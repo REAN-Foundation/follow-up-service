@@ -14,7 +14,7 @@ router = APIRouter(
 
 ###############################################################################
 
-@router.post("/notiy")
+@router.post("/notify")
 async def handle_sns_notification(message: Request):
     try:
         result = await handle(message)
