@@ -80,7 +80,7 @@ async def download(message: Request):
         raise HTTPException(status_code=400, detail='Unable to download PDF from S3')
     return local_file_path
 
-def download_pdf_from_s3(bucket_name, object_key):
+async def download_pdf_from_s3(bucket_name, object_key):
     try:
         s3 = boto3.client(
             's3',
