@@ -30,8 +30,8 @@ async def handle(file: UploadFile = File(...)):
     reminder_summary = reminder.summary()
 
     return {
-        "message" : "Reminders created successfully",
-        "summary" : reminder_summary,
+        "Message" : "Reminders created successfully",
+        "Data" : reminder_summary,
     }
 
 def store_uploaded_file(file: UploadFile):
