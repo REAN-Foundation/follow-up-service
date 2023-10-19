@@ -64,6 +64,7 @@ class Reminder:
                 user_id = self.create_patient(patient_mobile_number)
                 if user_id == None:
                     raise Exception('Unable to create patient')
+                self.new_patients_added_count = self.new_patients_added_count  + 1
                 self.update_patient(user_id, user_model)
 
             # Send reminders
