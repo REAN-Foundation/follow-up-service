@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
-
+from app.common.utils import validate_mobile
 from app.common.cache import cache
 
 ###############################################################
@@ -39,7 +39,7 @@ class Reminder:
         for appointment in appointments:
 
             patient_mobile_number = appointment['PatientMobile']
-            is_valid_mobile = self.validate_mobile(patient_mobile_number)
+            is_valid_mobile = validate_mobile(patient_mobile_number)
             if not is_valid_mobile:
                 print('*Invalid phone-number - ', patient_mobile_number)
                 self.appointments_skipped_count = self.appointments_skipped_count + 1
@@ -105,15 +105,6 @@ class Reminder:
             return None
         else:
             return search_result['Data']['Patients']['Items'][0]['UserId']
-
-    def validate_mobile(self, mobile):
-        # if not bool(mobile.strip()) or not mobile.startswith('+1-'):
-        if not bool(mobile.strip()):
-            print('Invalid Mobile Number ', mobile)
-            return False
-        ten_digit = mobile.split('-')[1]
-        if len(ten_digit) == 10 and ten_digit.isnumeric():
-            return True
 
     def create_patient(self, mobile):
         self.url = self.patient_url

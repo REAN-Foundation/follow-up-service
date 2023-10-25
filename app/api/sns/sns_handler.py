@@ -5,6 +5,7 @@ from app.common.utils import get_temp_filepath
 from app.services.login_service import UserLogin
 from app.services.pdf_reader_service import PdfReader
 from app.services.reminder_service import Reminder
+from app.services.notification_service import AdminNotification
 import json
 import os
 
@@ -60,6 +61,9 @@ async def handle_s3_event(message: Request):
     reminder = Reminder()
     reminder.create_one_time_reminders(reminder_date, appointments)
     reminder_summary = reminder.summary()
+
+    admin_notification = AdminNotification()
+    admin_notification.admin_notify(reminder_date,reminder_summary)
 
     return {
         "message" : "Reminders created successfully",
