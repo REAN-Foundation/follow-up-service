@@ -66,6 +66,16 @@ class Reminder:
                     raise Exception('Unable to create patient')
                 self.new_patients_added_count = self.new_patients_added_count  + 1
                 self.update_patient(user_id, user_model)
+            #   first reminder set as soon as pdf upload 
+            current_time = datetime.now()
+            new_time = str(current_time + timedelta(minutes=20))
+            date_element = new_time.split(' ')
+            time_element = date_element[1].split('.')
+            first_reminder = time_element[0]
+            print(first_reminder)
+            schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
+            response = self.schedule_reminder(schedule_model)
+            print(response)
 
             # Send reminders
             is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
@@ -150,12 +160,35 @@ class Reminder:
         hour, minute = appointment_time[0].split(':')
         rest = appointment_time[1]
         # appointment_time= '{}:{}:{}'.format(hour,minute,'00')
+        raw_content = {
+            "TemplateName": "appointment_msg",
+            "Variables": {
+                "en": [
+                    {
+                        "type": "text",
+                        "text": "appointment"
+                    },
+                    {
+                        "type": "text",
+                        "text":  reminder_time
+                    }
+                ]
+            },
+            "ButtonIds": [
+                "button_1",
+                "button_2"
+            ],
+            "ClientName": "GMU"
+        }
+
         return {
             'UserId': patient_user_id,
-            'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
+            # 'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
+            'Name': 'Appointment Reminder',
             'WhenDate': when_date,
             'WhenTime': reminder_time,
-            'NotificationType': 'WhatsApp'
+            'NotificationType': 'WhatsApp',
+            'RawContent':json.dumps(raw_content)
         }
 
     def schedule_reminder(self, schedule_create_model):

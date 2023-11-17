@@ -27,7 +27,7 @@ async def handle(file: UploadFile = File(...)):
 
     # 4. Send one-time-reminders
     reminder = Reminder()
-    # reminder_date = '2023-10-21'
+    # reminder_date = '2023-11-08'
     reminder.create_one_time_reminders(reminder_date, appointments)
     reminder_summary = reminder.summary()
 
