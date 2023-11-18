@@ -72,10 +72,10 @@ class Reminder:
             date_element = new_time.split(' ')
             time_element = date_element[1].split('.')
             first_reminder = time_element[0]
-            print(first_reminder)
+            # print(first_reminder)
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
             response = self.schedule_reminder(schedule_model)
-            print(response)
+            # print(response)
 
             # Send reminders
             is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
@@ -101,7 +101,7 @@ class Reminder:
         if response.status_code == 200 and not result['Message'] == 'No records found!':
             return True
         else:
-            print(result['Message'])
+            # print(result['Message'])
             return False
 
     def find_patient_by_mobile(self, mobile):
@@ -147,6 +147,7 @@ class Reminder:
 
         if patient['PatientMobile'].startswith('+1'):
             body['CurrentTimeZone'] = '-05:00'
+            body['DefaultTimeZone'] = '-05:00'
         return body
 
     def update_patient(self, patient_user_id, update_patient_model):

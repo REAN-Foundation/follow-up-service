@@ -37,7 +37,8 @@ class AdminNotification:
 
     def send_whatapp_to_GMU_admin(self,phone_nos,reminder_date,summary):
         total_patient = summary['Appointments processed']
-        reminder_set = round(int(summary['Reminders sent'])/2)
+        # reminder_set = round(int(summary['Reminders sent'])/2)
+        reminder_set = round(int(summary['Reminders sent']))
         reminders = str(reminder_set)
         header = self.get_notification_headers()
         body = {
