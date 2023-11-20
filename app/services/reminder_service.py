@@ -179,7 +179,8 @@ class Reminder:
                 "button_1",
                 "button_2"
             ],
-            "ClientName": "GMU"
+            # "ClientName": "GMU"
+            "ClientName": "REAN_BOT"
         }
 
         return {
