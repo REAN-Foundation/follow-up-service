@@ -186,7 +186,8 @@ class Reminder:
         return {
             'UserId': patient_user_id,
             # 'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
-            'Name': 'Appointment Reminder',
+            'Name': '{} with {}'.format(patient['AppointmentTime'], patient['Provider']),
+            # 'Name': 'Appointment Reminder',
             'WhenDate': when_date,
             'WhenTime': reminder_time,
             'NotificationType': 'WhatsApp',
