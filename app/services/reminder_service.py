@@ -6,6 +6,7 @@ import requests
 import urllib.parse
 from app.common.utils import validate_mobile
 from app.common.cache import cache
+import pytz
 
 ###############################################################
 
@@ -66,13 +67,11 @@ class Reminder:
                     raise Exception('Unable to create patient')
                 self.new_patients_added_count = self.new_patients_added_count  + 1
                 self.update_patient(user_id, user_model)
-            #   first reminder set as soon as pdf upload 
-            current_time = datetime.now()
-            new_time = str(current_time + timedelta(minutes=20))
-            date_element = new_time.split(' ')
-            time_element = date_element[1].split('.')
-            first_reminder = time_element[0]
-            # print(first_reminder)
+
+            # First reminder set as soon as pdf upload
+            print(patient_mobile_number) 
+            first_reminder = self.time_of_first_reminder(patient_mobile_number)
+            print(first_reminder)
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
             response = self.schedule_reminder(schedule_model)
             # print(response)
@@ -262,6 +261,27 @@ class Reminder:
             'x-api-key': self.api_key,
             'Content-Type': 'application/json'
         }
+    
+    def time_of_first_reminder(self, patient_mobile_number):
+        temp = str(patient_mobile_number)
+        if(temp.startswith('+1')):
+            desired_timezone = 'America/Cancun' 
+            utc_now = datetime.utcnow()
+               # Convert UTC time to the desired time zone
+            desired_timezone_obj = pytz.timezone(desired_timezone)
+            current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
+        if(temp.startswith('+91')):
+            desired_timezone = 'Asia/Kolkata' 
+            utc_now = datetime.utcnow()
+               # Convert UTC time to the desired time zone
+            desired_timezone_obj = pytz.timezone(desired_timezone)
+            current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
+       
+        new_time = str(current_time + timedelta(minutes=20))
+        date_element = new_time.split(' ')
+        time_element = date_element[1].split('.')
+        first_reminder_time = time_element[0]
+        return first_reminder_time
 
     def summary(self):
 

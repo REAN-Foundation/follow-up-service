@@ -18,6 +18,7 @@ async def handle(message: Request):
         if subscription_confirmation:
             return await handle_subscription_confirmation(message_data)
         else:
+            print('handling s3 event')
             return await handle_s3_event(message)
     except KeyError:
             raise HTTPException(status_code=400, detail='Unable to handle SNS notification')
@@ -55,6 +56,7 @@ async def handle_s3_event(message: Request):
         return ('Unable to find or unable to parse the date')
 
     # 3. Extract the PDF file
+    print('Extracting pdf data')
     appointments = reader.extract_appointments_from_pdf(file_path)
 
     # 4. Send one-time-reminders
@@ -62,6 +64,7 @@ async def handle_s3_event(message: Request):
     reminder.create_one_time_reminders(reminder_date, appointments)
     reminder_summary = reminder.summary()
 
+    
     admin_notification = AdminNotification()
     admin_notification.admin_notify(reminder_date,reminder_summary)
 

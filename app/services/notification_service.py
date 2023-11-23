@@ -16,6 +16,7 @@ class AdminNotification:
         self.notification_token = "Bearer " + whatsapp_token
 
     def admin_notify(self,reminder_date,summary):
+        print('Sending message to admins')
         file_name = 'GMU_admin.json'
         current_path = os.getcwd()
         folder_path = os.path.join(current_path, "../", "temp")
