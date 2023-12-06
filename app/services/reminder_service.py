@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
-from app.common.utils import validate_mobile
+from app.common.utils import get_temp_filepath, validate_mobile
 from app.common.cache import cache
 import pytz
 
@@ -32,11 +32,12 @@ class Reminder:
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
+        
 
     def create_one_time_reminders(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
-
+        summary_data = []
         for appointment in appointments:
 
             patient_mobile_number = appointment['PatientMobile']
@@ -54,6 +55,7 @@ class Reminder:
             first_time = appointment_time['FirstTime']
             second_time = appointment_time['SecondTime']
             first_name = user_model['FirstName']
+            last_name = user_model['LastName']
 
             if appointment['Status'] != PENDING_ARRIVAL:
                 continue
@@ -85,6 +87,33 @@ class Reminder:
             if not is_reminder_set:
                 schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
                 self.schedule_reminder(schedule_model)
+            data = {
+                "Patient_Name":first_name,
+                "Patient_UserId":user_id,
+                "Patient_Number":patient_mobile_number,
+                "Appointment_time": appointment['AppointmentTime'],
+                "Appointment_Set":"True",
+                "Reply":"No Reply"
+            }
+            summary_data.append(data)
+        self.create_report(summary_data,reminder_date) 
+
+    def create_report(self,summary_data,reminder_date):
+        print(summary_data)  
+        filename=str('file'+reminder_date+'.json')
+        if os.path.exists(os.getcwd()+"/temp/"+filename):
+            print(f"The file {filepresent} already exists. Please choose a different name.")
+        else:
+            temp_folder = os.path.join(os.getcwd(), "temp")
+            if not os.path.exists(temp_folder):
+                os.mkdir(temp_folder)
+            filepresent  = os.path.join(temp_folder, filename)
+            with open(filepresent, 'w') as json_file:
+                json.dump(summary_data, json_file, indent=6)
+
+ 
+            
+        
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):
         url = self.reminder_search_url
