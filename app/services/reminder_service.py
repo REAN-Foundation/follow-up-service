@@ -32,8 +32,7 @@ class Reminder:
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
-        
-
+       
     def create_one_time_reminders(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
@@ -57,11 +56,6 @@ class Reminder:
             first_name = user_model['FirstName']
             last_name = user_model['LastName']
 
-            if appointment['Status'] != PENDING_ARRIVAL:
-                continue
-
-            self.pending_arrival_count = self.pending_arrival_count + 1
-
             # Create patient if does not exist
             if user_id == None:
                 user_id = self.create_patient(patient_mobile_number)
@@ -70,50 +64,68 @@ class Reminder:
                 self.new_patients_added_count = self.new_patients_added_count  + 1
                 self.update_patient(user_id, user_model)
 
+            data = {
+                "patient_name":first_name,
+                "patient_userid":user_id,
+                "phone_number":patient_mobile_number,
+                "appointment_time": appointment['AppointmentTime'],
+                "appointment_status": appointment['Status'],
+                "WhatsApp_id":"",
+                "reply":"Not replied",
+                  }
+            summary_data.append(data)
+
+            if appointment['Status'] != PENDING_ARRIVAL:
+               continue
+
+            self.pending_arrival_count = self.pending_arrival_count + 1
+
             # First reminder set as soon as pdf upload
             print(patient_mobile_number) 
             first_reminder = self.time_of_first_reminder(patient_mobile_number)
             print(first_reminder)
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
             response = self.schedule_reminder(schedule_model)
-            # print(response)
+            
+            #  Send reminders 10 min before and after
 
-            # Send reminders
-            is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
-            if not is_reminder_set:
-                schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, first_time, reminder_date)
-                self.schedule_reminder(schedule_model)
-            is_reminder_set = self.search_reminder(user_id, reminder_date, second_time)
-            if not is_reminder_set:
-                schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
-                self.schedule_reminder(schedule_model)
-            data = {
-                "Patient_Name":first_name,
-                "Patient_UserId":user_id,
-                "Patient_Number":patient_mobile_number,
-                "Appointment_time": appointment['AppointmentTime'],
-                "Appointment_Set":"True",
-                "Reply":"No Reply"
-            }
-            summary_data.append(data)
+            # is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
+            # if not is_reminder_set:
+            #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, first_time, reminder_date)
+            #     self.schedule_reminder(schedule_model)
+            # is_reminder_set = self.search_reminder(user_id, reminder_date, second_time)
+            # if not is_reminder_set:
+            #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
+            #     self.schedule_reminder(schedule_model)
+            
         self.create_report(summary_data,reminder_date) 
 
     def create_report(self,summary_data,reminder_date):
         print(summary_data)  
         filename=str('file'+reminder_date+'.json')
-        if os.path.exists(os.getcwd()+"/temp/"+filename):
-            print(f"The file {filepresent} already exists. Please choose a different name.")
+        f_path=(os.getcwd()+"/temp/"+filename)
+        if os.path.exists(f_path):
+            print(f"The file {filename} already exists. Please choose a different name.")
+            json_string = json.dumps(summary_data, indent=7)
+            # self.replace_file(json_string,f_path)
+            print(json_string)
+            return(json_string)
         else:
             temp_folder = os.path.join(os.getcwd(), "temp")
             if not os.path.exists(temp_folder):
                 os.mkdir(temp_folder)
             filepresent  = os.path.join(temp_folder, filename)
             with open(filepresent, 'w') as json_file:
-                json.dump(summary_data, json_file, indent=6)
-
- 
-            
+                json.dump(summary_data, json_file, indent=7)
+            json_string = json.dumps(summary_data, indent=7)
+            return(json_string)
         
+    # def replace_file(self,json_string,f_path):
+    #     with open(f_path, 'r') as file:
+    #         data = json.load(file)
+    #     for item in json_string:
+    #         if item['appointment_status'] == 'Pending arrival':
+    #            print(item)
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):
         url = self.reminder_search_url

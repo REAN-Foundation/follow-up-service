@@ -104,7 +104,19 @@ class PdfReader:
                     self.invalid_record_count = self.invalid_record_count + 1
                     print('*Invalid record found: ', row)
                     self.invalid_appointments.append(row)
+        self.create_file_for_invalid_record(self.invalid_appointments)
         return all_appointments
+
+    def create_file_for_invalid_record(self,invalid_appointments):
+        filename=str('Invalid_Record.json')
+        temp_folder = os.path.join(os.getcwd(), "temp")
+        if not os.path.exists(temp_folder):
+            os.mkdir(temp_folder)
+        filepresent  = os.path.join(temp_folder, filename)
+        with open(filepresent, 'w') as json_file:
+                json.dump(invalid_appointments, json_file)
+        json_string = json.dumps(invalid_appointments)
+        return(json_string)
 
     def get_shape(self, df):
         return [df.count()[0],len(df.columns)]

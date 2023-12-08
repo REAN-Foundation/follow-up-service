@@ -5,7 +5,8 @@ from app.services.pdf_reader_service import PdfReader
 from app.services.reminder_service import Reminder
 from app.services.notification_service import AdminNotification
 import os
-
+from app.services.read_report import ReadReport
+from  app.services.update_service import UpdateFile
 ###############################################################################
 
 async def handle(file: UploadFile = File(...)):
@@ -50,4 +51,29 @@ def store_uploaded_file(file: UploadFile):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return file_path
+
+async def readfile(file_path):
+    reportfile = ReadReport()
+    filecontent = reportfile.read_report_file(file_path)
+    return(filecontent)
+
+async def readfile_summary(file_path,filename):
+    reportfile = ReadReport()
+    filesummary = reportfile.read_report_summary(file_path,filename)
+    return(filesummary)
+
+async def updatefile(file_path, patient_userid, new_data):
+    updatefile = UpdateFile()
+    updated_data = updatefile.update_content_by_id(file_path, patient_userid, new_data)
+    return(updated_data)
+
+async def update_whatsappid(file_path, phone_number, new_data):
+    updatefile = UpdateFile()
+    updated_data = updatefile.update_whatsapp_by_ph(file_path, phone_number,new_data)
+    return(updated_data)
+
+async def update_reply_by_ph(file_path, phone_number, new_data):
+    updatefile = UpdateFile()
+    updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
+    return(updated_data)
 
