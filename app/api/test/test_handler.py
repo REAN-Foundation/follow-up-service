@@ -57,10 +57,23 @@ async def readfile(file_path):
     filecontent = reportfile.read_report_file(file_path)
     return(filecontent)
 
+async def readfile_content_by_phone(file_path,phone_number):
+    reportfile = ReadReport()
+    filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
+    return(filecontent)
+
 async def readfile_summary(file_path,filename):
     reportfile = ReadReport()
     filesummary = reportfile.read_report_summary(file_path,filename)
     return(filesummary)
+
+async def update_reply_by_ph(file_path, phone_number, new_data):
+    updatefile = UpdateFile()
+    updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
+    return(updated_data)
+
+#############################################################################
+#currently not in use
 
 async def updatefile(file_path, patient_userid, new_data):
     updatefile = UpdateFile()
@@ -71,9 +84,6 @@ async def update_whatsappid(file_path, phone_number, new_data):
     updatefile = UpdateFile()
     updated_data = updatefile.update_whatsapp_by_ph(file_path, phone_number,new_data)
     return(updated_data)
+####################################################################################
 
-async def update_reply_by_ph(file_path, phone_number, new_data):
-    updatefile = UpdateFile()
-    updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
-    return(updated_data)
 

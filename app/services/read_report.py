@@ -12,7 +12,8 @@ class ReadReport:
         self.patient_reply_yes_count = 0
         self.patient_reply_no_count = 0
         self.patient_not_replied_count = 0
-
+        self.patient_data=[]
+        
     def read_report_file(self,file_path):
         try:
             with open(file_path, "r") as file:
@@ -57,4 +58,23 @@ class ReadReport:
         }
       
         return(file_summary) 
-        
+    
+    def readfile_content_by_ph(self,file_path,phone_number):
+        try:
+            with open(file_path, "r") as file:
+                json_content = json.load(file)
+            for item in json_content:
+                if item['phone_number'] == phone_number:
+                    data={
+                        'patient_name': item['patient_name'],
+                        'patient_userid': item['patient_userid'],
+                        'appointment_time':item['appointment_time'],
+                        'appointment_status': item['appointment_status'],
+                        'WhatsApp_id':item['WhatsApp_id'],
+                        'reply':item['reply']
+                    }
+                    self.patient_data.append(data)
+            return(self.patient_data)
+                   
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="File not found")
