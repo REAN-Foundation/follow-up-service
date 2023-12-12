@@ -37,24 +37,25 @@ class ReadReport:
 
         for item in data:
             self.patients_count = self.patients_count + 1
-            if item['appointment_status'] == 'Pending arrival':
+            if item['Patient_status'] == 'Pending arrival':
                 self.pending_arrival_patient_count = self.pending_arrival_patient_count + 1
-            if item['appointment_status'] == 'In lobby':
+            if item['Patient_status'] == 'In lobby':
                 self.arrived_patient_count = self.arrived_patient_count + 1
-            if item['reply'] == 'Yes':
+            if item['Patient_replied'] == 'Yes':
                 self.patient_reply_yes_count = self.patient_reply_yes_count + 1
-            if item['reply'] == 'No':
+            if item['Patient_replied'] == 'No':
                 self.patient_reply_no_count = self.patient_reply_no_count + 1
-            if item['reply'] == 'Not replied':
+            if item['Patient_replied'] == 'Not replied':
                 self.patient_not_replied_count = self.patient_not_replied_count + 1
         
         file_summary = {
             'Date': file_date,
-            'Patients_in_lobby' : self.arrived_patient_count,
-            'Pending_arrival' : self.pending_arrival_patient_count,
-            'Patient_replied_Yes' : self.patient_reply_yes_count,
-            'Patient_replied_No' :  self.patient_reply_no_count,
-            'Patient_Not_replied' : self.patient_not_replied_count
+            'Total patient': self.patients_count,
+            'Arrived patient' : self.arrived_patient_count,
+            'Patient not arrived' : self.pending_arrival_patient_count,
+            'Patient replied Yes' : self.patient_reply_yes_count,
+            'Patient replied No' :  self.patient_reply_no_count,
+            'Patient Not replied' : self.patient_not_replied_count
         }
       
         return(file_summary) 
@@ -64,14 +65,14 @@ class ReadReport:
             with open(file_path, "r") as file:
                 json_content = json.load(file)
             for item in json_content:
-                if item['phone_number'] == phone_number:
+                if item['Phone_number'] == phone_number:
                     data={
-                        'patient_name': item['patient_name'],
-                        'patient_userid': item['patient_userid'],
-                        'appointment_time':item['appointment_time'],
-                        'appointment_status': item['appointment_status'],
-                        'WhatsApp_id':item['WhatsApp_id'],
-                        'reply':item['reply']
+                        'Name of patient': item['Name_of_patient'],
+                        'Rean patient userid': item['Rean_patient_userid'],
+                        'Appointment time':item['Appointment_time'],
+                        'Patient status': item['Patient_status'],
+                        'WhatsApp message id':item['WhatsApp_message_id'],
+                        'Patient replied':item['Patient_replied']
                     }
                     self.patient_data.append(data)
             return(self.patient_data)

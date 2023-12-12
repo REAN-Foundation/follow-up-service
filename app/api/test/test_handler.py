@@ -72,18 +72,3 @@ async def update_reply_by_ph(file_path, phone_number, new_data):
     updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
     return(updated_data)
 
-#############################################################################
-#currently not in use
-
-async def updatefile(file_path, patient_userid, new_data):
-    updatefile = UpdateFile()
-    updated_data = updatefile.update_content_by_id(file_path, patient_userid, new_data)
-    return(updated_data)
-
-async def update_whatsappid(file_path, phone_number, new_data):
-    updatefile = UpdateFile()
-    updated_data = updatefile.update_whatsapp_by_ph(file_path, phone_number,new_data)
-    return(updated_data)
-####################################################################################
-
-

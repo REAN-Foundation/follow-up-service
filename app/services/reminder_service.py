@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
-from app.common.utils import get_temp_filepath, validate_mobile
+from app.common.utils import get_temp_filepath, valid_appointment_status, validate_mobile
 from app.common.cache import cache
 import pytz
 
@@ -65,13 +65,13 @@ class Reminder:
                 self.update_patient(user_id, user_model)
 
             data = {
-                "patient_name":first_name,
-                "patient_userid":user_id,
-                "phone_number":patient_mobile_number,
-                "appointment_time": appointment['AppointmentTime'],
-                "appointment_status": appointment['Status'],
-                "WhatsApp_id":"",
-                "reply":"Not replied",
+                "Name_of_patient":first_name,
+                "Rean_patient_userid":user_id,
+                "Phone_number":patient_mobile_number,
+                "Appointment_time":appointment['AppointmentTime'],
+                "Patient_status":valid_appointment_status(appointment['Status']),
+                "WhatsApp_message_id":"",
+                "Patient_replied":"Not replied",
                   }
             summary_data.append(data)
 
@@ -125,15 +125,15 @@ class Reminder:
         with open(f_path, 'r') as file:
             data = json.load(file)
         for item in data:
-            if item['appointment_status'] == 'Pending arrival':
+            if item['Patient_status'] == 'Pending arrival':
                for record in json_object:
-                    if record['phone_number'] == item['phone_number']:
-                       item['patient_name'] = record['patient_name']
-                       item['patient_userid'] = record['patient_userid']
-                       item['appointment_time'] = record['appointment_time']
-                       item['appointment_status'] = record['appointment_status']
-                       item['WhatsApp_id'] = record['WhatsApp_id']
-                       item['reply'] = record['reply']
+                    if record['Phone_number'] == item['Phone_number']:
+                       item['Name_of_patient'] = record['Name_of_patient']
+                       item['Rean_patient_userid'] = record['Rean_patient_userid']
+                       item['Appointment_time'] = record['Appointment_time']
+                       item['Patient_status'] = record['Patient_status']
+                       item['WhatsApp_message_id'] = record['WhatsApp_message_id']
+                       item['Patient_replied'] = record['Patient_replied']
         with open(f_path, 'w') as file:
            json.dump(data, file, indent=7)
          
