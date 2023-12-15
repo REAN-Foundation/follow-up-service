@@ -6,15 +6,15 @@ from app.api.sns.sns_handler import handle
 ###############################################################################
 
 router = APIRouter(
-    prefix="/sns",
-    tags=["sns"],
+    prefix="/appointment-schedule",
+    tags=["appointment-schedule"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
 )
 
 ###############################################################################
 
-@router.post("/notify")
+@router.post("/upload")
 async def handle_sns_notification(message: Request):
     try:
         print("Notification received")

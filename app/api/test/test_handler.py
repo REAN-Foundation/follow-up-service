@@ -42,7 +42,7 @@ async def handle(file: UploadFile = File(...)):
 
 def store_uploaded_file(file: UploadFile):
     current_path = os.getcwd()
-    folder_path = os.path.join(current_path, "../", "temp")
+    folder_path = os.path.join(current_path, "temp")
     exists = os.path.exists(folder_path)
     if not exists:
         os.mkdir(folder_path)

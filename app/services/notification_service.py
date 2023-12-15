@@ -19,7 +19,7 @@ class AdminNotification:
         print('Sending message to admins')
         file_name = 'GMU_admin.json'
         current_path = os.getcwd()
-        folder_path = os.path.join(current_path, "../", "temp")
+        folder_path = os.path.join(current_path, "temp")
         exists = os.path.exists(folder_path)
         if exists:
             file_path = os.path.join(folder_path,file_name)
