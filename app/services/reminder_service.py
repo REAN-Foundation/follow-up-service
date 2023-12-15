@@ -214,9 +214,13 @@ class Reminder:
         rest = appointment_time[1]
         # appointment_time= '{}:{}:{}'.format(hour,minute,'00')
         raw_content = {
-            "TemplateName": "appointment_msg",
+            "TemplateName": "appointment_rem_question",
             "Variables": {
                 "en": [
+                    {
+                        "type": "text",
+                        "text": patient_name
+                    },
                     {
                         "type": "text",
                         "text": "appointment"
@@ -224,12 +228,17 @@ class Reminder:
                     {
                         "type": "text",
                         "text":  reminder_time
+                    },
+                    {
+                        "type": "text",
+                        "text": "attend"
                     }
+
                 ]
             },
             "ButtonIds": [
-                "button_1",
-                "button_2"
+                "Reminder_Reply_Yes",
+                "Reminder_Reply_No"
             ],
             # "ClientName": "GMU"
             "ClientName": "REAN_BOT",
