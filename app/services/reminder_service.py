@@ -4,8 +4,9 @@ import json
 import os
 import requests
 import urllib.parse
-
+from app.common.utils import get_temp_filepath, valid_appointment_status, validate_mobile
 from app.common.cache import cache
+import pytz
 
 ###############################################################
 
@@ -31,15 +32,15 @@ class Reminder:
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
-
+       
     def create_one_time_reminders(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
-
+        summary_data = []
         for appointment in appointments:
 
             patient_mobile_number = appointment['PatientMobile']
-            is_valid_mobile = self.validate_mobile(patient_mobile_number)
+            is_valid_mobile = validate_mobile(patient_mobile_number)
             if not is_valid_mobile:
                 print('*Invalid phone-number - ', patient_mobile_number)
                 self.appointments_skipped_count = self.appointments_skipped_count + 1
@@ -53,28 +54,90 @@ class Reminder:
             first_time = appointment_time['FirstTime']
             second_time = appointment_time['SecondTime']
             first_name = user_model['FirstName']
-
-            if appointment['Status'] != PENDING_ARRIVAL:
-                continue
-
-            self.pending_arrival_count = self.pending_arrival_count + 1
+            last_name = user_model['LastName']
 
             # Create patient if does not exist
             if user_id == None:
                 user_id = self.create_patient(patient_mobile_number)
                 if user_id == None:
                     raise Exception('Unable to create patient')
+                self.new_patients_added_count = self.new_patients_added_count  + 1
                 self.update_patient(user_id, user_model)
 
-            # Send reminders
-            is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
-            if not is_reminder_set:
-                schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, first_time, reminder_date)
-                self.schedule_reminder(schedule_model)
-            is_reminder_set = self.search_reminder(user_id, reminder_date, second_time)
-            if not is_reminder_set:
-                schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
-                self.schedule_reminder(schedule_model)
+            data = {
+                "Name_of_patient":first_name,
+                "Rean_patient_userid":user_id,
+                "Phone_number":patient_mobile_number,
+                "Appointment_time":appointment['AppointmentTime'],
+                "Patient_status":valid_appointment_status(appointment['Status']),
+                "WhatsApp_message_id":"",
+                "Patient_replied":"Not replied",
+                  }
+            summary_data.append(data)
+
+            if appointment['Status'] != PENDING_ARRIVAL:
+               continue
+
+            self.pending_arrival_count = self.pending_arrival_count + 1
+
+            # First reminder set as soon as pdf upload
+            print(patient_mobile_number) 
+            first_reminder = self.time_of_first_reminder(patient_mobile_number)
+            print(first_reminder)
+            schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
+            response = self.schedule_reminder(schedule_model)
+            
+            #  Send reminders 10 min before and after
+
+            # is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
+            # if not is_reminder_set:
+            #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, first_time, reminder_date)
+            #     self.schedule_reminder(schedule_model)
+            # is_reminder_set = self.search_reminder(user_id, reminder_date, second_time)
+            # if not is_reminder_set:
+            #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
+            #     self.schedule_reminder(schedule_model)
+            
+        self.create_report(summary_data,reminder_date) 
+
+    def create_report(self,summary_data,reminder_date):
+        print(summary_data)  
+        filename=str('gmu_followup_file'+reminder_date+'.json')
+        f_path=(os.getcwd()+"/temp/"+filename)
+        if os.path.exists(f_path):
+            print(f"The file {filename} already exists. Please choose a different name.")
+            json_string = json.dumps(summary_data, indent=7)
+            json_object = json.loads(json_string)
+            self.replace_file(json_object,f_path)
+            print(json_string)
+            return(json_string)
+        else:
+            temp_folder = os.path.join(os.getcwd(), "temp")
+            if not os.path.exists(temp_folder):
+                os.mkdir(temp_folder)
+            filepresent  = os.path.join(temp_folder, filename)
+            with open(filepresent, 'w') as json_file:
+                json.dump(summary_data, json_file, indent=7)
+            json_string = json.dumps(summary_data, indent=7)
+            return(json_string)
+        
+    def replace_file(self,json_object,f_path):
+        with open(f_path, 'r') as file:
+            data = json.load(file)
+        for item in data:
+            if item['Patient_status'] == 'Pending arrival':
+               for record in json_object:
+                    if record['Phone_number'] == item['Phone_number']:
+                       item['Name_of_patient'] = record['Name_of_patient']
+                       item['Rean_patient_userid'] = record['Rean_patient_userid']
+                       item['Appointment_time'] = record['Appointment_time']
+                       item['Patient_status'] = record['Patient_status']
+                       item['WhatsApp_message_id'] = record['WhatsApp_message_id']
+                       item['Patient_replied'] = record['Patient_replied']
+        with open(f_path, 'w') as file:
+           json.dump(data, file, indent=7)
+         
+
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):
         url = self.reminder_search_url
@@ -90,7 +153,7 @@ class Reminder:
         if response.status_code == 200 and not result['Message'] == 'No records found!':
             return True
         else:
-            print(result['Message'])
+            # print(result['Message'])
             return False
 
     def find_patient_by_mobile(self, mobile):
@@ -104,15 +167,6 @@ class Reminder:
             return None
         else:
             return search_result['Data']['Patients']['Items'][0]['UserId']
-
-    def validate_mobile(self, mobile):
-        # if not bool(mobile.strip()) or not mobile.startswith('+1-'):
-        if not bool(mobile.strip()):
-            print('Invalid Mobile Number ', mobile)
-            return False
-        ten_digit = mobile.split('-')[1]
-        if len(ten_digit) == 10 and ten_digit.isnumeric():
-            return True
 
     def create_patient(self, mobile):
         self.url = self.patient_url
@@ -145,6 +199,7 @@ class Reminder:
 
         if patient['PatientMobile'].startswith('+1'):
             body['CurrentTimeZone'] = '-05:00'
+            body['DefaultTimeZone'] = '-05:00'
         return body
 
     def update_patient(self, patient_user_id, update_patient_model):
@@ -158,12 +213,46 @@ class Reminder:
         hour, minute = appointment_time[0].split(':')
         rest = appointment_time[1]
         # appointment_time= '{}:{}:{}'.format(hour,minute,'00')
+        raw_content = {
+            "TemplateName": "appointment_rem_question",
+            "Variables": {
+                "en": [
+                    {
+                        "type": "text",
+                        "text": patient_name
+                    },
+                    {
+                        "type": "text",
+                        "text": "appointment"
+                    },
+                    {
+                        "type": "text",
+                        "text":  reminder_time
+                    },
+                    {
+                        "type": "text",
+                        "text": "attend"
+                    }
+
+                ]
+            },
+            "ButtonIds": [
+                "Reminder_Reply_Yes",
+                "Reminder_Reply_No"
+            ],
+            # "ClientName": "GMU"
+            "ClientName": "REAN_BOT",
+            "AppointmentDate": patient['AppointmentTime']
+        }
+
         return {
             'UserId': patient_user_id,
-            'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
+            # 'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
+            'Name': 'appointment reminder',
             'WhenDate': when_date,
             'WhenTime': reminder_time,
-            'NotificationType': 'WhatsApp'
+            'NotificationType': 'WhatsApp',
+            'RawContent':json.dumps(raw_content)
         }
 
     def schedule_reminder(self, schedule_create_model):
@@ -234,6 +323,27 @@ class Reminder:
             'x-api-key': self.api_key,
             'Content-Type': 'application/json'
         }
+    
+    def time_of_first_reminder(self, patient_mobile_number):
+        temp = str(patient_mobile_number)
+        if(temp.startswith('+1')):
+            desired_timezone = 'America/Cancun' 
+            utc_now = datetime.utcnow()
+               # Convert UTC time to the desired time zone
+            desired_timezone_obj = pytz.timezone(desired_timezone)
+            current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
+        if(temp.startswith('+91')):
+            desired_timezone = 'Asia/Kolkata' 
+            utc_now = datetime.utcnow()
+               # Convert UTC time to the desired time zone
+            desired_timezone_obj = pytz.timezone(desired_timezone)
+            current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
+       
+        new_time = str(current_time + timedelta(minutes=20))
+        date_element = new_time.split(' ')
+        time_element = date_element[1].split('.')
+        first_reminder_time = time_element[0]
+        return first_reminder_time
 
     def summary(self):
 
