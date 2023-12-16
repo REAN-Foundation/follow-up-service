@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .sns.sns_routes import router as sns_router
+from .sns.appointment_routes import router as sns_router
 from .test.test_routes import router as test_router
 import os
 
