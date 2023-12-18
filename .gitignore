@@ -1,6 +1,6 @@
 .env
 *.pdf
-*.json
+temp/*
 __pycache__/
 env
 *.csv
