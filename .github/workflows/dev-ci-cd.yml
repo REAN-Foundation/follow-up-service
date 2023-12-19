@@ -58,6 +58,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Copy env file
+        run: aws s3 cp s3://${{ secrets.ENV_FILE_BUCKET_PATH }}/.env ./.env        
+
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
