@@ -65,7 +65,7 @@ class Reminder:
                 self.update_patient(user_id, user_model)
 
             data = {
-                "Name_of_patient":first_name,
+                "Name_of_patient":appointment['PatientName'],
                 "Rean_patient_userid":user_id,
                 "Phone_number":patient_mobile_number,
                 "Appointment_time":appointment['AppointmentTime'],
