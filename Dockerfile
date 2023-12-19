@@ -11,4 +11,4 @@ COPY . /app
 EXPOSE 3000
 #CMD ["python", "main.py"]
 RUN chmod +x /app/entrypoint.sh
-ENTRYPOINT ["python", "-c", "main.py"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
