@@ -5,7 +5,8 @@ from app.common.exceptions import HTTPError
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.exc import SQLAlchemyError
+# from sqlalchemy.exc import SQLAlchemyError
+import traceback2 as traceback
 
 #################################################################
 
@@ -16,6 +17,7 @@ async def api_error_handler(request: Request, exc: HTTPError):
 
     # Handle telemetry and logging here...
     logger.error(f"API Error: {exc.message}")
+    traceback.print_exception(type(exc), exc, exc.__traceback__)
 
     return JSONResponse(
         status_code=exc.status_code,
@@ -33,6 +35,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     # Handle telemetry and logging here...
     logger.error(f"Validation Error: {exc.errors()}")
+    traceback.print_exception(type(exc), exc, exc.__traceback__)
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -52,6 +55,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def generic_exception_handler(request: Request, exc: Exception):
     # Handle telemetry and logging here...
     logger.error(f"Internal Server Error: {exc.args}")
+    traceback.print_exception(type(exc), exc, exc.__traceback__)
 
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

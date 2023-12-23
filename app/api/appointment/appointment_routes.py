@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.sns.appointment_handler import handle, readfile, readfile_content_by_phone, readfile_summary, update_reply_by_ph
+from app.api.appointment.appointment_handler import handle, readfile, readfile_content_by_phone, readfile_summary, update_reply_by_ph
 from app.common.utils import get_temp_filepath
 
 ###############################################################################

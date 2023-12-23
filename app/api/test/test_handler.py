@@ -53,22 +53,34 @@ def store_uploaded_file(file: UploadFile):
     return file_path
 
 async def readfile(file_path):
-    reportfile = ReadReport()
-    filecontent = reportfile.read_report_file(file_path)
-    return(filecontent)
+    try:
+        reportfile = ReadReport()
+        filecontent = reportfile.read_report_file(file_path)
+        return(filecontent)
+    except Exception as e:
+         raise e
 
 async def readfile_content_by_phone(file_path,phone_number):
-    reportfile = ReadReport()
-    filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
-    return(filecontent)
+    try:
+        reportfile = ReadReport()
+        filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
+        return(filecontent)
+    except Exception as e:
+         raise e
 
 async def readfile_summary(file_path,filename):
-    reportfile = ReadReport()
-    filesummary = reportfile.read_report_summary(file_path,filename)
-    return(filesummary)
+    try:
+        reportfile = ReadReport()
+        filesummary = reportfile.read_report_summary(file_path,filename)
+        return(filesummary)
+    except Exception as e:
+         raise e
 
 async def update_reply_by_ph(file_path, phone_number, new_data):
-    updatefile = UpdateFile()
-    updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
-    return(updated_data)
+    try:
+        updatefile = UpdateFile()
+        updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
+        return(updated_data)
+    except Exception as e:
+         raise e
 

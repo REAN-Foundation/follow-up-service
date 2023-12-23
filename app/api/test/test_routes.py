@@ -11,7 +11,7 @@ from .test_handler import handle,readfile,update_reply_by_ph,readfile_summary,re
 ###############################################################################
 
 router = APIRouter(
-    prefix="/tests",
+    prefix="/appointments/tests",
     tags=["tests"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
