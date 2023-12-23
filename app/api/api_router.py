@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from .appointment.appointment_routes import router as appointment_router
-from .test.test_routes import router as test_router
+from .test.appointment_test_routes import router as test_router
 import os
 
 API_PREFIX = os.environ.get("API_PREFIX", "/api/v1")

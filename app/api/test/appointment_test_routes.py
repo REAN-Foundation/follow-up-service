@@ -6,7 +6,7 @@ import os
 from app.common.base_response import BaseResponseModel
 from app.common.response_model import ResponseModel
 from app.common.utils import get_temp_filepath
-from .test_handler import handle,readfile,update_reply_by_ph,readfile_summary,readfile_content_by_phone
+from .appointment_test_handler import handle,readfile,update_reply_by_ph,readfile_summary,readfile_content_by_phone
 
 ###############################################################################
 
