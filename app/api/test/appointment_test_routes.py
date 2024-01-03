@@ -7,7 +7,7 @@ from app.common.base_response import BaseResponseModel
 from app.common.response_model import ResponseModel
 from app.common.utils import get_temp_filepath
 from .appointment_test_handler import handle,readfile,update_reply_by_ph,readfile_summary,readfile_content_by_phone
-
+from app.common.cache import cache
 ###############################################################################
 
 router = APIRouter(
@@ -74,4 +74,20 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-
+@router.get("/gmu/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
+async def read_file():
+    filename = cache.get('recent_file')
+    print(" RECENT FILE:",filename)
+    # filename = file_name.replace(' ', '')
+    file_path = get_temp_filepath(filename)
+    try:
+        appointment_followup_data = await readfile(file_path)        
+        followup_summary = await readfile_summary(file_path,filename)
+        data = {
+            "File_data":appointment_followup_data,
+            "Summary":followup_summary 
+            } 
+        return(data)
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})

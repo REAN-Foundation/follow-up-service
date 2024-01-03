@@ -3,6 +3,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.api.appointment.appointment_handler import handle, readfile, readfile_content_by_phone, readfile_summary, update_reply_by_ph
 from app.common.utils import get_temp_filepath
+from app.common.cache import cache
 
 ###############################################################################
 
@@ -71,4 +72,20 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-
+@router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
+async def read_file():
+    filename = cache.get('recent_file')
+    print(" RECENT FILE:",filename)
+    # filename = file_name.replace(' ', '')
+    file_path = get_temp_filepath(filename)
+    try:
+        appointment_followup_data = await readfile(file_path)        
+        followup_summary = await readfile_summary(file_path,filename)
+        data = {
+            "File_data":appointment_followup_data,
+            "Summary":followup_summary 
+            } 
+        return(data)
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})

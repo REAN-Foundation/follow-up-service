@@ -26,6 +26,7 @@ class Reminder:
         self.reminder_search_url = str(reancare_base_url + "/reminders/search")
         self.api_key = os.getenv("REANCARE_API_KEY")
         self.access_token = cache.get('access_token')
+        self.recent_file = ''
 
         self.new_patients_added_count = 0
         self.reminders_sent_count = 0
@@ -119,6 +120,10 @@ class Reminder:
             with open(filepresent, 'w') as json_file:
                 json.dump(summary_data, json_file, indent=7)
             json_string = json.dumps(summary_data, indent=7)
+            self.recent_file = filename
+            cache.set('recent_file', self.recent_file)
+            recent_file = cache.get('recent_file') 
+            print("RECENT FILE IN CACHE",recent_file)
             return(json_string)
         
     def replace_file(self,json_object,f_path):
