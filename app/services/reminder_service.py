@@ -103,7 +103,7 @@ class Reminder:
 
     def create_report(self,summary_data,reminder_date):
         print(summary_data)  
-        filename=str('gmu_followup_file'+reminder_date+'.json')
+        filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         if os.path.exists(f_path):
             print(f"The file {filename} already exists. Please choose a different name.")
@@ -120,10 +120,12 @@ class Reminder:
             with open(filepresent, 'w') as json_file:
                 json.dump(summary_data, json_file, indent=7)
             json_string = json.dumps(summary_data, indent=7)
-            self.recent_file = filename
-            cache.set('recent_file', self.recent_file)
-            recent_file = cache.get('recent_file') 
-            print("RECENT FILE IN CACHE",recent_file)
+
+            # code to set recent file in cache
+            # self.recent_file = filename
+            # cache.set('recent_file', self.recent_file)
+            # recent_file = cache.get('recent_file') 
+            # print("RECENT FILE IN CACHE",recent_file)
             return(json_string)
         
     def replace_file(self,json_object,f_path):
@@ -141,7 +143,7 @@ class Reminder:
                        item['Patient_replied'] = record['Patient_replied']
         with open(f_path, 'w') as file:
            json.dump(data, file, indent=7)
-         
+       
 
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):

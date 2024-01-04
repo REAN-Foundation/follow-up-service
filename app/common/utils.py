@@ -45,6 +45,17 @@ def valid_patient_reply(reply):
     if reply == PatientReplyEnum.Patient_Replied_No:
         return(PatientReplyEnum.Patient_Replied_No)
    
+def find_recent_file_with_prefix(folder_path, prefix):
+    # Get a list of all files in the folder that start with the specified prefix
+    files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.startswith(prefix) and os.path.isfile(os.path.join(folder_path, f))]
     
+    # Sort files by modification time (most recent first)
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    
+    # Return the most recently modified file with the specified prefix
+    if files:
+        return files[0]
+    else:
+        return None
 
-    
+ 
