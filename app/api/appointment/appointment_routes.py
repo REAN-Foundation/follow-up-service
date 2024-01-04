@@ -83,14 +83,12 @@ async def read_file():
     folder_path = os.path.join(os.getcwd(), "temp")
     prefix = "gmu_followup_file_"
     filename =find_recent_file_with_prefix(folder_path, prefix)
-    file_name = filename.split('\\')
-    f_name  = '\\'.join(file_name[4:])
-    # file_name = os.path.basename(filename)
-    print(f_name)
-    file_path = get_temp_filepath(f_name)
+    
+    print(filename)
+    file_path = get_temp_filepath(filename)
     try:
         appointment_followup_data = await readfile(file_path)        
-        followup_summary = await readfile_summary(file_path,f_name)
+        followup_summary = await readfile_summary(file_path,filename)
         data = {
             "File_data":appointment_followup_data,
             "Summary":followup_summary 
