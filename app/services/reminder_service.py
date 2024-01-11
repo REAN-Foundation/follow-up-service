@@ -243,7 +243,7 @@ class Reminder:
 
                 ]
             },
-            "ButtonIds": [
+            "ButtonsIds": [
                 "Reminder_Reply_Yes",
                 "Reminder_Reply_No"
             ],
