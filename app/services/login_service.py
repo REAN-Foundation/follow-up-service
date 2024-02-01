@@ -18,8 +18,12 @@ class UserLogin:
         self.password = os.getenv("PASSWORD")
         self.API_KEY = os.getenv("REANCARE_API_KEY")
         self.access_token = ''
+        self.url = str(reancare_base_url)
 
     def login(self):
+        base_url = self.url
+        health_check_resp = requests.get(base_url)
+        print("health check resp", health_check_resp)
         headers = {
             'x-api-key': self.API_KEY,
             'Content-Type': 'application/json'

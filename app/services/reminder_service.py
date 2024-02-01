@@ -20,6 +20,7 @@ class Reminder:
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
         if reancare_base_url == None:
             raise Exception('REANCARE_BASE_URL is not set')
+        tenant_id = os.getenv("TENANT_ID")
 
         self.patient_url = str(reancare_base_url + "/patients/")
         self.reminder_url = str(reancare_base_url + "/reminders/one-time")
@@ -27,13 +28,14 @@ class Reminder:
         self.api_key = os.getenv("REANCARE_API_KEY")
         self.access_token = cache.get('access_token')
         self.recent_file = ''
+        self.tenant_id = tenant_id
 
         self.new_patients_added_count = 0
         self.reminders_sent_count = 0
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
-       
+
     def create_one_time_reminders(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
@@ -82,12 +84,12 @@ class Reminder:
             self.pending_arrival_count = self.pending_arrival_count + 1
 
             # First reminder set as soon as pdf upload
-            print(patient_mobile_number) 
+            print(patient_mobile_number)
             first_reminder = self.time_of_first_reminder(patient_mobile_number)
             print(first_reminder)
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
             response = self.schedule_reminder(schedule_model)
-            
+
             #  Send reminders 10 min before and after
 
             # is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
@@ -98,11 +100,11 @@ class Reminder:
             # if not is_reminder_set:
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
-            
-        self.create_report(summary_data,reminder_date) 
+
+        self.create_report(summary_data,reminder_date)
 
     def create_report(self,summary_data,reminder_date):
-        print(summary_data)  
+        print(summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         if os.path.exists(f_path):
@@ -124,10 +126,10 @@ class Reminder:
             # code to set recent file in cache
             # self.recent_file = filename
             # cache.set('recent_file', self.recent_file)
-            # recent_file = cache.get('recent_file') 
+            # recent_file = cache.get('recent_file')
             # print("RECENT FILE IN CACHE",recent_file)
             return(json_string)
-        
+
     def replace_file(self,json_object,f_path):
         with open(f_path, 'r') as file:
             data = json.load(file)
@@ -143,7 +145,7 @@ class Reminder:
                        item['Patient_replied'] = record['Patient_replied']
         with open(f_path, 'w') as file:
            json.dump(data, file, indent=7)
-       
+
 
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):
@@ -178,7 +180,7 @@ class Reminder:
     def create_patient(self, mobile):
         self.url = self.patient_url
         header = self.get_headers(create_user=True)
-        body = json.dumps({'Phone': mobile})
+        body = json.dumps({'Phone': mobile, 'TenantId': self.tenant_id})
         response = requests.post(self.url, headers = header, data = body)
         result = response.json()
         if not result['HttpCode'] == 201:
@@ -330,22 +332,22 @@ class Reminder:
             'x-api-key': self.api_key,
             'Content-Type': 'application/json'
         }
-    
+
     def time_of_first_reminder(self, patient_mobile_number):
         temp = str(patient_mobile_number)
         if(temp.startswith('+1')):
-            desired_timezone = 'America/Cancun' 
+            desired_timezone = 'America/Cancun'
             utc_now = datetime.utcnow()
                # Convert UTC time to the desired time zone
             desired_timezone_obj = pytz.timezone(desired_timezone)
             current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
         if(temp.startswith('+91')):
-            desired_timezone = 'Asia/Kolkata' 
+            desired_timezone = 'Asia/Kolkata'
             utc_now = datetime.utcnow()
                # Convert UTC time to the desired time zone
             desired_timezone_obj = pytz.timezone(desired_timezone)
             current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
-       
+
         new_time = str(current_time + timedelta(minutes=20))
         date_element = new_time.split(' ')
         time_element = date_element[1].split('.')
