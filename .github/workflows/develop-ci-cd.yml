@@ -13,18 +13,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-
     - name: Install AWS CLI
       run: |
         sudo apt-get update
         sudo apt-get install -y awscli
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        pip install -r requirements.txt
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
