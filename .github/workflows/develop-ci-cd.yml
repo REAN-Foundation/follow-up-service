@@ -47,6 +47,7 @@ jobs:
         script: |
           docker stop document-processor || true
           docker rm document-processor || true
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 443751504066.dkr.ecr.ap-south-1.amazonaws.com
           docker pull 443751504066.dkr.ecr.ap-south-1.amazonaws.com/document-processor:${{ github.sha }}
           docker run -d -p 3232:3232 --network host --name document-processor 443751504066.dkr.ecr.ap-south-1.amazonaws.com/document-processor:${{ github.sha }}
 
