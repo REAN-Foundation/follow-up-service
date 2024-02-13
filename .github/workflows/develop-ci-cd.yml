@@ -3,7 +3,7 @@ name: Document-processor Deployment
 on:
   push:
     branches:
-      - [develop-inflection]
+      - develop-inflection
 
 jobs:
   deploy:
