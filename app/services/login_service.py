@@ -30,8 +30,7 @@ class UserLogin:
         }
         body = {
             'UserName': self.username,
-            'Password': self.password,
-            'LoginRoleId': 1
+            'Password': self.password
         }
         response = requests.post(
             self.login_url, headers = headers, data = json.dumps(body))
