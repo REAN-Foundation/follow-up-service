@@ -9,4 +9,5 @@ class AppStatusEnum(str, Enum):
 class PatientReplyEnum(str, Enum):
     Patient_Replied_Yes = "Yes"
     Patient_Replied_No = "No"
+    Invalid_Patient_Reply = "Not replied"
    
