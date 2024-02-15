@@ -10,7 +10,7 @@ from app.common.utils import get_temp_filepath
 
 months = {
     'January'  : '01',
-    'Febuary'  : '02',
+    'February' : '02',
     'March'    : '03',
     'April'    : '04',
     'May'      : '05',
@@ -57,7 +57,7 @@ class PdfReader:
 
             self.all_appointments = all_appointments_
             self.debug_log(self.all_appointments)
-
+            print('All Appointments extracted successfully')
             return self.all_appointments
 
         except Exception as e:
@@ -146,6 +146,7 @@ class PdfReader:
                 date = yyyy+'-'+mm+'-'+dd
                 try:
                     if bool(parser.parse(date)):
+                        print('Date is extracted correctly & It is valid')
                         return date
                 except:
                     return None

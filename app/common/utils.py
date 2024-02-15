@@ -44,6 +44,7 @@ def valid_patient_reply(reply):
         return(PatientReplyEnum.Patient_Replied_Yes)
     if reply == PatientReplyEnum.Patient_Replied_No:
         return(PatientReplyEnum.Patient_Replied_No)
+    return(PatientReplyEnum.Invalid_Patient_Reply)
    
 def find_recent_file_with_prefix(folder_path, prefix):
     # Get a list of all files in the folder that start with the specified prefix

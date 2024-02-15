@@ -104,7 +104,7 @@ class Reminder:
         self.create_report(summary_data,reminder_date)
 
     def create_report(self,summary_data,reminder_date):
-        print(summary_data)
+        print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         if os.path.exists(f_path):
@@ -137,12 +137,33 @@ class Reminder:
             if item['Patient_status'] == 'Pending arrival':
                for record in json_object:
                     if record['Phone_number'] == item['Phone_number']:
-                       item['Name_of_patient'] = record['Name_of_patient']
-                       item['Rean_patient_userid'] = record['Rean_patient_userid']
-                       item['Appointment_time'] = record['Appointment_time']
-                       item['Patient_status'] = record['Patient_status']
-                       item['WhatsApp_message_id'] = record['WhatsApp_message_id']
-                       item['Patient_replied'] = record['Patient_replied']
+                       if item['Name_of_patient'] == record['Name_of_patient']:
+                           item['Patient_status'] = record['Patient_status']
+                           item['Patient_replied'] = record['Patient_replied']
+
+        flag = 0
+        for item in json_object:
+            for record in data:
+                if item['Phone_number'] == record['Phone_number']:
+                    flag = 1
+            if flag != 1:
+                data.append(item)
+                flag = 0
+            flag = 0
+        
+        # for item in data:
+        #     if item['Patient_status'] == 'Pending arrival':
+        #        for record in json_object:
+        #             if record['Phone_number'] == item['Phone_number']:
+        #                if item['Name_of_patient'] == record['Name_of_patient']:
+        #                 #    item['Name_of_patient'] = record['Name_of_patient']
+        #                 #    item['Rean_patient_userid'] = record['Rean_patient_userid']
+        #                 #    item['Appointment_time'] = record['Appointment_time']
+        #                    item['Patient_status'] = record['Patient_status']
+        #                 #    item['WhatsApp_message_id'] = record['WhatsApp_message_id']
+        #                    item['Patient_replied'] = record['Patient_replied']
+
+
         with open(f_path, 'w') as file:
            json.dump(data, file, indent=7)
 

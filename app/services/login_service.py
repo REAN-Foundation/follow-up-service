@@ -41,7 +41,7 @@ class UserLogin:
         self.access_token = result['Data']['AccessToken']
 
         cache.set('access_token', self.access_token)
-
+        print('Login successful')
         return (result)
 
     def get_access_token(self):
