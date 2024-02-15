@@ -139,7 +139,7 @@ class Reminder:
                     if record['Phone_number'] == item['Phone_number']:
                        if item['Name_of_patient'] == record['Name_of_patient']:
                            item['Patient_status'] = record['Patient_status']
-                           item['Patient_replied'] = record['Patient_replied']
+                        #    item['Patient_replied'] = record['Patient_replied']
 
         flag = 0
         for item in json_object:
