@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
+from app.common.enumclasses import AppStatusEnum
 from app.common.utils import get_temp_filepath, valid_appointment_status, validate_mobile
 from app.common.cache import cache
 import pytz
@@ -74,7 +75,7 @@ class Reminder:
                 "Appointment_time":appointment['AppointmentTime'],
                 "Patient_status":valid_appointment_status(appointment['Status']),
                 "WhatsApp_message_id":"",
-                "Patient_replied":"Not replied",
+                "Patient_replied": "N/A" if valid_appointment_status(appointment['Status'])!=AppStatusEnum.Pending_Arrival else "Not replied",
                   }
             summary_data.append(data)
 
@@ -121,6 +122,7 @@ class Reminder:
             filepresent  = os.path.join(temp_folder, filename)
             with open(filepresent, 'w') as json_file:
                 json.dump(summary_data, json_file, indent=7)
+
             json_string = json.dumps(summary_data, indent=7)
 
             # code to set recent file in cache
@@ -139,7 +141,7 @@ class Reminder:
                     if record['Phone_number'] == item['Phone_number']:
                        if item['Name_of_patient'] == record['Name_of_patient']:
                            item['Patient_status'] = record['Patient_status']
-                        #    item['Patient_replied'] = record['Patient_replied']
+                           item['Patient_replied'] = record['Patient_replied']
 
         flag = 0
         for item in json_object:
