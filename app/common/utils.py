@@ -3,6 +3,8 @@ import os
 import uuid
 from pygments import highlight, lexers, formatters
 from app.common.enumclasses import AppStatusEnum,PatientReplyEnum
+from datetime import datetime
+import pytz
 ###############################################################################
 
 def print_colorized_json(obj):
@@ -56,4 +58,28 @@ def find_recent_file_with_prefix(folder_path, prefix):
         return most_recent_file
     else:
         return None
- 
+    
+def is_date_valid(date_string):
+    # Convert date string to date object using EST time zone 
+    date_object = datetime.strptime(date_string, "%Y-%m-%d")
+
+    est_timezone = pytz.timezone('America/New_York')
+    est_date_object = est_timezone.localize(date_object)
+
+    # Create todays date object using EST time zone
+
+    # Define the UTC datetime object
+    utc_datetime = datetime.utcnow()
+
+    # Convert UTC datetime to EST timezone
+    utc_timezone = pytz.timezone('UTC')
+    est_timezone = pytz.timezone('America/New_York')
+
+    utc_datetime = utc_timezone.localize(utc_datetime)
+    est_datetime = utc_datetime.astimezone(est_timezone)
+
+    est_today = est_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    if est_date_object < est_today:
+        return False
+    return True

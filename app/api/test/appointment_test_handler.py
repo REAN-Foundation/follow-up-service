@@ -1,5 +1,6 @@
 import shutil
 from fastapi import File, UploadFile
+from app.common.utils import is_date_valid
 from app.services.login_service import UserLogin
 from app.services.pdf_reader_service import PdfReader
 from app.services.reminder_service import Reminder
@@ -22,24 +23,31 @@ async def handle(file: UploadFile = File(...)):
     reminder_date = reader.extract_reminder_date(file_path)
     if not reminder_date:
         return ('Unable to find or unable to parse the date')
-
+    # Compare file date with the todays date
+    is_valid_date = is_date_valid(reminder_date); 
     # 3. Extract the PDF file
-    appointments = reader.extract_appointments_from_pdf(file_path)
+    if is_valid_date:
+        # 3. Extract the PDF file
+        appointments = reader.extract_appointments_from_pdf(file_path)
 
-    # 4. Send one-time-reminders
-    reminder = Reminder()
-    # reminder_date = '2023-11-08'
-    reminder.create_one_time_reminders(reminder_date, appointments)
-    reminder_summary = reminder.summary()
+        # 4. Send one-time-reminders
+        reminder = Reminder()
+        # reminder_date = '2023-11-08'
+        reminder.create_one_time_reminders(reminder_date, appointments)
+        reminder_summary = reminder.summary()
 
-    admin_notification = AdminNotification()
-    admin_notification.admin_notify(reminder_date,reminder_summary)
+        admin_notification = AdminNotification()
+        admin_notification.admin_notify(reminder_date,reminder_summary)
+
+        return {
+            "Message" : "Reminders created successfully",
+            "Data" : reminder_summary,
+        }
 
     return {
-        "Message" : "Reminders created successfully",
-        "Data" : reminder_summary,
-    }
-
+            "Message" : "Can not process appontment pdf with previous dates",
+            "Data": None 
+        }
 def store_uploaded_file(file: UploadFile):
     current_path = os.getcwd()
     folder_path = os.path.join(current_path, "temp")
