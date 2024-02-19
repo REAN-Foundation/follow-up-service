@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 import boto3
 import httpx
 from app.common.utils import get_temp_filepath
+from app.common.utils import is_date_valid
 from app.services.login_service import UserLogin
 from app.services.pdf_reader_service import PdfReader
 from app.services.reminder_service import Reminder
@@ -58,24 +59,31 @@ async def handle_s3_event(message: Request):
     if not reminder_date:
         return ('Unable to find or unable to parse the date')
 
+    # Compare file date with the todays date
+
+    is_valid_date = is_date_valid(reminder_date); 
     # 3. Extract the PDF file
-    print('Extracting pdf data')
-    appointments = reader.extract_appointments_from_pdf(file_path)
+    if is_valid_date:
+        print('Extracting pdf data')
+        appointments = reader.extract_appointments_from_pdf(file_path)
 
-    # 4. Send one-time-reminders
-    reminder = Reminder()
-    reminder.create_one_time_reminders(reminder_date, appointments)
-    reminder_summary = reminder.summary()
+        # 4. Send one-time-reminders
+        reminder = Reminder()
+        reminder.create_one_time_reminders(reminder_date, appointments)
+        reminder_summary = reminder.summary()
 
-    
-    admin_notification = AdminNotification()
-    admin_notification.admin_notify(reminder_date,reminder_summary)
+        
+        admin_notification = AdminNotification()
+        admin_notification.admin_notify(reminder_date,reminder_summary)
 
+        return {
+            "message" : "Reminders created successfully",
+            "summary" : reminder_summary,
+        }
     return {
-        "message" : "Reminders created successfully",
-        "summary" : reminder_summary,
+        "message" : "Can not process appointment pdf with previous dates",
+        "summary" : None
     }
-
 async def download(message: Request):
     webhook_data = await message.json()
     s3_event_notification = json.loads(webhook_data['Message'])
