@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
-from app.common.enumclasses import AppStatusEnum
+from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
 from app.common.utils import get_temp_filepath, valid_appointment_status, validate_mobile
 from app.common.cache import cache
 import pytz
@@ -89,7 +89,12 @@ class Reminder:
             first_reminder = self.time_of_first_reminder(patient_mobile_number)
             print(first_reminder)
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
-            response = self.schedule_reminder(schedule_model)
+            
+            # Check the patient replied status
+            already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
+            
+            if not already_replied:
+                response = self.schedule_reminder(schedule_model)
 
             #  Send reminders 10 min before and after
 
@@ -103,6 +108,21 @@ class Reminder:
             #     self.schedule_reminder(schedule_model)
 
         self.create_report(summary_data,reminder_date)
+
+    def isPatientAlreadyReplied(self, mobile, reminder_date):
+        print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
+        filename=str('gmu_followup_file_'+reminder_date+'.json')
+        f_path=(os.getcwd()+"/temp/"+filename)
+        if os.path.exists(f_path):
+            with open(f_path, 'r') as file:
+                data = json.load(file)
+                for item in data:
+                    if item['Phone_number'] == mobile:
+                        if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
+                            return False
+                return True
+        return False
+
 
     def create_report(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
@@ -141,7 +161,7 @@ class Reminder:
                     if record['Phone_number'] == item['Phone_number']:
                        if item['Name_of_patient'] == record['Name_of_patient']:
                            item['Patient_status'] = record['Patient_status']
-                           item['Patient_replied'] = record['Patient_replied']
+                        #    item['Patient_replied'] = record['Patient_replied']
 
         flag = 0
         for item in json_object:
