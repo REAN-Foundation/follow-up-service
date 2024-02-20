@@ -11,12 +11,21 @@ class UpdateFile:
         with open(file_path, 'r') as file:
             data = json.load(file)
         patient_reply = valid_patient_reply(new_data['Patient_replied'])
+
+        # Updating patient reply for status Pending arrival
         for item in data:
             if item['Patient_status'] == 'Pending arrival':
                 if item['Phone_number'] == number:
                     if patient_reply != PatientReplyEnum.Invalid_Patient_Reply:
                         item['Patient_replied'] =patient_reply
                         item['WhatsApp_message_id'] =new_data['WhatsApp_message_id']
+
+        # # Updating patient reply for status ANY
+        # for item in data:
+        #    if item['Phone_number'] == number:
+        #         if patient_reply != PatientReplyEnum.Invalid_Patient_Reply:
+        #             item['Patient_replied'] =patient_reply
+        #             item['WhatsApp_message_id'] =new_data['WhatsApp_message_id']
 
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=7)

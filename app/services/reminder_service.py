@@ -113,9 +113,18 @@ class Reminder:
         print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
         filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
+        flag = 0
         if os.path.exists(f_path):
             with open(f_path, 'r') as file:
                 data = json.load(file)
+
+                for element in data:
+                    if element['Phone_number'] == mobile:
+                        flag = 1
+
+                if flag == 0:
+                    return False
+                
                 for item in data:
                     if item['Phone_number'] == mobile:
                         if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
