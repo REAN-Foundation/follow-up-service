@@ -85,9 +85,9 @@ class Reminder:
             self.pending_arrival_count = self.pending_arrival_count + 1
 
             # First reminder set as soon as pdf upload
-            print(patient_mobile_number)
+            print(f'patient phone number {patient_mobile_number}')
             first_reminder = self.time_of_first_reminder(patient_mobile_number)
-            print(first_reminder)
+            print(f'time of reminder after pdfupload {first_reminder}')
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
             
             # Check the patient replied status
@@ -400,7 +400,7 @@ class Reminder:
             desired_timezone_obj = pytz.timezone(desired_timezone)
             current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
 
-        new_time = str(current_time + timedelta(minutes=20))
+        new_time = str(current_time + timedelta(minutes=5))
         date_element = new_time.split(' ')
         time_element = date_element[1].split('.')
         first_reminder_time = time_element[0]
