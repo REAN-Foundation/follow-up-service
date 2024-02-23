@@ -400,7 +400,7 @@ class Reminder:
             desired_timezone_obj = pytz.timezone(desired_timezone)
             current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
 
-        new_time = str(current_time + timedelta(minutes=5))
+        new_time = str(current_time + timedelta(minutes=6))
         date_element = new_time.split(' ')
         time_element = date_element[1].split('.')
         first_reminder_time = time_element[0]
