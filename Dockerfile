@@ -10,7 +10,6 @@ COPY . /app
 #RUN aws s3 cp s3://duploservices-dev-configs-new-167414264568/document-processor/GMU_admin.json /app/assets
 EXPOSE 3232
 #CMD ["python", "main.py"]
-
 COPY entrypoint.sh /app/entrypoint.sh
 RUN dos2unix /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh

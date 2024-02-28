@@ -6,3 +6,4 @@ env
 *.csv
 test_data/*.pdf
 assets/GMU_admin.json
+test.txt
