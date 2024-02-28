@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.common.exceptions import add_exception_handlers
 from app.startup.router import router
 
 #################################################################
@@ -23,3 +24,4 @@ def get_application():
     return server
 
 app = get_application()
+add_exception_handlers(app)

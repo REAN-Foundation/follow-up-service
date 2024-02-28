@@ -2,21 +2,15 @@ import json
 import os
 import uuid
 from pygments import highlight, lexers, formatters
-from app.common.exceptions import UUIDValidationError
 from app.common.enumclasses import AppStatusEnum,PatientReplyEnum
+from datetime import datetime
+import pytz
 ###############################################################################
 
 def print_colorized_json(obj):
     jsonStr = json.dumps(obj.__dict__, default=str, indent=2)
     colored = highlight(jsonStr, lexers.JsonLexer(), formatters.TerminalFormatter())
     print(colored)
-
-def validate_uuid4(uuid_str):
-    try:
-        val = uuid.UUID(uuid_str, version=4)
-    except ValueError:
-        raise UUIDValidationError("{uuid_str} is not valid UUID.")
-    return uuid_str
 
 def generate_uuid4():
     return str(uuid.uuid4())
@@ -52,7 +46,40 @@ def valid_patient_reply(reply):
         return(PatientReplyEnum.Patient_Replied_Yes)
     if reply == PatientReplyEnum.Patient_Replied_No:
         return(PatientReplyEnum.Patient_Replied_No)
+    return(PatientReplyEnum.Invalid_Patient_Reply)
    
+def find_recent_file_with_prefix(folder_path, prefix):
+    # Get a list of all files in the folder that start with the specified prefix
+    files = [f for f in os.listdir(folder_path) if f.startswith(prefix) and os.path.isfile(os.path.join(folder_path, f))]
     
+    # If files are found, get the most recently modified file
+    if files:
+        most_recent_file = max(files, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
+        return most_recent_file
+    else:
+        return None
+    
+def is_date_valid(date_string):
+    # Convert date string to date object using EST time zone 
+    date_object = datetime.strptime(date_string, "%Y-%m-%d")
 
-    
+    est_timezone = pytz.timezone('America/New_York')
+    est_date_object = est_timezone.localize(date_object)
+
+    # Create todays date object using EST time zone
+
+    # Define the UTC datetime object
+    utc_datetime = datetime.utcnow()
+
+    # Convert UTC datetime to EST timezone
+    utc_timezone = pytz.timezone('UTC')
+    est_timezone = pytz.timezone('America/New_York')
+
+    utc_datetime = utc_timezone.localize(utc_datetime)
+    est_datetime = utc_datetime.astimezone(est_timezone)
+
+    est_today = est_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    if est_date_object < est_today:
+        return False
+    return True
