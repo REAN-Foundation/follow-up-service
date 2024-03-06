@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 import boto3
 import httpx
 from app.common.utils import get_temp_filepath
+from app.common.utils import is_date_valid
 from app.services.login_service import UserLogin
 from app.services.pdf_reader_service import PdfReader
 from app.services.reminder_service import Reminder
@@ -58,24 +59,31 @@ async def handle_s3_event(message: Request):
     if not reminder_date:
         return ('Unable to find or unable to parse the date')
 
+    # Compare file date with the todays date
+
+    is_valid_date = is_date_valid(reminder_date); 
     # 3. Extract the PDF file
-    print('Extracting pdf data')
-    appointments = reader.extract_appointments_from_pdf(file_path)
+    if is_valid_date:
+        print('Extracting pdf data')
+        appointments = reader.extract_appointments_from_pdf(file_path)
 
-    # 4. Send one-time-reminders
-    reminder = Reminder()
-    reminder.create_one_time_reminders(reminder_date, appointments)
-    reminder_summary = reminder.summary()
+        # 4. Send one-time-reminders
+        reminder = Reminder()
+        reminder.create_one_time_reminders(reminder_date, appointments)
+        reminder_summary = reminder.summary()
 
-    
-    admin_notification = AdminNotification()
-    admin_notification.admin_notify(reminder_date,reminder_summary)
+        
+        admin_notification = AdminNotification()
+        admin_notification.admin_notify(reminder_date,reminder_summary)
 
+        return {
+            "message" : "Reminders created successfully",
+            "summary" : reminder_summary,
+        }
     return {
-        "message" : "Reminders created successfully",
-        "summary" : reminder_summary,
+        "message" : "Can not process appointment pdf with previous dates",
+        "summary" : None
     }
-
 async def download(message: Request):
     webhook_data = await message.json()
     s3_event_notification = json.loads(webhook_data['Message'])
@@ -105,22 +113,34 @@ async def download_pdf_from_s3(bucket_name, object_key):
 
 #Other routes of file handling
 async def readfile(file_path):
-    reportfile = ReadReport()
-    filecontent = reportfile.read_report_file(file_path)
-    return(filecontent)
+    try:
+        reportfile = ReadReport()
+        filecontent = reportfile.read_report_file(file_path)
+        return(filecontent)
+    except Exception as e:
+         raise e
 
 async def readfile_content_by_phone(file_path,phone_number):
-    reportfile = ReadReport()
-    filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
-    return(filecontent)
+    try:
+        reportfile = ReadReport()
+        filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
+        return(filecontent)
+    except Exception as e:
+         raise e
 
 async def readfile_summary(file_path,filename):
-    reportfile = ReadReport()
-    filesummary = reportfile.read_report_summary(file_path,filename)
-    return(filesummary)
+    try:
+        reportfile = ReadReport()
+        filesummary = reportfile.read_report_summary(file_path,filename)
+        return(filesummary)
+    except Exception as e:
+         raise e
 
 async def update_reply_by_ph(file_path, phone_number, new_data):
-    updatefile = UpdateFile()
-    updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
-    return(updated_data)
+    try:
+        updatefile = UpdateFile()
+        updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
+        return(updated_data)
+    except Exception as e:
+         raise e
 

@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
+from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
 from app.common.utils import get_temp_filepath, valid_appointment_status, validate_mobile
 from app.common.cache import cache
 import pytz
@@ -20,19 +21,22 @@ class Reminder:
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
         if reancare_base_url == None:
             raise Exception('REANCARE_BASE_URL is not set')
+        tenant_id = os.getenv("TENANT_ID")
 
         self.patient_url = str(reancare_base_url + "/patients/")
         self.reminder_url = str(reancare_base_url + "/reminders/one-time")
         self.reminder_search_url = str(reancare_base_url + "/reminders/search")
         self.api_key = os.getenv("REANCARE_API_KEY")
         self.access_token = cache.get('access_token')
+        self.recent_file = ''
+        self.tenant_id = tenant_id
 
         self.new_patients_added_count = 0
         self.reminders_sent_count = 0
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
-       
+
     def create_one_time_reminders(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
@@ -71,7 +75,7 @@ class Reminder:
                 "Appointment_time":appointment['AppointmentTime'],
                 "Patient_status":valid_appointment_status(appointment['Status']),
                 "WhatsApp_message_id":"",
-                "Patient_replied":"Not replied",
+                "Patient_replied": "N/A" if valid_appointment_status(appointment['Status'])!=AppStatusEnum.Pending_Arrival else "Not replied",
                   }
             summary_data.append(data)
 
@@ -81,12 +85,17 @@ class Reminder:
             self.pending_arrival_count = self.pending_arrival_count + 1
 
             # First reminder set as soon as pdf upload
-            print(patient_mobile_number) 
+            print(f'patient phone number {patient_mobile_number}')
             first_reminder = self.time_of_first_reminder(patient_mobile_number)
-            print(first_reminder)
+            print(f'time of reminder after pdfupload {first_reminder}')
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
-            response = self.schedule_reminder(schedule_model)
             
+            # Check the patient replied status
+            already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
+            
+            if not already_replied:
+                response = self.schedule_reminder(schedule_model)
+
             #  Send reminders 10 min before and after
 
             # is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
@@ -97,12 +106,36 @@ class Reminder:
             # if not is_reminder_set:
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
-            
-        self.create_report(summary_data,reminder_date) 
+
+        self.create_report(summary_data,reminder_date)
+
+    def isPatientAlreadyReplied(self, mobile, reminder_date):
+        print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
+        filename=str('gmu_followup_file_'+reminder_date+'.json')
+        f_path=(os.getcwd()+"/temp/"+filename)
+        flag = 0
+        if os.path.exists(f_path):
+            with open(f_path, 'r') as file:
+                data = json.load(file)
+
+                for element in data:
+                    if element['Phone_number'] == mobile:
+                        flag = 1
+
+                if flag == 0:
+                    return False
+                
+                for item in data:
+                    if item['Phone_number'] == mobile:
+                        if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
+                            return False
+                return True
+        return False
+
 
     def create_report(self,summary_data,reminder_date):
-        print(summary_data)  
-        filename=str('gmu_followup_file'+reminder_date+'.json')
+        print('SUMMARY:',summary_data)
+        filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         if os.path.exists(f_path):
             print(f"The file {filename} already exists. Please choose a different name.")
@@ -118,9 +151,16 @@ class Reminder:
             filepresent  = os.path.join(temp_folder, filename)
             with open(filepresent, 'w') as json_file:
                 json.dump(summary_data, json_file, indent=7)
+
             json_string = json.dumps(summary_data, indent=7)
+
+            # code to set recent file in cache
+            # self.recent_file = filename
+            # cache.set('recent_file', self.recent_file)
+            # recent_file = cache.get('recent_file')
+            # print("RECENT FILE IN CACHE",recent_file)
             return(json_string)
-        
+
     def replace_file(self,json_object,f_path):
         with open(f_path, 'r') as file:
             data = json.load(file)
@@ -128,15 +168,36 @@ class Reminder:
             if item['Patient_status'] == 'Pending arrival':
                for record in json_object:
                     if record['Phone_number'] == item['Phone_number']:
-                       item['Name_of_patient'] = record['Name_of_patient']
-                       item['Rean_patient_userid'] = record['Rean_patient_userid']
-                       item['Appointment_time'] = record['Appointment_time']
-                       item['Patient_status'] = record['Patient_status']
-                       item['WhatsApp_message_id'] = record['WhatsApp_message_id']
-                       item['Patient_replied'] = record['Patient_replied']
+                       if item['Name_of_patient'] == record['Name_of_patient']:
+                           item['Patient_status'] = record['Patient_status']
+                        #    item['Patient_replied'] = record['Patient_replied']
+
+        flag = 0
+        for item in json_object:
+            for record in data:
+                if item['Phone_number'] == record['Phone_number']:
+                    flag = 1
+            if flag != 1:
+                data.append(item)
+                flag = 0
+            flag = 0
+        
+        # for item in data:
+        #     if item['Patient_status'] == 'Pending arrival':
+        #        for record in json_object:
+        #             if record['Phone_number'] == item['Phone_number']:
+        #                if item['Name_of_patient'] == record['Name_of_patient']:
+        #                 #    item['Name_of_patient'] = record['Name_of_patient']
+        #                 #    item['Rean_patient_userid'] = record['Rean_patient_userid']
+        #                 #    item['Appointment_time'] = record['Appointment_time']
+        #                    item['Patient_status'] = record['Patient_status']
+        #                 #    item['WhatsApp_message_id'] = record['WhatsApp_message_id']
+        #                    item['Patient_replied'] = record['Patient_replied']
+
+
         with open(f_path, 'w') as file:
            json.dump(data, file, indent=7)
-         
+
 
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):
@@ -171,7 +232,7 @@ class Reminder:
     def create_patient(self, mobile):
         self.url = self.patient_url
         header = self.get_headers(create_user=True)
-        body = json.dumps({'Phone': mobile})
+        body = json.dumps({'Phone': mobile, 'TenantId': self.tenant_id})
         response = requests.post(self.url, headers = header, data = body)
         result = response.json()
         if not result['HttpCode'] == 201:
@@ -236,7 +297,7 @@ class Reminder:
 
                 ]
             },
-            "ButtonIds": [
+            "ButtonsIds": [
                 "Reminder_Reply_Yes",
                 "Reminder_Reply_No"
             ],
@@ -323,23 +384,23 @@ class Reminder:
             'x-api-key': self.api_key,
             'Content-Type': 'application/json'
         }
-    
+
     def time_of_first_reminder(self, patient_mobile_number):
         temp = str(patient_mobile_number)
         if(temp.startswith('+1')):
-            desired_timezone = 'America/Cancun' 
+            desired_timezone = 'America/Cancun'
             utc_now = datetime.utcnow()
                # Convert UTC time to the desired time zone
             desired_timezone_obj = pytz.timezone(desired_timezone)
             current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
         if(temp.startswith('+91')):
-            desired_timezone = 'Asia/Kolkata' 
+            desired_timezone = 'Asia/Kolkata'
             utc_now = datetime.utcnow()
                # Convert UTC time to the desired time zone
             desired_timezone_obj = pytz.timezone(desired_timezone)
             current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
-       
-        new_time = str(current_time + timedelta(minutes=20))
+
+        new_time = str(current_time + timedelta(minutes=6))
         date_element = new_time.split(' ')
         time_element = date_element[1].split('.')
         first_reminder_time = time_element[0]

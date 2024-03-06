@@ -24,13 +24,11 @@ class ReadReport:
             raise HTTPException(status_code=404, detail="File not found")
         
     def read_report_summary(self,file_path,filename):
-        file_name = filename.split('.')
-        f_name = file_name[0].split('e')
-        file_date = f_name[1]
-        # reverse str but no use wrong answer
-        # filedate = str(filedate_obj)
-        # file_date = filedate[::-1]
-        print(file_date) 
+        file_name = filename.split('_')
+        f_date  = '_'.join(file_name[3:])
+        file_date = f_date.split('.')
+        date_of_file = file_date[0]
+        print(date_of_file) 
                
         with open(file_path, 'r') as file:
             data = json.load(file)
@@ -49,7 +47,7 @@ class ReadReport:
                 self.patient_not_replied_count = self.patient_not_replied_count + 1
         
         file_summary = {
-            'Date': file_date,
+            'Date': date_of_file,
             'Total patient': self.patients_count,
             'Arrived patient' : self.arrived_patient_count,
             'Patient not arrived' : self.pending_arrival_patient_count,
