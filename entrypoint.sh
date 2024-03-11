@@ -2,7 +2,7 @@
 
 # Add config/creds copying here..
 aws s3 cp s3://duploservices-dev-configs-new-167414264568/document-processor/GMU_admin.json /app/assets
-aws s3 cp s3://duploservices-dev-configs-new-167414264568/document-processor/.env /app/.env
+#aws s3 cp s3://duploservices-dev-configs-new-167414264568/document-processor/.env /app/.env
 
 cd /app
 # Add any other scripts here...
