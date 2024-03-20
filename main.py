@@ -10,6 +10,6 @@ load_dotenv()
 
 # Run the application server
 if __name__ == "__main__":
-        PORT = int(os.getenv("PORT", 3232))
+        PORT = int(os.getenv("PORT", 3000))
         logger.info("Running in production mode")
-        uvicorn.run(app, host="0.0.0.0", port=3232)
+        uvicorn.run(app, host="0.0.0.0", port=PORT)

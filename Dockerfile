@@ -19,7 +19,7 @@ RUN pip install --upgrade pip && \
 
 COPY . /app
 
-EXPOSE 3232
+EXPOSE 3000
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN dos2unix /app/entrypoint.sh && \
