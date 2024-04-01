@@ -44,5 +44,5 @@ class GghnUserLogin:
 
         cache.set('gghn_access_token', self.gghn_access_token)
         print('Login successful')
-        print('gghn_access_token',self.gghn_access_token)
+        # print('gghn_access_token',self.gghn_access_token)
         return (result)
