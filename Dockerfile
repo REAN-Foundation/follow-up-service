@@ -10,12 +10,19 @@ RUN apt-get update && \
     libxext6 \
     ghostscript \
     awscli \
-    dos2unix
+    dos2unix 
+
+# Download and install aom 3.8.2-2
+# RUN wget http://security.ubuntu.com/ubuntu/pool/universe/a/aom/libaom0_3.8.2-2_amd64.deb \
+#     && dpkg -i libaom0_3.8.2-2_amd64.deb \
+#     && rm libaom0_3.8.2-2_amd64.deb
 
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
     pip install --upgrade setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
+    
+RUN apt-get remove libaom3:amd64 -y
 
 COPY . /app
 
