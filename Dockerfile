@@ -1,4 +1,4 @@
-FROM python:3.12.1
+FROM python:3.13.0a6
 WORKDIR /app
 RUN python -m venv venv
 ENV PATH="/app/venv/bin:$PATH"
