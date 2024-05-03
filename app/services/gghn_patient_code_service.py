@@ -52,7 +52,13 @@ class ExtractPatientCode:
         filename=str(prefix+enquiry_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         if os.path.exists(f_path):
-            print(f"The file {filename} already exists. Please choose a different name.")
+            print(f"The file {filename} already exists!")
+            if(prefix=='gghn_details_'):
+                self.update_content(filename,resp_data,enquiry_date,prefix)
+            else:
+                with open(f_path, 'w') as json_file:
+                         json.dump(resp_data, json_file, indent=25)
+                return(filename)
         else: 
             temp_folder = os.path.join(os.getcwd(), "temp")
             if not os.path.exists(temp_folder):
@@ -87,4 +93,69 @@ class ExtractPatientCode:
         prefix = "gghn_appointment_"  
         file_name = self.create_data_file(appointment_details,date,prefix)
       
+    def update_content(self,filename,resp_data,enquiry_date,prefix):
+        additional_data=[]
+        try:
+            filepath = get_temp_filepath(filename)
+            with open(filepath, 'r') as file:
+                file_data = json.load(file)
+        except Exception as e:
+            # Handle other exceptions
+            print(f"An unexpected error occurred while reading file{filename}: {e}")
+        # print("file data...",file_data)
+        # print("resp_data...",resp_data)
+        flag=0
+        for rdata in resp_data:
+            flag=0
+            for fdata in file_data:
+                if rdata['participant_code'] == fdata['participant_code']:
+                    flag=1
+                # print("value of flag",flag)  
+            if flag==0:
+                additional_paitient={
+                                 "state": rdata['state'],
+                                 "facilityname": rdata['facilityname'],
+                                 "sex": rdata['sex'],
+                                 "age":rdata['age'],
+                                 "art_start_date": rdata['art_start_date'],
+                                 "last_pickup_date": rdata['last_pickup_date'],
+                                 "months_of_arv_refill": rdata['months_of_arv_refill'],
+                                 "next_appointment_date":rdata['next_appointment_date'],
+                                 "current_art_regimen": rdata['current_art_regimen'],
+                                 "clinical_staging_at_last_visit": rdata['clinical_staging_at_last_visit'],
+                                 "last_cd4_count": rdata['last_cd4_count'],
+                                 "current_viral_load":rdata['current_viral_load'],
+                                 "viral_load_status": rdata['viral_load_status'],
+                                 "current_art_status": rdata['current_art_status'],
+                                 "outcome_of_last_tb_screening":rdata['outcome_of_last_tb_screening'],
+                                 "date_started_on_tb_treatment":rdata['date_started_on_tb_treatment'],
+                                 "tb_treatment_type":rdata['tb_treatment_type'],
+                                 "tb_treatment_completion_date": rdata['tb_treatment_completion_date'],
+                                 "tb_treatment_outcome":rdata['tb_treatment_outcome'],
+                                 "date_of_commencement_of_eac":rdata['date_of_commencement_of_eac'],
+                                 "number_of_eac_sessions_completed": rdata['number_of_eac_sessions_completed'],
+                                 "result_of_cervical_cancer_screening": rdata['result_of_cervical_cancer_screening'],
+                                 "fingerprint_captured":rdata['fingerprint_captured'],
+                                 "fingerprint_recaptured":rdata['fingerprint_recaptured'], 
+                                 "participant_code":rdata['participant_code']
+                                 }
+                # print(type(additional_paitient))
+                # print(type(additional_data))
+                additional_data.append(additional_paitient)
+           
+        print("additional paitients are",additional_data)
+        print(type(file_data))
+        file_data.extend(additional_data)
+        try:
+            filepath = get_temp_filepath(filename)
+            with open(filepath, 'w') as json_file:
+                json.dump(file_data, json_file, indent=25)
+            return(filename)
+        except Exception as e:
+        # Handle other exceptions
+            print(f"An unexpected error occurred while writing into file{filename}: {e}")
+
        
+
+
+            
