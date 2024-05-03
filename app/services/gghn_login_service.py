@@ -3,6 +3,7 @@ import json
 import os
 import requests
 from app.common.cache import cache
+from app.common.exceptions import HTTPError
 
 ###############################################################
 
@@ -23,8 +24,12 @@ class GghnUserLogin:
 
     def gghnlogin(self):
         base_url_ = self._url
-        health_check_resp = requests.get(base_url_)
-        print("health check resp", health_check_resp)
+        try:
+            health_check_resp = requests.get(base_url_)
+            print("health check resp", health_check_resp)
+        except HTTPError as e:
+                print(f"HTTP Error {e.status_code}: {e.message}")
+
         headers = {
             # 'x-api-key': self.API_KEY,
             'Content-Type': 'application/json'
@@ -33,8 +38,11 @@ class GghnUserLogin:
             'UserName': self._username,
             'Password': self._password
         }
-        response = requests.post(
+        try:
+            response = requests.post(
             self.login_url,headers = headers, data = json.dumps(body))
+        except HTTPError as e:
+                print(f"HTTP Error {e.status_code}: {e.message}")
         print("Login Response",response)
         result = response.json()
         print("response",result)
