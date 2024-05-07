@@ -5,7 +5,7 @@ import os
 import requests
 import urllib.parse
 from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
-from app.common.utils import get_temp_filepath, valid_appointment_status, validate_mobile
+from app.common.utils import find_patient_by_mobile, get_headers, get_temp_filepath, time_of_first_reminder, valid_appointment_status, validate_mobile
 from app.common.cache import cache
 import pytz
 
@@ -52,7 +52,7 @@ class Reminder:
 
             self.appointments_processed_count = self.appointments_processed_count + 1
 
-            user_id = self.find_patient_by_mobile(patient_mobile_number)
+            user_id = find_patient_by_mobile(patient_mobile_number)
             user_model = self.get_update_patient_model(appointment)
             appointment_time = self.get_time_in_24hrs(appointment)
             first_time = appointment_time['FirstTime']
@@ -86,7 +86,7 @@ class Reminder:
 
             # First reminder set as soon as pdf upload
             print(f'patient phone number {patient_mobile_number}')
-            first_reminder = self.time_of_first_reminder(patient_mobile_number)
+            first_reminder = time_of_first_reminder(patient_mobile_number)
             print(f'time of reminder after pdfupload {first_reminder}')
             schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
             
@@ -217,21 +217,21 @@ class Reminder:
             # print(result['Message'])
             return False
 
-    def find_patient_by_mobile(self, mobile):
-        self.url = self.patient_url
-        headers = self.get_headers()
-        formatted = urllib.parse.quote(mobile)
-        url = self.url + "search?phone={}".format(formatted)
-        response = requests.get(url, headers=headers)
-        search_result = response.json()
-        if search_result['Message'] == 'No records found!':
-            return None
-        else:
-            return search_result['Data']['Patients']['Items'][0]['UserId']
+    # def find_patient_by_mobile(self, mobile):
+    #     self.url = self.patient_url
+    #     headers = self.get_headers()
+    #     formatted = urllib.parse.quote(mobile)
+    #     url = self.url + "search?phone={}".format(formatted)
+    #     response = requests.get(url, headers=headers)
+    #     search_result = response.json()
+    #     if search_result['Message'] == 'No records found!':
+    #         return None
+    #     else:
+    #         return search_result['Data']['Patients']['Items'][0]['UserId']
 
     def create_patient(self, mobile):
         self.url = self.patient_url
-        header = self.get_headers(create_user=True)
+        header = get_headers(create_user=True)
         body = json.dumps({'Phone': mobile, 'TenantId': self.tenant_id})
         response = requests.post(self.url, headers = header, data = body)
         result = response.json()
@@ -264,7 +264,7 @@ class Reminder:
         return body
 
     def update_patient(self, patient_user_id, update_patient_model):
-        header = self.get_headers()
+        header = get_headers()
         response = requests.put(self.patient_url+patient_user_id, headers=header, data=json.dumps(update_patient_model))
         if response.status_code != 200:
             raise Exception('Unable to update patient')
@@ -317,7 +317,7 @@ class Reminder:
         }
 
     def schedule_reminder(self, schedule_create_model):
-        header = self.get_headers()
+        header = get_headers()
         response = requests.post(self.reminder_url, headers=header, data=json.dumps(schedule_create_model))
         if response.status_code == 201:
             self.reminders_sent_count = self.reminders_sent_count + 1
@@ -373,38 +373,38 @@ class Reminder:
         # print(time_1 - delta)
         # print(time_2 + delta)
 
-    def get_headers(self, create_user = False):
-        if create_user:
-            return {
-                'x-api-key': self.api_key,
-                'Content-Type': 'application/json'
-            }
-        return {
-            'Authorization': "Bearer " + self.access_token,
-            'x-api-key': self.api_key,
-            'Content-Type': 'application/json'
-        }
+    # def get_headers(self, create_user = False):
+        # if create_user:
+        #     return {
+        #         'x-api-key': self.api_key,
+        #         'Content-Type': 'application/json'
+        #     }
+        # return {
+        #     'Authorization': "Bearer " + self.access_token,
+        #     'x-api-key': self.api_key,
+        #     'Content-Type': 'application/json'
+        # }
 
-    def time_of_first_reminder(self, patient_mobile_number):
-        temp = str(patient_mobile_number)
-        if(temp.startswith('+1')):
-            desired_timezone = 'America/Cancun'
-            utc_now = datetime.utcnow()
-               # Convert UTC time to the desired time zone
-            desired_timezone_obj = pytz.timezone(desired_timezone)
-            current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
-        if(temp.startswith('+91')):
-            desired_timezone = 'Asia/Kolkata'
-            utc_now = datetime.utcnow()
-               # Convert UTC time to the desired time zone
-            desired_timezone_obj = pytz.timezone(desired_timezone)
-            current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
+    # def time_of_first_reminder(self, patient_mobile_number):
+    #     temp = str(patient_mobile_number)
+    #     if(temp.startswith('+1')):
+    #         desired_timezone = 'America/Cancun'
+    #         utc_now = datetime.utcnow()
+    #            # Convert UTC time to the desired time zone
+    #         desired_timezone_obj = pytz.timezone(desired_timezone)
+    #         current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
+    #     if(temp.startswith('+91')):
+    #         desired_timezone = 'Asia/Kolkata'
+    #         utc_now = datetime.utcnow()
+    #            # Convert UTC time to the desired time zone
+    #         desired_timezone_obj = pytz.timezone(desired_timezone)
+    #         current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
 
-        new_time = str(current_time + timedelta(minutes=6))
-        date_element = new_time.split(' ')
-        time_element = date_element[1].split('.')
-        first_reminder_time = time_element[0]
-        return first_reminder_time
+    #     new_time = str(current_time + timedelta(minutes=6))
+    #     date_element = new_time.split(' ')
+    #     time_element = date_element[1].split('.')
+    #     first_reminder_time = time_element[0]
+    #     return first_reminder_time
 
     def summary(self):
 

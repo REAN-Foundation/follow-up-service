@@ -18,7 +18,7 @@ class GghnUserLogin:
         self._username = os.getenv("GGHN_USERNAME")
         self._password = os.getenv("GGHN_PASSWORD")
         self._clientname = os.getenv("CLIENT_NAME")
-        # self.API_KEY = os.getenv("REANCARE_API_KEY")
+        
         self.gghn_access_token = ''
         self._url = str(gghn_base_url)
 

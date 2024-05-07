@@ -5,12 +5,15 @@ import os
 import requests
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
-from app.common.utils import get_temp_filepath
+from app.common.utils import find_patient_by_mobile, get_headers, get_temp_filepath, open_file_in_readmode, time_of_first_reminder
 ###########################################################
 class ExtractPatientCode:
     def __init__(self):
         summary_data=[]
+        reancare_base_url = os.getenv("REANCARE_BASE_URL")
+        self.reminder_url = str(reancare_base_url + "/reminders/one-time")
         self.patient_code_count = 0
+        self.reminders_sent_count = 0
         self.appointment_details= []
 
         gghn_base_url = os.getenv("GGHN_BASE_URL")
@@ -42,8 +45,10 @@ class ExtractPatientCode:
             print("result of post---",result)
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
-            appointment_file=self.extract_appointment(file_name,date)
-            return (result)
+            appointment_file = self.extract_appointment(file_name,date)
+            appointment_file = "gghn_appointment_2024-05-02.json" 
+            resp = self.send_reminder(appointment_file,date)
+            return (resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
 
@@ -95,13 +100,9 @@ class ExtractPatientCode:
       
     def update_content(self,filename,resp_data,enquiry_date,prefix):
         additional_data=[]
-        try:
-            filepath = get_temp_filepath(filename)
-            with open(filepath, 'r') as file:
-                file_data = json.load(file)
-        except Exception as e:
-            # Handle other exceptions
-            print(f"An unexpected error occurred while reading file{filename}: {e}")
+        file_data = open_file_in_readmode(filename)
+        if(file_data == None):
+            print(f"An unexpected error occurred while reading file{filename}")
         # print("file data...",file_data)
         # print("resp_data...",resp_data)
         flag=0
@@ -145,6 +146,8 @@ class ExtractPatientCode:
            
         print("additional paitients are",additional_data)
         print(type(file_data))
+        length_of_list = len(additional_data)
+        print("Length of the additional_data:", length_of_list)
         file_data.extend(additional_data)
         try:
             filepath = get_temp_filepath(filename)
@@ -155,7 +158,79 @@ class ExtractPatientCode:
         # Handle other exceptions
             print(f"An unexpected error occurred while writing into file{filename}: {e}")
 
-       
-
-
+    def send_reminder(self,appointment_file,date):
+        filedata = open_file_in_readmode(appointment_file) 
+        if(filedata == None):
+            print(f"An unexpected error occurred while reading file{appointment_file}")
+        for item in filedata:
+            try:
+                phone_number = item['paitient_phone']
+                patient_code = item['participant_code']
+                print("GGHN patient phone number is:",phone_number)
+                patient_data = find_patient_by_mobile(phone_number)
+                print("GGHN patient user id is:",patient_data)
+                if(patient_data == None):
+                    print(f"An error occurred while searching a patient")
+                first_reminder = time_of_first_reminder(phone_number)
+                print("first reminder time for GGHN patient",first_reminder)
+                schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
+                response = self.schedule_reminder(schedule_model)
+                print("reminder response",response)
+            except Exception as e:
+                print(f"an error occured: {e}")
+        return(response)
+             
             
+
+    def get_schedule_create_model(self, patient_user_id,patient_code, reminder_time, when_date):
+        raw_content = {
+            "TemplateName": "appointment_rem_question",
+            "Variables": {
+                "en": [
+                    {
+                        "type": "text",
+                        "text": patient_code
+                    },
+                    {
+                        "type": "text",
+                        "text": "appointment"
+                    },
+                    {
+                        "type": "text",
+                        "text":  when_date
+                    },
+                    {
+                        "type": "text",
+                        "text": "attend"
+                    }
+
+                ]
+            },
+            "ButtonsIds": [
+                "Reminder_Reply_Yes",
+                "Reminder_Reply_No"
+            ],
+            # "ClientName": "GMU"
+            "ClientName": "REAN_BOT",
+            "AppointmentDate": when_date
+        }
+
+        return {
+            'UserId': patient_user_id,
+            # 'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
+            'Name': 'appointment reminder',
+            'WhenDate': when_date,
+            'WhenTime': '18:00:00',
+            'NotificationType': 'WhatsApp',
+            'RawContent':json.dumps(raw_content)
+        }
+
+    def schedule_reminder(self, schedule_create_model):
+        header = get_headers()
+        response = requests.post(self.reminder_url, headers=header, data=json.dumps(schedule_create_model))
+        if response.status_code == 201:
+            self.reminders_sent_count = self.reminders_sent_count + 1
+        else:
+            print('Unable to schedule reminder ', response.json())  
+        return{"reminders_sent_count":self.reminders_sent_count} 
+          
