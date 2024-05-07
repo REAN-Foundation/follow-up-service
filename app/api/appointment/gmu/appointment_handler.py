@@ -3,15 +3,15 @@ import boto3
 import httpx
 from app.common.utils import get_temp_filepath
 from app.common.utils import is_date_valid
-from app.services.login_service import UserLogin
-from app.services.pdf_reader_service import PdfReader
-from app.services.reminder_service import Reminder
-from app.services.notification_service import AdminNotification
+from app.services.appointment.gmu_service.login_service import UserLogin
+from app.services.appointment.gmu_service.pdf_reader_service import PdfReader
+from app.services.appointment.gmu_service.reminder_service import Reminder
+from app.services.appointment.gmu_service.notification_service import AdminNotification
 import json
 import os
 
-from app.services.read_report import ReadReport
-from  app.services.update_AFReport_service import UpdateFile
+from app.services.appointment.gmu_service.read_report import ReadReport
+from  app.services.appointment.gmu_service.update_AFReport_service import UpdateFile
 
 ###############################################################################
 

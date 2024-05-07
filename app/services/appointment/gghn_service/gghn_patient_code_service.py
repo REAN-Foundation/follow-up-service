@@ -3,10 +3,11 @@ import json
 import os
 
 import requests
+from app.common.appointment.appointment_utils import time_of_first_reminder
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
-from app.common.utils import find_patient_by_mobile, get_headers, get_temp_filepath, open_file_in_readmode, time_of_first_reminder
-###########################################################
+from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
+from app.common.utils import get_temp_filepath, open_file_in_readmode
 class ExtractPatientCode:
     def __init__(self):
         summary_data=[]

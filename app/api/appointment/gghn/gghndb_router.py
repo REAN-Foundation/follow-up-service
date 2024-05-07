@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
-from app.api.gghndb_appointment.gghndb_handler import readfile_content
+from app.api.appointment.gghn.gghndb_handler import readfile_content
 from app.common.response_model import ResponseModel
 ##################################################################################
 router = APIRouter(

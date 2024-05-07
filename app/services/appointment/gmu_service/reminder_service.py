@@ -4,8 +4,10 @@ import json
 import os
 import requests
 import urllib.parse
+from app.common.appointment.appointment_utils import time_of_first_reminder, valid_appointment_status, validate_mobile
 from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
-from app.common.utils import find_patient_by_mobile, get_headers, get_temp_filepath, time_of_first_reminder, valid_appointment_status, validate_mobile
+from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
+from app.common.utils import  get_temp_filepath
 from app.common.cache import cache
 import pytz
 

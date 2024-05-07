@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 import requests
-from app.common.utils import validate_mobile
+from app.common.appointment.appointment_utils import validate_mobile
 
 class AdminNotification:
     def __init__(self):

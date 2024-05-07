@@ -1,7 +1,7 @@
 import json
 from app.common.enumclasses import PatientReplyEnum
 
-from app.common.utils import valid_patient_reply
+from app.common.appointment.appointment_utils import valid_patient_reply
 class UpdateFile:
         
     def update_reply_by_phone(self,file_path, phone_number, new_data):
