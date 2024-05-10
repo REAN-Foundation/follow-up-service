@@ -2,7 +2,8 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.appointment.gmu.appointment_handler import handle, readfile, readfile_content_by_phone, readfile_summary, update_reply_by_ph
+
+from app.api.appointment.gmu.appointment_handler import handle, read_appointment_file, readfile_content_by_phone, readfile_summary, update_reply_by_ph
 from app.common.utils import  find_recent_file_with_prefix, get_temp_filepath
 from app.common.cache import cache
 
@@ -47,7 +48,7 @@ async def read_file(date_str: str):
     filename = file_name.replace(' ', '')
     file_path = get_temp_filepath(filename)
     try:
-        appointment_followup_data = await readfile(file_path)        
+        appointment_followup_data = await read_appointment_file(file_path)        
         followup_summary = await readfile_summary(file_path,filename)
         data = {
             "File_data":appointment_followup_data,
@@ -87,7 +88,7 @@ async def read_file():
     print(filename)
     file_path = get_temp_filepath(filename)
     try:
-        appointment_followup_data = await readfile(file_path)        
+        appointment_followup_data = await read_appointment_file(file_path)        
         followup_summary = await readfile_summary(file_path,filename)
         data = {
             "File_data":appointment_followup_data,

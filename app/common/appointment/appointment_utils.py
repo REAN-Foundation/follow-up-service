@@ -64,3 +64,26 @@ def time_of_first_reminder(patient_mobile_number):
         time_element = date_element[1].split('.')
         first_reminder_time = time_element[0]
         return first_reminder_time
+
+def isPatientAlreadyReplied(prefix_string, mobile, reminder_date):
+        print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
+        filename=str(prefix_string+reminder_date+'.json')
+        f_path=(os.getcwd()+"/temp/"+filename)
+        flag = 0
+        if os.path.exists(f_path):
+            with open(f_path, 'r') as file:
+                data = json.load(file)
+
+                for element in data:
+                    if element['Phone_number'] == mobile:
+                        flag = 1
+
+                if flag == 0:
+                    return False
+                
+                for item in data:
+                    if item['Phone_number'] == mobile:
+                        if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
+                            return False
+                return True
+        return False

@@ -112,10 +112,10 @@ async def download_pdf_from_s3(bucket_name, object_key):
         return None
 
 #Other routes of file handling
-async def readfile(file_path):
+async def read_appointment_file(file_path):
     try:
         reportfile = ReadReport()
-        filecontent = reportfile.read_report_file(file_path)
+        filecontent = reportfile.read_appointment_file(file_path)
         return(filecontent)
     except Exception as e:
          raise e
@@ -131,7 +131,7 @@ async def readfile_content_by_phone(file_path,phone_number):
 async def readfile_summary(file_path,filename):
     try:
         reportfile = ReadReport()
-        filesummary = reportfile.read_report_summary(file_path,filename)
+        filesummary = reportfile.read_appointment_summary(file_path,filename)
         return(filesummary)
     except Exception as e:
          raise e

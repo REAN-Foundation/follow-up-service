@@ -3,7 +3,7 @@ import json
 import os
 
 import requests
-from app.common.appointment.appointment_utils import time_of_first_reminder
+from app.common.appointment.appointment_utils import isPatientAlreadyReplied, time_of_first_reminder
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
@@ -47,7 +47,7 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
             appointment_file = self.extract_appointment(file_name,date)
-            appointment_file = "gghn_appointment_2024-05-02.json" 
+            appointment_file = "gghn_appointment_2024-05-2.json" 
             resp = self.send_reminder(appointment_file,date)
             return (resp)
         except HTTPError:
@@ -62,9 +62,10 @@ class ExtractPatientCode:
             if(prefix=='gghn_details_'):
                 self.update_content(filename,resp_data,enquiry_date,prefix)
             else:
-                with open(f_path, 'w') as json_file:
-                         json.dump(resp_data, json_file, indent=25)
-                return(filename)
+                self.update_appointment_content(filename,resp_data,enquiry_date,prefix)
+                # with open(f_path, 'w') as json_file:
+                #          json.dump(resp_data, json_file, indent=25)
+                # return(filename)
         else: 
             temp_folder = os.path.join(os.getcwd(), "temp")
             if not os.path.exists(temp_folder):
@@ -87,10 +88,12 @@ class ExtractPatientCode:
         appointment_details= []
         for data in appointment_data:
             patient_code_details={
-                "facilityname":data['facilityname'],
-                "next_appointment_date":data['next_appointment_date'],
-                "participant_code":data['participant_code'],
-                "paitient_phone":""
+                "Facilityname":data['facilityname'],
+                "Next_appointment_date":data['next_appointment_date'],
+                "Participant_code":data['participant_code'],
+                "Phone_number":"",
+                "WhatsApp_message_id": "",
+                "Patient_replied":"Not replied"
             }
             appointment_details.append(patient_code_details)
             self.patient_code_count= self.patient_code_count+1
@@ -159,14 +162,57 @@ class ExtractPatientCode:
         # Handle other exceptions
             print(f"An unexpected error occurred while writing into file{filename}: {e}")
 
+    def update_appointment_content(self,filename,resp_data,enquiry_date,prefix):
+        additional_appointment=[]
+        file_data = open_file_in_readmode(filename)
+        if(file_data == None):
+            print(f"An unexpected error occurred while reading file {filename}")
+        # print("file data...",file_data)
+        # print("resp_data...",resp_data)
+        flag=0
+        for rdata in resp_data:
+            flag=0
+            for fdata in file_data:
+                if rdata['Participant_code'] == fdata['Participant_code']:
+                    flag=1
+                # print("value of flag",flag)  
+            if flag==0:
+                additional_app={
+                                "Facilityname": rdata['Facilityname'],
+                                "Next_appointment_date":rdata['Next_appointment_date'],
+                                "Participant_code":rdata['Participant_code'],
+                                "Phone_number": "",
+                                "WhatsApp_message_id": "",
+                                "Patient_replied": "Not replied",
+                                }
+                # print(type(additional_paitient))
+                # print(type(additional_data))
+                additional_appointment.append(additional_app)
+           
+        print("additional paitients are",additional_appointment)
+        print(type(file_data))
+        length_of_list = len(additional_appointment)
+        print("Length of the additional_appointment:", length_of_list)
+        file_data.extend(additional_appointment)
+        try:
+            filepath = get_temp_filepath(filename)
+            with open(filepath, 'w') as json_file:
+                json.dump(file_data, json_file, indent=25)
+            return(filename)
+        except Exception as e:
+        # Handle other exceptions
+            print(f"An unexpected error occurred while writing into file{filename}: {e}")
+
+
     def send_reminder(self,appointment_file,date):
+        count = 0
         filedata = open_file_in_readmode(appointment_file) 
         if(filedata == None):
             print(f"An unexpected error occurred while reading file{appointment_file}")
         for item in filedata:
             try:
-                phone_number = item['paitient_phone']
-                patient_code = item['participant_code']
+                phone_number = item['Phone_number']
+                patient_code = item['Participant_code']
                 print("GGHN patient phone number is:",phone_number)
                 patient_data = find_patient_by_mobile(phone_number)
                 print("GGHN patient user id is:",patient_data)
@@ -174,12 +220,20 @@ class ExtractPatientCode:
                     print(f"An error occurred while searching a patient")
                 first_reminder = time_of_first_reminder(phone_number)
                 print("first reminder time for GGHN patient",first_reminder)
-                schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
-                response = self.schedule_reminder(schedule_model)
-                print("reminder response",response)
+                prefix_str = 'gghn_appointment_'
+                #for trial date made static
+                date = '2024-05-02'
+                already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
+                if not already_replied:
+                    schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
+                    response = self.schedule_reminder(schedule_model)
+                    print("reminder response",response)
+                    count = response
+                else:
+                    print(f"patient with {phone_number}has already replied hence reminder not sent!")
             except Exception as e:
                 print(f"an error occured: {e}")
-        return(response)
+        return{'reminders_sent_count':count}
              
             
 
@@ -233,5 +287,5 @@ class ExtractPatientCode:
             self.reminders_sent_count = self.reminders_sent_count + 1
         else:
             print('Unable to schedule reminder ', response.json())  
-        return{"reminders_sent_count":self.reminders_sent_count} 
+        return(self.reminders_sent_count)
           
