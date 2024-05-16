@@ -49,7 +49,7 @@ class ExtractPatientCode:
             appointment_file = self.extract_appointment(file_name,date)
             appointment_file = "gghn_appointment_2024-05-2.json" 
             resp = self.send_reminder(appointment_file,date)
-            return (resp)
+            return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
 

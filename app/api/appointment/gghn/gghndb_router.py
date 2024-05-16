@@ -15,14 +15,19 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 #################################################################################
-@router.get("/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED)
+@router.get("/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
 def read_file(date_string: str):
     try:
-        return readfile_content(date_string)
+        response = readfile_content(date_string)
+        return {
+            "Message" : "Reminders created successfully",
+            "Data" : response
+        } 
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
-        
+
+ # Here i have changed the route from appointment-status to appointment-reply       
 @router.put("/appointment-reply/{phone_number}/day/{date_str}",  status_code=status.HTTP_201_CREATED)
 async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str):
     try:
@@ -33,8 +38,11 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
         filename = file_name.replace(' ', '')
         file_path = get_temp_filepath(filename)
         content = new_data
-        updated_data = await update_gghn_reply_by_ph(file_path, number, content)
-        return updated_data
+        updated_data = await update_gghn_reply_by_ph(filename, file_path, number, content)
+        return {
+            "Message" : "Updated response successfully",
+            "Data" : updated_data
+        } 
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
     
@@ -50,10 +58,27 @@ async def read_file():
         gghn_appointment_followup_data = await read_appointment_file(file_path)        
         followup_summary = await readfile_summary(file_path,filename)
         data = {
+            "Summary":followup_summary,
             "File_data":gghn_appointment_followup_data,
-            "Summary":followup_summary 
             } 
         return(data)
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Recent file error"})
+
+@router.get("/status-report/{date_str}", status_code=status.HTTP_200_OK, response_model=ResponseModel[BaseResponseModel|None])
+async def read_file(date_str: str):
+    file_name=(f"gghn_appointment_{date_str}.json")
+    filename = file_name.replace(' ', '')
+    file_path = get_temp_filepath(filename)
+    try:
+        appointment_followup_data = await read_appointment_file(file_path)        
+        followup_summary = await readfile_summary(file_path,filename)
+        data = {
+            "Summary":followup_summary,
+            "File_data":appointment_followup_data
+            } 
+        return(data)
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})

@@ -69,7 +69,7 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         filename = file_name.replace(' ', '')
         file_path = get_temp_filepath(filename)
         content = new_data
-        updated_data = await update_reply_by_ph(file_path, number, content)
+        updated_data = await update_reply_by_ph(filename, file_path, number, content)
         return updated_data
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))

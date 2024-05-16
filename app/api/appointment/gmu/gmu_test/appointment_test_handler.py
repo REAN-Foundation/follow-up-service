@@ -1,13 +1,13 @@
 import shutil
 from fastapi import File, UploadFile
 from app.common.utils import is_date_valid
+from app.services.appointment.common_service.update_AFReport_service import UpdateFile
 from app.services.appointment.gmu_service.login_service import UserLogin
 from app.services.appointment.gmu_service.pdf_reader_service import PdfReader
 from app.services.appointment.gmu_service.reminder_service import Reminder
 from app.services.appointment.gmu_service.notification_service import AdminNotification
 import os
 from app.services.appointment.gmu_service.read_report import ReadReport
-from  app.services.appointment.gmu_service.update_AFReport_service import UpdateFile
 ###############################################################################
 
 async def handle(file: UploadFile = File(...)):
@@ -84,10 +84,10 @@ async def readfile_summary(file_path,filename):
     except Exception as e:
          raise e
 
-async def update_reply_by_ph(file_path, phone_number, new_data):
+async def update_reply_by_ph(filename, file_path, phone_number, new_data):
     try:
         updatefile = UpdateFile()
-        updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
+        updated_data = updatefile.update_reply_by_phone(filename, file_path, phone_number,new_data)
         return(updated_data)
     except Exception as e:
          raise e
