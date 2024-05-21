@@ -222,7 +222,7 @@ class ExtractPatientCode:
                 print("first reminder time for GGHN patient",first_reminder)
                 prefix_str = 'gghn_appointment_'
                 #for trial date made static
-                date = '2024-05-02'
+                date = '2024-05-2'
                 already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
                 if not already_replied:
                     schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)

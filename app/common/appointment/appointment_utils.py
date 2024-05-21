@@ -70,6 +70,7 @@ def isPatientAlreadyReplied(prefix_string, mobile, reminder_date):
         filename=str(prefix_string+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         flag = 0
+        
         if os.path.exists(f_path):
             with open(f_path, 'r') as file:
                 data = json.load(file)

@@ -66,7 +66,7 @@ async def read_file():
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Recent file error"})
 
-@router.get("/status-report/{date_str}", status_code=status.HTTP_200_OK, response_model=ResponseModel[BaseResponseModel|None])
+@router.get("/status-report/{date_str}", status_code=status.HTTP_200_OK)
 async def read_file(date_str: str):
     file_name=(f"gghn_appointment_{date_str}.json")
     filename = file_name.replace(' ', '')
