@@ -13,6 +13,7 @@ class ExtractPatientCode:
         summary_data=[]
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
         self.reminder_url = str(reancare_base_url + "/reminders/one-time")
+        self.search_by_emrid = str(reancare_base_url + "/patients/search")
         self.patient_code_count = 0
         self.reminders_sent_count = 0
         self.appointment_details= []
@@ -47,8 +48,9 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
             appointment_file = self.extract_appointment(file_name,date)
-            appointment_file = "gghn_appointment_2024-05-2.json" 
-            resp = self.send_reminder(appointment_file,date)
+            # appointment_file = "gghn_appointment_2024-05-2.json"
+            updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
+            resp = self.send_reminder(updated_appointment_file,date)
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
@@ -101,6 +103,7 @@ class ExtractPatientCode:
         # print("appointments-----",appointment_details)  
         prefix = "gghn_appointment_"  
         file_name = self.create_data_file(appointment_details,date,prefix)
+        return(file_name)
       
     def update_content(self,filename,resp_data,enquiry_date,prefix):
         additional_data=[]
@@ -222,7 +225,7 @@ class ExtractPatientCode:
                 print("first reminder time for GGHN patient",first_reminder)
                 prefix_str = 'gghn_appointment_'
                 #for trial date made static
-                date = '2024-05-2'
+                # date = '2024-05-2'
                 already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
                 if not already_replied:
                     schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
@@ -289,3 +292,47 @@ class ExtractPatientCode:
             print('Unable to schedule reminder ', response.json())  
         return(self.reminders_sent_count)
           
+
+    def update_phone_by_EMRId(self, file_name, date):
+        recent_data=[]
+        filepath = get_temp_filepath(file_name)
+        if not os.path.exists(filepath):
+            raise Exception(file_name + " does not exist.")
+
+        file=open(filepath,"r")
+        file_content=file.read()
+        appointment_data=json.loads(file_content)
+        print("appointment file data",appointment_data)
+        for app_data in appointment_data:
+            EMRId=app_data['Participant_code']
+            phone_nos = self.search_phone_by_EMRId(file_name, date, EMRId)
+            if(phone_nos != None):
+                app_data['Phone_number'] = phone_nos
+            else:
+                app_data['Phone_number'] = ''
+
+        with open(filepath, 'w') as file:
+            json.dump(appointment_data, file, indent=6)
+        
+        with open(filepath, 'r') as file:
+            retrived_data = json.load(file)
+
+        return(file_name)
+
+            
+    def search_phone_by_EMRId(self, file_name, date, EMRId):
+        print("search url",self.search_by_emrid)
+        header = get_headers()
+        print("header",header)
+        params = {
+        'externalMedicalRegistrationId': EMRId
+        }
+        response = requests.get(self.search_by_emrid, headers = header, params=params)
+        result = response.json()
+        if response.status_code == 200 and not result['Message'] == 'No records found!':
+            phone_no_retrived = str(result['Data']['Patients']['Items'][0]['Phone'])
+            print(f"phone retrived for {EMRId} is {phone_no_retrived}")
+            return (phone_no_retrived)
+        else:
+            # print(result['Message'])
+             return(None)

@@ -6,7 +6,7 @@ from app.services.appointment.common_service.update_AFReport_service import Upda
 from app.services.appointment.gghn_service.gghn_login_service import GghnUserLogin 
 from app.services.appointment.gghn_service.gghn_patient_code_service import ExtractPatientCode
 from app.services.appointment.gghn_service.read_reply_report import GGHNReadReport
-from app.services.appointment.gmu_service.login_service import UserLogin
+from app.services.appointment.common_service.login_service import UserLogin
 
 def readfile_content(date):
     try:

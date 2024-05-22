@@ -40,6 +40,8 @@ def valid_patient_reply(reply):
 
 def time_of_first_reminder(patient_mobile_number):
         temp = str(patient_mobile_number)
+        if(temp == ""):
+             print("No phone number is allocated")
         if(temp.startswith('+1')):
             desired_timezone = 'America/Cancun'
             utc_now = datetime.utcnow()
