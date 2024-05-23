@@ -48,7 +48,7 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
             appointment_file = self.extract_appointment(file_name,date)
-            # appointment_file = "gghn_appointment_2024-05-2.json"
+            # appointment_file = "add test file here"
             updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
             resp = self.send_reminder(updated_appointment_file,date)
             return(resp)
