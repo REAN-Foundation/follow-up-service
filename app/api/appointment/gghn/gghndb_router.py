@@ -36,9 +36,9 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
         number = ph_number.replace(' ', '')
         file_name=(f"gghn_appointment_{date_str}.json")
         filename = file_name.replace(' ', '')
-        file_path = get_temp_filepath(filename)
+        # file_path = get_temp_filepath(filename)
         content = new_data
-        updated_data = await update_gghn_reply_by_ph(filename, file_path, number, content)
+        updated_data = await update_gghn_reply_by_ph(filename, number, content)
         return {
             "Message" : "Updated response successfully",
             "Data" : updated_data
@@ -70,10 +70,10 @@ async def read_file():
 async def read_file(date_str: str):
     file_name=(f"gghn_appointment_{date_str}.json")
     filename = file_name.replace(' ', '')
-    file_path = get_temp_filepath(filename)
+    # file_path = get_temp_filepath(filename)
     try:
-        appointment_followup_data = await read_appointment_file(file_path)        
-        followup_summary = await readfile_summary(file_path,filename)
+        appointment_followup_data = await read_appointment_file(filename)        
+        followup_summary = await readfile_summary(filename)
         data = {
             "Summary":followup_summary,
             "File_data":appointment_followup_data

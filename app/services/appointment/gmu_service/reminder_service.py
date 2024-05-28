@@ -11,6 +11,8 @@ from app.common.utils import  get_temp_filepath
 from app.common.cache import cache
 import pytz
 
+from app.services.appointment.common_service.db_service import DatabaseService
+
 ###############################################################
 
 PENDING_ARRIVAL = 'Pending arrival'
@@ -38,6 +40,8 @@ class Reminder:
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
+        self.db_data = DatabaseService()
+        self.collect_prefix = 'gmu'
 
     def create_one_time_reminders(self, reminder_date, appointments):
 
@@ -94,7 +98,7 @@ class Reminder:
             
             # Check the patient replied status
             prefix_string = 'gmu_followup_file_'
-            already_replied = isPatientAlreadyReplied(prefix_string, patient_mobile_number, reminder_date)
+            already_replied = isPatientAlreadyReplied(prefix_string, patient_mobile_number, reminder_date, self.collect_prefix)
             # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
             
             if not already_replied:
@@ -140,34 +144,40 @@ class Reminder:
     def create_report(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
-        f_path=(os.getcwd()+"/temp/"+filename)
-        if os.path.exists(f_path):
-            print(f"The file {filename} already exists. Please choose a different name.")
+        data = self.db_data.search_file(filename, self.collect_prefix)
+        # f_path=(os.getcwd()+"/temp/"+filename)
+        if(data != None):
+            print(f"The file {filename} already exists. ")
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
-            self.replace_file(json_object,f_path)
-            print(json_string)
-            return(json_string)
+            data_replaced = self.replace_file(json_object,filename)
+            content_data = self.db_data.update_file(filename, data_replaced, self.collect_prefix)
+            print(content_data)
+            return(content_data)
         else:
-            temp_folder = os.path.join(os.getcwd(), "temp")
-            if not os.path.exists(temp_folder):
-                os.mkdir(temp_folder)
-            filepresent  = os.path.join(temp_folder, filename)
-            with open(filepresent, 'w') as json_file:
-                json.dump(summary_data, json_file, indent=7)
-
             json_string = json.dumps(summary_data, indent=7)
+            json_object = json.loads(json_string)
+            content_data = self.db_data.store_file(filename, json_object, self.collect_prefix)
+            # temp_folder = os.path.join(os.getcwd(), "temp")
+            # if not os.path.exists(temp_folder):
+            #     os.mkdir(temp_folder)
+            # filepresent  = os.path.join(temp_folder, filename)
+            # with open(filepresent, 'w') as json_file:
+            #     json.dump(summary_data, json_file, indent=7)
+
+            # json_string = json.dumps(summary_data, indent=7)
 
             # code to set recent file in cache
             # self.recent_file = filename
             # cache.set('recent_file', self.recent_file)
             # recent_file = cache.get('recent_file')
             # print("RECENT FILE IN CACHE",recent_file)
-            return(json_string)
+            print(content_data)
+            return(content_data)
 
-    def replace_file(self,json_object,f_path):
-        with open(f_path, 'r') as file:
-            data = json.load(file)
+    def replace_file(self,json_object,filename):
+        # with open(f_path, 'r') as file:
+        data = self.db_data.search_file(filename, self.collect_prefix)
         for item in data:
             if item['Patient_status'] == 'Pending arrival':
                for record in json_object:
@@ -199,9 +209,9 @@ class Reminder:
         #                    item['Patient_replied'] = record['Patient_replied']
 
 
-        with open(f_path, 'w') as file:
-           json.dump(data, file, indent=7)
-
+        # with open(f_path, 'w') as file:
+        #    json.dump(data, file, indent=7)
+        return(data)
 
 
     def search_reminder(self, patient_user_id, reminder_date, reminder_time):

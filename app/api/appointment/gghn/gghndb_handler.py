@@ -22,26 +22,26 @@ def readfile_content(date):
     except Exception as e:
          raise e
     
-async def update_gghn_reply_by_ph(filename, file_path, phone_number, new_data):
+async def update_gghn_reply_by_ph(filename,phone_number, new_data):
     try:
         updatefile =  UpdateFile()
-        updated_data = updatefile.update_reply_by_phone(filename,file_path, phone_number,new_data)
+        updated_data = updatefile.update_reply_by_phone(filename,phone_number,new_data)
         return(updated_data)
     except Exception as e:
          raise e
 
-async def read_appointment_file(file_path):
+async def read_appointment_file(filename):
     try:
         reportfile = GGHNReadReport()
-        filecontent = reportfile.gghn_read_appointment_file(file_path)
+        filecontent = reportfile.gghn_read_appointment_file(filename)
         return(filecontent)
     except Exception as e:
          raise e
     
-async def readfile_summary(file_path,filename):
+async def readfile_summary(filename):
     try:
         reportfile = GGHNReadReport()
-        filesummary = reportfile.gghn_read_appointment_summary(file_path,filename)
+        filesummary = reportfile.gghn_read_appointment_summary(filename)
         return(filesummary)
     except Exception as e:
          raise e

@@ -8,6 +8,7 @@ from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
 from app.common.utils import get_temp_filepath, open_file_in_readmode
+from app.services.appointment.common_service.db_service import DatabaseService
 class ExtractPatientCode:
     def __init__(self):
         summary_data=[]
@@ -17,6 +18,8 @@ class ExtractPatientCode:
         self.patient_code_count = 0
         self.reminders_sent_count = 0
         self.appointment_details= []
+        self.db_data = DatabaseService()
+        self.collect_prefix = 'gghn'
 
         gghn_base_url = os.getenv("GGHN_BASE_URL")
         if gghn_base_url == None:
@@ -48,9 +51,10 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
             appointment_file = self.extract_appointment(file_name,date)
-            # appointment_file = "add test file here"
-            updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
-            resp = self.send_reminder(updated_appointment_file,date)
+            appointment_file = "gghn_appointment_2024-05-2.json"
+            # updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
+            # resp = self.send_reminder(updated_appointment_file,date)
+            resp = self.send_reminder(appointment_file,date)
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
@@ -58,35 +62,26 @@ class ExtractPatientCode:
     #Create/update a detail file of api out put 
     def create_data_file(self,resp_data,enquiry_date,prefix):
         filename=str(prefix+enquiry_date+'.json')
-        f_path=(os.getcwd()+"/temp/"+filename)
-        if os.path.exists(f_path):
+        response = self.db_data.search_file(filename,self.collect_prefix)
+        if response == None:
+            self.db_data.store_file(filename,resp_data, self.collect_prefix)
+        else:
+        
             print(f"The file {filename} already exists!")
             if(prefix=='gghn_details_'):
                 self.update_content(filename,resp_data,enquiry_date,prefix)
             else:
                 self.update_appointment_content(filename,resp_data,enquiry_date,prefix)
-                # with open(f_path, 'w') as json_file:
-                #          json.dump(resp_data, json_file, indent=25)
-                # return(filename)
-        else: 
-            temp_folder = os.path.join(os.getcwd(), "temp")
-            if not os.path.exists(temp_folder):
-                os.mkdir(temp_folder)
-            filepresent  = os.path.join(temp_folder, filename)
-            with open(filepresent, 'w') as json_file:
-                json.dump(resp_data, json_file, indent=25)
         return(filename)        
       
     #Create a file with only necessary details for appointment    
     def extract_appointment(self, file_name,date):
-
-        filepath = get_temp_filepath(file_name)
-        if not os.path.exists(filepath):
+        response = self.db_data.search_file(file_name,self.collect_prefix)
+        if response == None:
             raise Exception(file_name + " does not exist.")
-
-        file=open(filepath,"r")
-        file_content=file.read()
-        appointment_data=json.loads(file_content)
+       
+        # appointment_data=json.loads(response)
+        appointment_data = response
         appointment_details= []
         for data in appointment_data:
             patient_code_details={
@@ -107,9 +102,12 @@ class ExtractPatientCode:
       
     def update_content(self,filename,resp_data,enquiry_date,prefix):
         additional_data=[]
-        file_data = open_file_in_readmode(filename)
-        if(file_data == None):
-            print(f"An unexpected error occurred while reading file{filename}")
+        file_content = self.db_data.search_file(filename,self.collect_prefix)
+        if(file_content == None):
+            print(f"An unexpected error occurred while reading {filename}")
+        # file_data = json.dumps(file_content)    
+        file_data = (file_content) 
+        print("file data...",file_data)
         # print("file data...",file_data)
         # print("resp_data...",resp_data)
         flag=0
@@ -156,21 +154,22 @@ class ExtractPatientCode:
         length_of_list = len(additional_data)
         print("Length of the additional_data:", length_of_list)
         file_data.extend(additional_data)
+        # json_string = json.dumps(file_data)
         try:
-            filepath = get_temp_filepath(filename)
-            with open(filepath, 'w') as json_file:
-                json.dump(file_data, json_file, indent=25)
+            self.db_data.update_file(filename,file_data,self.collect_prefix)
             return(filename)
         except Exception as e:
         # Handle other exceptions
-            print(f"An unexpected error occurred while writing into file{filename}: {e}")
+            print(f"An unexpected error occurred while updating{filename}: {e}")
 
     def update_appointment_content(self,filename,resp_data,enquiry_date,prefix):
         additional_appointment=[]
-        file_data = open_file_in_readmode(filename)
-        if(file_data == None):
-            print(f"An unexpected error occurred while reading file {filename}")
-        # print("file data...",file_data)
+        file_content = self.db_data.search_file(filename,self.collect_prefix)
+        if(file_content == None):
+            print(f"An unexpected error occurred while reading {filename}")
+        # file_data = json.dumps(file_content)
+        file_data = (file_content)     
+        print("file data...",file_data)
         # print("resp_data...",resp_data)
         flag=0
         for rdata in resp_data:
@@ -197,21 +196,20 @@ class ExtractPatientCode:
         length_of_list = len(additional_appointment)
         print("Length of the additional_appointment:", length_of_list)
         file_data.extend(additional_appointment)
+        # json_string = json.dumps(file_data)
         try:
-            filepath = get_temp_filepath(filename)
-            with open(filepath, 'w') as json_file:
-                json.dump(file_data, json_file, indent=25)
+            self.db_data.update_file(filename,file_data,self.collect_prefix)
             return(filename)
         except Exception as e:
         # Handle other exceptions
-            print(f"An unexpected error occurred while writing into file{filename}: {e}")
+            print(f"An unexpected error occurred while writing into{filename}: {e}")
 
 
     def send_reminder(self,appointment_file,date):
         count = 0
-        filedata = open_file_in_readmode(appointment_file) 
+        filedata = self.db_data.search_file(appointment_file,self.collect_prefix)
         if(filedata == None):
-            print(f"An unexpected error occurred while reading file{appointment_file}")
+            print(f"An unexpected error occurred while reading{appointment_file}")
         for item in filedata:
             try:
                 phone_number = item['Phone_number']
@@ -225,8 +223,8 @@ class ExtractPatientCode:
                 print("first reminder time for GGHN patient",first_reminder)
                 prefix_str = 'gghn_appointment_'
                 #for trial date made static
-                # date = '2024-05-2'
-                already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
+                date = '2024-05-2'
+                already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date,self.collect_prefix)
                 if not already_replied:
                     schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
                     response = self.schedule_reminder(schedule_model)
@@ -295,13 +293,12 @@ class ExtractPatientCode:
 
     def update_phone_by_EMRId(self, file_name, date):
         recent_data=[]
-        filepath = get_temp_filepath(file_name)
-        if not os.path.exists(filepath):
-            raise Exception(file_name + " does not exist.")
-
-        file=open(filepath,"r")
-        file_content=file.read()
-        appointment_data=json.loads(file_content)
+        file_data = self.db_data.search_file(file_name,self.collect_prefix)
+        if(file_data == None):
+            print(f"An unexpected error occurred in update_phone_by_EMRId while reading {file_name}")
+        
+        # appointment_data=json.loads(file_data)
+        appointment_data = file_data
         print("appointment file data",appointment_data)
         for app_data in appointment_data:
             EMRId=app_data['Participant_code']
@@ -311,12 +308,8 @@ class ExtractPatientCode:
             else:
                 app_data['Phone_number'] = ''
 
-        with open(filepath, 'w') as file:
-            json.dump(appointment_data, file, indent=6)
-        
-        with open(filepath, 'r') as file:
-            retrived_data = json.load(file)
-
+        retrived_data = self.db_data.update_file(file_name,appointment_data,self.collect_prefix)
+        data = retrived_data
         return(file_name)
 
             

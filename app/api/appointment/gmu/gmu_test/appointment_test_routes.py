@@ -35,9 +35,9 @@ async def read_file(phone_number: str, date_string: str):
     number = ph_number.replace(' ', '')
     file_name=(f"gmu_followup_file_{date_string}.json")
     filename = file_name.replace(' ', '')
-    file_path = get_temp_filepath(filename)
+    # file_path = get_temp_filepath(filename)
     try:
-        return await readfile_content_by_phone(file_path,number)
+        return await readfile_content_by_phone(filename,number)
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
@@ -46,10 +46,10 @@ async def read_file(phone_number: str, date_string: str):
 async def read_file(date_str: str):
     file_name=(f"gmu_followup_file_{date_str}.json")
     filename = file_name.replace(' ', '')
-    file_path = get_temp_filepath(filename)
+    # file_path = get_temp_filepath(filename)
     try:
-        appointment_followup_data = await read_appointment_file(file_path)        
-        followup_summary = await readfile_summary(file_path,filename)
+        appointment_followup_data = await read_appointment_file(filename)        
+        followup_summary = await readfile_summary(filename)
         data = {
             "File_data":appointment_followup_data,
             "Summary":followup_summary 
@@ -67,9 +67,9 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         number = ph_number.replace(' ', '')
         file_name=(f"gmu_followup_file_{date_str}.json")
         filename = file_name.replace(' ', '')
-        file_path = get_temp_filepath(filename)
+        # file_path = get_temp_filepath(filename)
         content = new_data
-        updated_data = await update_reply_by_ph(filename, file_path, number, content)
+        updated_data = await update_reply_by_ph(filename, number, content)
         return updated_data
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
