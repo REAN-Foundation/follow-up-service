@@ -15,19 +15,12 @@ class GGHNReadReport:
         self.patient_not_replied_count = 0
         self.patient_data=[]
         self.db_data = DatabaseService()
-        self.collection_prefix = ''
+        self.collection_prefix = 'gghn'
 
     def gghn_read_appointment_file(self,filename):
         try:
-            if filename.startswith('gmu_followup_file_'):
-                self.collection_prefix = 'gmu'
-                data = self.db_data.search_file(filename,self.collection_prefix)
-                return(data)
-            
-            if filename.startswith('gghn_appointment_'):
-                self.collection_prefix = 'gghn'
-                data = self.db_data.search_file(filename, self.collection_prefix)
-                return(data)
+            data = self.db_data.search_file(filename, self.collection_prefix)
+            return(data)
             
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
@@ -38,60 +31,28 @@ class GGHNReadReport:
         file_date = f_date.split('.')
         date_of_file = file_date[0]
         print(date_of_file)
-
-        if filename.startswith('gghn_appointment_'): 
-            self.collection_prefix = 'gghn'    
-            data = self.db_data.search_file(filename, self.collection_prefix)    
-        # with open(file_path, 'r') as file:
-        #     data = json.load(file)
-
-            for item in data:
-                self.patients_count = self.patients_count + 1
-                if item['Patient_replied'] == 'Yes':
-                    self.patient_reply_yes_count = self.patient_reply_yes_count + 1
-                if item['Patient_replied'] == 'No':
-                    self.patient_reply_no_count = self.patient_reply_no_count + 1
-                if item['Patient_replied'] == 'Not replied':
-                    self.patient_not_replied_count = self.patient_not_replied_count + 1
-        
-            file_summary = {
-                'Date': date_of_file,
-                'Total patient': self.patients_count,
-                'Patient replied Yes' : self.patient_reply_yes_count,
-                'Patient replied No' :  self.patient_reply_no_count,
-                'Patient Not replied' : self.patient_not_replied_count
-                 }
-            
-        if filename.startswith('gmu_followup_file_'): 
-            self.collection_prefix = 'gmu'    
-            data = self.db_data.search_file(filename, self.collection_prefix) 
-
-            for item in data:
-                self.patients_count = self.patients_count + 1
-                if item['Patient_status'] == 'Pending arrival':
-                    self.pending_arrival_patient_count = self.pending_arrival_patient_count + 1
-                if item['Patient_status'] == 'In lobby':
-                    self.arrived_patient_count = self.arrived_patient_count + 1
-                if item['Patient_replied'] == 'Yes':
-                    self.patient_reply_yes_count = self.patient_reply_yes_count + 1
-                if item['Patient_replied'] == 'No':
-                    self.patient_reply_no_count = self.patient_reply_no_count + 1
-                if item['Patient_replied'] == 'Not replied':
-                    self.patient_not_replied_count = self.patient_not_replied_count + 1
-            
-            file_summary = {
-                'Date': date_of_file,
-                'Total patient': self.patients_count,
-                'Arrived patient' : self.arrived_patient_count,
-                'Patient not arrived' : self.pending_arrival_patient_count,
-                'Patient replied Yes' : self.patient_reply_yes_count,
-                'Patient replied No' :  self.patient_reply_no_count,
-                'Patient Not replied' : self.patient_not_replied_count
-            }
-        
-        return(file_summary) 
+         
+        data = self.db_data.search_file(filename, self.collection_prefix)    
+        for item in data:
+            self.patients_count = self.patients_count + 1
+            if item['Patient_replied'] == 'Yes':
+                self.patient_reply_yes_count = self.patient_reply_yes_count + 1
+            if item['Patient_replied'] == 'No':
+                self.patient_reply_no_count = self.patient_reply_no_count + 1
+            if item['Patient_replied'] == 'Not replied':
+                self.patient_not_replied_count = self.patient_not_replied_count + 1
     
-    # def readfile_content_by_ph(self,filename,phone_number):
+        file_summary = {
+            'Date': date_of_file,
+            'Total patient': self.patients_count,
+            'Patient replied Yes' : self.patient_reply_yes_count,
+            'Patient replied No' :  self.patient_reply_no_count,
+            'Patient Not replied' : self.patient_not_replied_count
+                }
+        return(file_summary) 
+     
+
+# def readfile_content_by_ph(self,filename,phone_number):
     #     try:
     #         # with open(file_path, "r") as file:
     #         #     json_content = json.load(file)

@@ -1,7 +1,5 @@
-
 import json
 import os
-
 import requests
 from app.common.appointment.appointment_utils import isPatientAlreadyReplied, time_of_first_reminder
 from app.common.cache import cache
@@ -29,6 +27,7 @@ class ExtractPatientCode:
         self.token = cache.get('gghn_access_token')
         print("gghn token----",self.token)
 
+
     #Get Paitient details using gghn api   
     def read_content(self, date):
         try:
@@ -51,13 +50,17 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
             appointment_file = self.extract_appointment(file_name,date)
+            # here static appointment fle can be set for tial when it is set also set date in send reminder 
+            # before checking patient reply 
             appointment_file = "gghn_appointment_2024-05-2.json"
+
             # updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
             # resp = self.send_reminder(updated_appointment_file,date)
             resp = self.send_reminder(appointment_file,date)
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
+
 
     #Create/update a detail file of api out put 
     def create_data_file(self,resp_data,enquiry_date,prefix):
@@ -74,13 +77,13 @@ class ExtractPatientCode:
                 self.update_appointment_content(filename,resp_data,enquiry_date,prefix)
         return(filename)        
       
+
     #Create a file with only necessary details for appointment    
     def extract_appointment(self, file_name,date):
         response = self.db_data.search_file(file_name,self.collect_prefix)
         if response == None:
             raise Exception(file_name + " does not exist.")
        
-        # appointment_data=json.loads(response)
         appointment_data = response
         appointment_details= []
         for data in appointment_data:
@@ -94,22 +97,22 @@ class ExtractPatientCode:
             }
             appointment_details.append(patient_code_details)
             self.patient_code_count= self.patient_code_count+1
-        print("patient_code_count",self.patient_code_count)
-        # print("appointments-----",appointment_details)  
+        print("patient_code_count",self.patient_code_count)  
         prefix = "gghn_appointment_"  
         file_name = self.create_data_file(appointment_details,date,prefix)
         return(file_name)
-      
+
+
+    # Update gghn details file  
     def update_content(self,filename,resp_data,enquiry_date,prefix):
         additional_data=[]
         file_content = self.db_data.search_file(filename,self.collect_prefix)
         if(file_content == None):
             print(f"An unexpected error occurred while reading {filename}")
-        # file_data = json.dumps(file_content)    
+          
         file_data = (file_content) 
         print("file data...",file_data)
-        # print("file data...",file_data)
-        # print("resp_data...",resp_data)
+       
         flag=0
         for rdata in resp_data:
             flag=0
@@ -145,8 +148,7 @@ class ExtractPatientCode:
                                  "fingerprint_recaptured":rdata['fingerprint_recaptured'], 
                                  "participant_code":rdata['participant_code']
                                  }
-                # print(type(additional_paitient))
-                # print(type(additional_data))
+                
                 additional_data.append(additional_paitient)
            
         print("additional paitients are",additional_data)
@@ -154,7 +156,7 @@ class ExtractPatientCode:
         length_of_list = len(additional_data)
         print("Length of the additional_data:", length_of_list)
         file_data.extend(additional_data)
-        # json_string = json.dumps(file_data)
+       
         try:
             self.db_data.update_file(filename,file_data,self.collect_prefix)
             return(filename)
@@ -162,15 +164,17 @@ class ExtractPatientCode:
         # Handle other exceptions
             print(f"An unexpected error occurred while updating{filename}: {e}")
 
+
+    # Update gghn appointment file  
     def update_appointment_content(self,filename,resp_data,enquiry_date,prefix):
         additional_appointment=[]
         file_content = self.db_data.search_file(filename,self.collect_prefix)
         if(file_content == None):
             print(f"An unexpected error occurred while reading {filename}")
-        # file_data = json.dumps(file_content)
+        
         file_data = (file_content)     
         print("file data...",file_data)
-        # print("resp_data...",resp_data)
+        
         flag=0
         for rdata in resp_data:
             flag=0
@@ -187,8 +191,7 @@ class ExtractPatientCode:
                                 "WhatsApp_message_id": "",
                                 "Patient_replied": "Not replied",
                                 }
-                # print(type(additional_paitient))
-                # print(type(additional_data))
+               
                 additional_appointment.append(additional_app)
            
         print("additional paitients are",additional_appointment)
@@ -196,7 +199,7 @@ class ExtractPatientCode:
         length_of_list = len(additional_appointment)
         print("Length of the additional_appointment:", length_of_list)
         file_data.extend(additional_appointment)
-        # json_string = json.dumps(file_data)
+        
         try:
             self.db_data.update_file(filename,file_data,self.collect_prefix)
             return(filename)
@@ -224,6 +227,7 @@ class ExtractPatientCode:
                 prefix_str = 'gghn_appointment_'
                 #for trial date made static
                 date = '2024-05-2'
+
                 already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date,self.collect_prefix)
                 if not already_replied:
                     schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
@@ -236,7 +240,6 @@ class ExtractPatientCode:
                 print(f"an error occured: {e}")
         return{'reminders_sent_count':count}
              
-            
 
     def get_schedule_create_model(self, patient_user_id,patient_code, reminder_time, when_date):
         raw_content = {
@@ -280,6 +283,8 @@ class ExtractPatientCode:
             'NotificationType': 'WhatsApp',
             'RawContent':json.dumps(raw_content)
         }
+    # As GGHN do not provie when time so the when time is trial testing time
+
 
     def schedule_reminder(self, schedule_create_model):
         header = get_headers()
@@ -291,13 +296,13 @@ class ExtractPatientCode:
         return(self.reminders_sent_count)
           
 
+    # Update phone number in appointment file of GGHN
     def update_phone_by_EMRId(self, file_name, date):
         recent_data=[]
         file_data = self.db_data.search_file(file_name,self.collect_prefix)
         if(file_data == None):
             print(f"An unexpected error occurred in update_phone_by_EMRId while reading {file_name}")
         
-        # appointment_data=json.loads(file_data)
         appointment_data = file_data
         print("appointment file data",appointment_data)
         for app_data in appointment_data:
@@ -312,7 +317,8 @@ class ExtractPatientCode:
         data = retrived_data
         return(file_name)
 
-            
+
+    #Search patient phone number from baseservice database corresponding to EMRId 
     def search_phone_by_EMRId(self, file_name, date, EMRId):
         print("search url",self.search_by_emrid)
         header = get_headers()
@@ -328,4 +334,4 @@ class ExtractPatientCode:
             return (phone_no_retrived)
         else:
             # print(result['Message'])
-             return(None)
+            return(None)

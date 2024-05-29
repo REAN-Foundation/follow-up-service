@@ -9,19 +9,16 @@ class UpdateFile:
          self.collection_prefix = ''
 
     def update_reply_by_phone(self, filename, phone_number, new_data):
-
         print('Reply From WhatsApp',phone_number , ":", str(new_data))
         print("filename",filename)
         number = phone_number.replace(' ', '')
         print(number)
-        # with open(file_path, 'r') as file:
-        #     data = json.load(file)
+       
         if filename.startswith('gmu_followup_file_'):
             self.collection_prefix = 'gmu'
             data = self.db_data.search_file(filename,self.collection_prefix)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
-        
-        
+                
         # Updating patient reply for status Pending arrival
             for item in data:
                 if item['Patient_status'] == 'Pending arrival':

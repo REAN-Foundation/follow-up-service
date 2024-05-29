@@ -40,10 +40,8 @@ class DatabaseService:
             collection = self.connect_atlas(collect_prefix)
             # Define the query to filter documents
             query = {"filename": query}
-
             # Retrieve documents matching the query
             documents = collection.find_one(query)
-
             # Check if any documents were found
             if documents == None:
                 print("No documents found matching the query.")

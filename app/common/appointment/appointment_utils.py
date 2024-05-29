@@ -81,7 +81,6 @@ def isPatientAlreadyReplied(prefix_string, mobile, reminder_date,collect_prefix)
             print(f"No file exsist with name{filename}")
         
         else:
-            # data = json.load(f_data)
             data = f_data
             for element in data:
                 if element['Phone_number'] == mobile:
