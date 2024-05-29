@@ -48,9 +48,10 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = self.create_data_file(result,date,prefix)
             appointment_file = self.extract_appointment(file_name,date)
-            # appointment_file = "add test file here"
+            # appointment_file = "add example phone numer file here"
             updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
             resp = self.send_reminder(updated_appointment_file,date)
+            
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
@@ -222,18 +223,21 @@ class ExtractPatientCode:
                 if(patient_data == None):
                     print(f"An error occurred while searching a patient")
                 first_reminder = time_of_first_reminder(phone_number)
-                print("first reminder time for GGHN patient",first_reminder)
-                prefix_str = 'gghn_appointment_'
-                #for trial date made static
-                # date = '2024-05-2'
-                already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
-                if not already_replied:
-                    schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
-                    response = self.schedule_reminder(schedule_model)
-                    print("reminder response",response)
-                    count = response
+                if(first_reminder != None):
+                    print("first reminder time for GGHN patient",first_reminder)
+                    prefix_str = 'gghn_appointment_'
+                    #for trial date made static
+                    # date = '2024-05-2'
+                    already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
+                    if not already_replied:
+                        schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
+                        response = self.schedule_reminder(schedule_model)
+                        print("reminder response",response)
+                        count = response
+                    else:
+                        print(f"patient with {phone_number}has already replied hence reminder not sent!")
                 else:
-                    print(f"patient with {phone_number}has already replied hence reminder not sent!")
+                    print("No phone number found to set remnder")
             except Exception as e:
                 print(f"an error occured: {e}")
         return{'reminders_sent_count':count}
