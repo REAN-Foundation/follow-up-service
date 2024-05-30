@@ -237,13 +237,12 @@ class ExtractPatientCode:
                     else:
                         print(f"patient with {phone_number}has already replied hence reminder not sent!")
                 else:
-                    print("No phone number found to set remnder")
+                    print("No phone number found to set reminder")
             except Exception as e:
                 print(f"an error occured: {e}")
         return{'reminders_sent_count':count}
              
             
-
     def get_schedule_create_model(self, patient_user_id,patient_code, reminder_time, when_date):
         raw_content = {
             "TemplateName": "appointment_rem_question",
