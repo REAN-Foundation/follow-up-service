@@ -113,34 +113,36 @@ async def download_pdf_from_s3(bucket_name, object_key):
         return None
 
 #Other routes of file handling
-async def read_appointment_file(file_path):
+
+async def read_appointment_file(filename):
     try:
         reportfile = ReadReport()
-        filecontent = reportfile.read_appointment_file(file_path)
+        filecontent = reportfile.read_appointment_file(filename)
         return(filecontent)
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(file_path,phone_number):
+async def readfile_content_by_phone(filename,phone_number):
     try:
         reportfile = ReadReport()
-        filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
+        filecontent = reportfile.readfile_content_by_ph(filename, phone_number)
         return(filecontent)
     except Exception as e:
          raise e
 
-async def readfile_summary(file_path,filename):
+
+async def readfile_summary(filename):
     try:
         reportfile = ReadReport()
-        filesummary = reportfile.read_appointment_summary(file_path,filename)
+        filesummary = reportfile.read_appointment_summary(filename)
         return(filesummary)
     except Exception as e:
          raise e
 
-async def update_reply_by_ph(filename, file_path, phone_number, new_data):
+async def update_reply_by_ph(filename, phone_number, new_data):
     try:
         updatefile = UpdateFile()
-        updated_data = updatefile.update_reply_by_phone(filename, file_path, phone_number,new_data)
+        updated_data = updatefile.update_reply_by_phone(filename, phone_number,new_data)
         return(updated_data)
     except Exception as e:
          raise e
