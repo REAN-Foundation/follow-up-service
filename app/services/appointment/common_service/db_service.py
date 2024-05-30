@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import pymongo
 from pymongo import MongoClient
@@ -23,9 +24,11 @@ class DatabaseService:
     
     def store_file(self,filename,content,collect_prefix):
         collection = self.connect_atlas(collect_prefix)
+        time_stamp  = datetime.utcnow()
         document = {
                         "filename": filename,
-                        "content": content
+                        "content": content,
+                        "updatedAt": time_stamp
                     }
         # Insert the document into the collection
         collection.insert_one(document)
@@ -63,7 +66,11 @@ class DatabaseService:
         resp = self.search_file(file_name,collect_prefix)
         if resp != None:
             print(type(update_content)) 
-            update = {"$set": {"content": update_content}}
+            update_fields = {
+            'content': update_content,
+            'updatedAt': datetime.utcnow()
+            }
+            update = {"$set": update_fields}
             print(type(update)) 
             # Update the document
             result = collection.update_one(filter, update)
@@ -74,3 +81,12 @@ class DatabaseService:
                 print("No documents matched the filter.")
                 data = None
         return(data)
+    
+    def find_recent_documents(self, file_prefix, collect_prefix):
+        collection = self.connect_atlas(collect_prefix)
+        query = {'filename': {'$regex': f'^{file_prefix}'}}
+        cursor = collection.find(query).sort('updatedAt', -1).limit(1)
+        return cursor.next() if cursor.count() > 0 else None
+
+
+       

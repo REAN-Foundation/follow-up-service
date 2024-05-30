@@ -2,6 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from app.common.appointment.appointment_utils import find_recent_file_from_atlas
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from app.api.appointment.gghn.gghndb_handler import read_appointment_file, readfile_content, readfile_summary, update_gghn_reply_by_ph
@@ -48,15 +49,15 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
     
 @router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
 async def read_file():
-    folder_path = os.path.join(os.getcwd(), "temp")
-    prefix = "gghn_appointment_"
-    filename =find_recent_file_with_prefix(folder_path, prefix)
-    
-    print(filename)
-    file_path = get_temp_filepath(filename)
+    file_prefix = "gghn_appointment_"
+    collection_prefix = 'gghn'
+    filename = find_recent_file_from_atlas(file_prefix,collection_prefix)
+    file_name = filename['filename']
+    print(file_name)
+
     try:
-        gghn_appointment_followup_data = await read_appointment_file(file_path)        
-        followup_summary = await readfile_summary(file_path,filename)
+        gghn_appointment_followup_data = await read_appointment_file(file_name)        
+        followup_summary = await readfile_summary(file_name)
         data = {
             "Summary":followup_summary,
             "File_data":gghn_appointment_followup_data,

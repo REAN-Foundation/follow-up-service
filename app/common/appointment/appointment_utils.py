@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from fastapi import HTTPException
 from pygments import highlight, lexers, formatters
 from app.common.enumclasses import AppStatusEnum,PatientReplyEnum
 from datetime import datetime
@@ -95,3 +96,12 @@ def isPatientAlreadyReplied(prefix_string, mobile, reminder_date,collect_prefix)
                         return False
             return True
         return False
+
+
+def find_recent_file_from_atlas(file_prefix, collection_prefix):
+    try:
+        db_connect = DatabaseService()
+        most_recent_file = db_connect.find_recent_documents(file_prefix, collection_prefix)
+        return most_recent_file
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
