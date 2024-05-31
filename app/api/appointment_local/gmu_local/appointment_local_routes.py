@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from app.api.appointment.gmu.appointment_handler import handle, read_appointment_file, readfile_content_by_phone, readfile_summary, update_reply_by_ph
+from app.api.appointment_local.gmu_local.appointment_local_handler import handle, read_appointment_file, readfile_content_by_phone, readfile_summary, update_reply_by_ph
 from app.common.utils import  find_recent_file_with_prefix, get_temp_filepath
 from app.common.cache import cache
 

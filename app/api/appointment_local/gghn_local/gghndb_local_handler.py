@@ -2,11 +2,11 @@
 
 from fastapi import APIRouter, HTTPException, Request
 import boto3
-from app.services.appointment.common_service.update_AFReport_service import UpdateFile
-from app.services.appointment.gghn_service.gghn_login_service import GghnUserLogin 
-from app.services.appointment.gghn_service.gghn_patient_code_service import ExtractPatientCode
-from app.services.appointment.gghn_service.read_reply_report import GGHNReadReport
-from app.services.appointment.common_service.login_service import UserLogin
+from app.services.appointment_local_service.common_local_service.update_AFReport_local_service import UpdateFile
+from app.services.appointment_local_service.gghn_local_service.gghn_login_local_service import GghnUserLogin 
+from app.services.appointment_local_service.gghn_local_service.gghn_patient_code_local_service import ExtractPatientCode
+from app.services.appointment_local_service.gghn_local_service.read_reply_report_local_service import GGHNReadReport
+from app.services.appointment_local_service.common_local_service.login_service import UserLogin
 
 def readfile_content(date):
     try:

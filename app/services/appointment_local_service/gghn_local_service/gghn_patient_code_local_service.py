@@ -1,9 +1,7 @@
-
 import json
 import os
-
 import requests
-from app.common.appointment.appointment_utils import isPatientAlreadyReplied, time_of_first_reminder
+from app.common.appointment.appointment_utils import has_patient_replied_infile, time_of_first_reminder
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
@@ -228,7 +226,7 @@ class ExtractPatientCode:
                     prefix_str = 'gghn_appointment_'
                     #for trial date made static
                     # date = '2024-05-2'
-                    already_replied = isPatientAlreadyReplied(prefix_str, phone_number, date)
+                    already_replied = has_patient_replied_infile(prefix_str, phone_number, date)
                     if not already_replied:
                         schedule_model = self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
                         response = self.schedule_reminder(schedule_model)

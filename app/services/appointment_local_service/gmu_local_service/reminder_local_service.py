@@ -4,7 +4,7 @@ import json
 import os
 import requests
 import urllib.parse
-from app.common.appointment.appointment_utils import isPatientAlreadyReplied, time_of_first_reminder, valid_appointment_status, validate_mobile
+from app.common.appointment.appointment_utils import has_patient_replied_infile, time_of_first_reminder, valid_appointment_status, validate_mobile
 from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
 from app.common.utils import  get_temp_filepath
@@ -95,7 +95,7 @@ class Reminder:
                 
                 # Check the patient replied status
                 prefix_string = 'gmu_followup_file_'
-                already_replied = isPatientAlreadyReplied(prefix_string, patient_mobile_number, reminder_date)
+                already_replied = has_patient_replied_infile(prefix_string, patient_mobile_number, reminder_date)
                 # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
                 
                 if not already_replied:

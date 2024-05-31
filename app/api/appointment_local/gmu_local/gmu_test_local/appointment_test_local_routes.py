@@ -6,7 +6,7 @@ import os
 from app.common.base_response import BaseResponseModel
 from app.common.response_model import ResponseModel
 from app.common.utils import  find_recent_file_with_prefix, get_temp_filepath
-from .appointment_test_handler import handle, read_appointment_file,update_reply_by_ph,readfile_summary,readfile_content_by_phone
+from .appointment_test_local_handler import handle, read_appointment_file,update_reply_by_ph,readfile_summary,readfile_content_by_phone
 from app.common.cache import cache
 ###############################################################################
 
