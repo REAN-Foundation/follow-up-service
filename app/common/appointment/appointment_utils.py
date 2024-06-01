@@ -41,7 +41,7 @@ def valid_patient_reply(reply):
         return(PatientReplyEnum.Patient_Replied_No)
     return(PatientReplyEnum.Invalid_Patient_Reply)
 
-def time_of_first_reminder(patient_mobile_number):
+async def time_of_first_reminder(patient_mobile_number):
         temp = str(patient_mobile_number)
         if(temp == ""):
              print("No phone number is allocated")
@@ -73,7 +73,7 @@ def time_of_first_reminder(patient_mobile_number):
             first_reminder_time = time_element[0]
             return first_reminder_time
 
-def has_patient_replied_infile(prefix_string, mobile, reminder_date):
+async def has_patient_replied_infile(prefix_string, mobile, reminder_date):
         print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
         filename=str(prefix_string+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
@@ -97,11 +97,11 @@ def has_patient_replied_infile(prefix_string, mobile, reminder_date):
                 return True
         return False
 
-def has_patient_replied(prefix_string, mobile, reminder_date,collect_prefix):
+async def has_patient_replied(prefix_string, mobile, reminder_date,collect_prefix):
         print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
         db_connect = DatabaseService()
         filename=str(prefix_string+reminder_date+'.json')
-        f_data=db_connect.search_file(filename,collect_prefix)
+        f_data= await db_connect.search_file(filename,collect_prefix)
         flag = 0
         if(f_data == None):
             print(f"No file exsist with name{filename}")

@@ -10,7 +10,7 @@ class DatabaseService:
     def __init__(self):
         pass
 
-    def connect_atlas(self,collect_prefix):
+    async def connect_atlas(self,collect_prefix):
         connection_url = os.getenv("MONGODB_URL")
         client = MongoClient(connection_url)
         # db = client['document_db']
@@ -22,7 +22,7 @@ class DatabaseService:
             record = db.get_collection(os.getenv("GMU_COLLECTION_NAME"))
             return(record)
     
-    def store_file(self,filename,content,collect_prefix):
+    async def store_file(self,filename,content,collect_prefix):
         collection = self.connect_atlas(collect_prefix)
         time_stamp  = datetime.utcnow()
         document = {
@@ -37,7 +37,7 @@ class DatabaseService:
         cnt = collection.count_documents({})
         print("count of records in collection",cnt)
 
-    def search_file(self, query, collect_prefix):
+    async def search_file(self, query, collect_prefix):
         try:
             # MongoDB Atlas connection string
             collection = self.connect_atlas(collect_prefix)
@@ -59,7 +59,7 @@ class DatabaseService:
         except pymongo.errors.PyMongoError as e:
             print(f"An error occurred: {e}")
     
-    def update_file(self, filename, update_content, collect_prefix):
+    async def update_file(self, filename, update_content, collect_prefix):
         file_name = filename
         collection = self.connect_atlas(collect_prefix)
         filter = {"filename":file_name}
@@ -82,7 +82,7 @@ class DatabaseService:
                 data = None
         return(data)
     
-    def find_recent_documents(self, file_prefix, collect_prefix):
+    async def find_recent_documents(self, file_prefix, collect_prefix):
         collection = self.connect_atlas(collect_prefix)
         query = {'filename': {'$regex': f'^{file_prefix}'}}
         cursor = collection.find(query).sort('updatedAt', -1).limit(1)

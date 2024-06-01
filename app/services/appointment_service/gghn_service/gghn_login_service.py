@@ -22,7 +22,7 @@ class GghnUserLogin:
         self.gghn_access_token = ''
         self._url = str(gghn_base_url)
 
-    def gghnlogin(self):
+    async def gghnlogin(self):
         base_url_ = self._url
         try:
             health_check_resp = requests.get(base_url_)

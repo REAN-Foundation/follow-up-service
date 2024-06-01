@@ -1,7 +1,7 @@
 import os
 class RecentFile:
 
-    def find_recent_file(self, prefix):
+    async def find_recent_file(self, prefix):
         folder_path = os.path.join(os.getcwd(), "temp")
         # Get a list of all files in the folder that start with the specified prefix
         files = [f for f in os.listdir(folder_path) if f.startswith(prefix) and os.path.isfile(os.path.join(folder_path, f))]

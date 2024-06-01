@@ -8,7 +8,7 @@ class UpdateFile:
          self.db_data = DatabaseService()
          self.collection_prefix = ''
 
-    def update_reply_by_phone(self, filename, phone_number, new_data):
+    async def update_reply_by_phone(self, filename, phone_number, new_data):
         print('Reply From WhatsApp',phone_number , ":", str(new_data))
         print("filename",filename)
         number = phone_number.replace(' ', '')
@@ -16,7 +16,7 @@ class UpdateFile:
        
         if filename.startswith('gmu_followup_file_'):
             self.collection_prefix = 'gmu'
-            data = self.db_data.search_file(filename,self.collection_prefix)
+            data = await self.db_data.search_file(filename,self.collection_prefix)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
                 
         # Updating patient reply for status Pending arrival
@@ -29,7 +29,7 @@ class UpdateFile:
                             item['WhatsApp_message_id'] = new_data['WhatsApp_message_id']
 
             try:
-                content = self.db_data.update_file(filename, data, self.collection_prefix)
+                content = await self.db_data.update_file(filename, data, self.collection_prefix)
                 return(content)
             except Exception as e:
             # Handle other exceptions
@@ -38,7 +38,7 @@ class UpdateFile:
             
         if filename.startswith('gghn_appointment_'):
             self.collection_prefix = 'gghn'
-            data = self.db_data.search_file(filename, self.collection_prefix)
+            data = await self.db_data.search_file(filename, self.collection_prefix)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
         # Updating patient reply for status ANY
             for item in data:
@@ -49,7 +49,7 @@ class UpdateFile:
                         item['WhatsApp_message_id'] =new_data['WhatsApp_message_id']
 
             try:
-                content = self.db_data.update_file(filename,data,self.collection_prefix)
+                content = await self.db_data.update_file(filename,data,self.collection_prefix)
                 return(content)
             except Exception as e:
             # Handle other exceptions

@@ -40,7 +40,7 @@ class PdfReader:
         self.collect_prefix = 'gmu'
 
 
-    def extract_appointments_from_pdf(self, input_file_path):
+    async def extract_appointments_from_pdf(self, input_file_path):
         try:
             if not os.path.exists(input_file_path):
                 raise Exception(input_file_path + " does not exist.")
@@ -63,14 +63,14 @@ class PdfReader:
                 json_string = df.to_json(orient='records')
                 # json_string = tables[i].to_json()
                 print("json_string..",json_string)
-                content = self.db_data.search_file(filename, self.collect_prefix)
+                content = await self.db_data.search_file(filename, self.collect_prefix)
                 if(content != None):
-                    self.db_data.update_file(filename, json_string, self.collect_prefix)
+                    await self.db_data.update_file(filename, json_string, self.collect_prefix)
                 else:
-                    self.db_data.store_file(filename, json_string, self.collect_prefix)
+                    await self.db_data.store_file(filename, json_string, self.collect_prefix)
                 # temp_filepath = get_temp_filepath(filename)
                 # tables[i].to_json(temp_filepath)
-                appointments = self.extract_table_appointments(filename)
+                appointments = await self.extract_table_appointments(filename)
                 all_appointments_.extend(appointments)
                
 
@@ -83,8 +83,8 @@ class PdfReader:
             print(e)
             return None
 
-    def extract_table_appointments(self, filename):
-        file_content = self.db_data.search_file(filename,self.collect_prefix)
+    async def extract_table_appointments(self, filename):
+        file_content = await self.db_data.search_file(filename,self.collect_prefix)
         # filepath = get_temp_filepath(file_name)
         # if not os.path.exists(filepath):
         #     raise Exception(filepath + " does not exist.")
@@ -128,7 +128,7 @@ class PdfReader:
         return all_appointments
         # return (self.data)
     
-    def create_file_for_invalid_record(self,invalid_appointments):
+    async def create_file_for_invalid_record(self,invalid_appointments):
         filename=str('Invalid_Record.json')
         temp_folder = os.path.join(os.getcwd(), "temp")
         if not os.path.exists(temp_folder):
@@ -153,7 +153,7 @@ class PdfReader:
         temp = "+1-" + temp
         return temp
 
-    def extract_reminder_date(self, filepath):
+    async def extract_reminder_date(self, filepath):
         # filepath = get_temp_filepath(file_name)
         if not os.path.exists(filepath):
             raise Exception(filepath + " does not exist.")

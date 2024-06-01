@@ -39,7 +39,7 @@ class Reminder:
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
 
-    def create_one_time_reminders(self, reminder_date, appointments):
+    async def create_one_time_reminders(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
         summary_data = []
@@ -54,9 +54,9 @@ class Reminder:
 
             self.appointments_processed_count = self.appointments_processed_count + 1
 
-            user_id = find_patient_by_mobile(patient_mobile_number)
-            user_model = self.get_update_patient_model(appointment)
-            appointment_time = self.get_time_in_24hrs(appointment)
+            user_id = await find_patient_by_mobile(patient_mobile_number)
+            user_model = await self.get_update_patient_model(appointment)
+            appointment_time = await self.get_time_in_24hrs(appointment)
             first_time = appointment_time['FirstTime']
             second_time = appointment_time['SecondTime']
             first_name = user_model['FirstName']
@@ -64,11 +64,11 @@ class Reminder:
 
             # Create patient if does not exist
             if user_id == None:
-                user_id = self.create_patient(patient_mobile_number)
+                user_id = await self.create_patient(patient_mobile_number)
                 if user_id == None:
                     raise Exception('Unable to create patient')
                 self.new_patients_added_count = self.new_patients_added_count  + 1
-                self.update_patient(user_id, user_model)
+                await self.update_patient(user_id, user_model)
 
             data = {
                 "Name_of_patient":appointment['PatientName'],
@@ -88,18 +88,18 @@ class Reminder:
 
             # First reminder set as soon as pdf upload
             print(f'patient phone number {patient_mobile_number}')
-            first_reminder = time_of_first_reminder(patient_mobile_number)
+            first_reminder = await time_of_first_reminder(patient_mobile_number)
             if(first_reminder != None):
                 print(f'time of reminder after pdfupload {first_reminder}')
-                schedule_model = self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
+                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
                 
                 # Check the patient replied status
                 prefix_string = 'gmu_followup_file_'
-                already_replied = has_patient_replied_infile(prefix_string, patient_mobile_number, reminder_date)
+                already_replied = await has_patient_replied_infile(prefix_string, patient_mobile_number, reminder_date)
                 # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
                 
                 if not already_replied:
-                    response = self.schedule_reminder(schedule_model)
+                    response = await self.schedule_reminder(schedule_model)
 
             #  Send reminders 10 min before and after
 
@@ -113,7 +113,7 @@ class Reminder:
             #     self.schedule_reminder(schedule_model)
             else:
                 print("No phone number found to set remnder")
-        self.create_report(summary_data,reminder_date)
+        await self.create_report(summary_data,reminder_date)
 
     # def isPatientAlreadyReplied(self, mobile, reminder_date):
     #     print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
@@ -139,7 +139,7 @@ class Reminder:
     #     return False
 
 
-    def create_report(self,summary_data,reminder_date):
+    async def create_report(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
@@ -167,7 +167,7 @@ class Reminder:
             # print("RECENT FILE IN CACHE",recent_file)
             return(json_string)
 
-    def replace_file(self,json_object,f_path):
+    async def replace_file(self,json_object,f_path):
         with open(f_path, 'r') as file:
             data = json.load(file)
         for item in data:
@@ -206,9 +206,9 @@ class Reminder:
 
 
 
-    def search_reminder(self, patient_user_id, reminder_date, reminder_time):
+    async def search_reminder(self, patient_user_id, reminder_date, reminder_time):
         url = self.reminder_search_url
-        headers = self.get_headers()
+        headers = get_headers()
         params = {
             'userId': patient_user_id,
             'whenDate': reminder_date,
@@ -235,7 +235,7 @@ class Reminder:
     #     else:
     #         return search_result['Data']['Patients']['Items'][0]['UserId']
 
-    def create_patient(self, mobile):
+    async def create_patient(self, mobile):
         self.url = self.patient_url
         header = get_headers(create_user=True)
         body = json.dumps({'Phone': mobile, 'TenantId': self.tenant_id})
@@ -249,7 +249,7 @@ class Reminder:
             user_id = created_patient_info['Data']['Patient']['UserId']
             return user_id
 
-    def get_update_patient_model(self, patient):
+    async def get_update_patient_model(self, patient):
         body = {}
         name = patient['PatientName'].split(' ')
         if len(name) == 2:
@@ -269,13 +269,13 @@ class Reminder:
             body['DefaultTimeZone'] = '-05:00'
         return body
 
-    def update_patient(self, patient_user_id, update_patient_model):
+    async def update_patient(self, patient_user_id, update_patient_model):
         header = get_headers()
         response = requests.put(self.patient_url+patient_user_id, headers=header, data=json.dumps(update_patient_model))
         if response.status_code != 200:
             raise Exception('Unable to update patient')
 
-    def get_schedule_create_model(self, patient_user_id, patient_name, patient, reminder_time, when_date):
+    async def get_schedule_create_model(self, patient_user_id, patient_name, patient, reminder_time, when_date):
         appointment_time = patient['AppointmentTime'].split(' ')
         hour, minute = appointment_time[0].split(':')
         rest = appointment_time[1]
@@ -322,7 +322,7 @@ class Reminder:
             'RawContent':json.dumps(raw_content)
         }
 
-    def schedule_reminder(self, schedule_create_model):
+    async def schedule_reminder(self, schedule_create_model):
         header = get_headers()
         response = requests.post(self.reminder_url, headers=header, data=json.dumps(schedule_create_model))
         if response.status_code == 201:
@@ -330,7 +330,7 @@ class Reminder:
         else:
             print('Unable to schedule reminder ', response.json())
 
-    def get_time_in_24hrs(self, i):
+    async def get_time_in_24hrs(self, i):
         patient_ap_time = i['AppointmentTime']
         ap_time = patient_ap_time.split(' ')
         appointment_time = ap_time[0].split(':')
@@ -342,23 +342,23 @@ class Reminder:
                 newtime = '12'
                 appointment = (str(newtime)+":"+rest+":00")
                 # print("PM",appointment)
-                return self.get_appointment_time(appointment)
+                return await self.get_appointment_time(appointment)
             else:
                 appointment = (str(newtime)+":"+rest+":00")
                 # print("PM",appointment)
-                return self.get_appointment_time(appointment)
+                return await self.get_appointment_time(appointment)
         else:
             if appointment_time[0] == "12" or appointment_time[0] == "00":
                 new_app_time = '00'
                 appointment = (str(new_app_time)+":"+rest+":00")
-                return self.get_appointment_time(appointment)
+                return await self.get_appointment_time(appointment)
                 # print("AM",appointment)
             else:
                 appointment = str(appointment_time[0]+":"+rest+":00")
                 # print("AM",appointment)
-                return self.get_appointment_time(appointment)
+                return await self.get_appointment_time(appointment)
 
-    def get_appointment_time(self, time):
+    async def get_appointment_time(self, time):
         appoint = str(time)
         time_str = appoint
         time_object = datetime.strptime(time_str, '%H:%M:%S').time()
@@ -412,7 +412,7 @@ class Reminder:
     #     first_reminder_time = time_element[0]
     #     return first_reminder_time
 
-    def summary(self):
+    async def summary(self):
 
         print('Appointments processed : ', self.appointments_processed_count)
         print('Appointments skipped   : ', self.appointments_skipped_count)

@@ -15,7 +15,7 @@ class GGHNReadReport:
         self.patient_not_replied_count = 0
         self.patient_data=[]
         
-    def gghn_read_appointment_file(self,file_name):
+    async def gghn_read_appointment_file(self,file_name):
         try:
             file_path = get_temp_filepath(file_name)
             with open(file_path, "r") as file:
@@ -25,7 +25,7 @@ class GGHNReadReport:
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
         
-    def gghn_read_appointment_summary(self,filename):
+    async def gghn_read_appointment_summary(self,filename):
         file_path = get_temp_filepath(filename)
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[2:])

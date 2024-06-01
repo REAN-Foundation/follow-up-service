@@ -20,7 +20,7 @@ class UserLogin:
         self.access_token = ''
         self.url = str(reancare_base_url)
 
-    def login(self):
+    async def login(self):
         base_url = self.url
         health_check_resp = requests.get(base_url)
         print("health check resp", health_check_resp)

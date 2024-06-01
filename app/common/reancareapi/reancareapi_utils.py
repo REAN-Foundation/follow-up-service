@@ -11,7 +11,7 @@ import urllib.parse
 import requests
 ###############################################################################
 
-def find_patient_by_mobile(mobile):
+async def find_patient_by_mobile(mobile):
     reancare_base_url = os.getenv("REANCARE_BASE_URL")
     url = str(reancare_base_url + "/patients/")
     headers = get_headers()

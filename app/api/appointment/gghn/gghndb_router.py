@@ -17,9 +17,9 @@ router = APIRouter(
 )
 #################################################################################
 @router.get("/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
-def read_file(date_string: str):
+async def read_file(date_string: str):
     try:
-        response = readfile_content(date_string)
+        response = await readfile_content(date_string)
         return {
             "Message" : "Reminders created successfully",
             "Data" : response
@@ -50,7 +50,7 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
 @router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
 async def read_file():
     file_prefix = "gghn_appointment_"
-    filename =  recent_file(file_prefix)
+    filename = await recent_file(file_prefix)
     print(filename)
 
     try:

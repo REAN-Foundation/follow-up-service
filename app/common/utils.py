@@ -27,7 +27,7 @@ def get_temp_filepath(file_name):
    
 
     
-def is_date_valid(date_string):
+async def is_date_valid(date_string):
     # Convert date string to date object using EST time zone 
     date_object = datetime.strptime(date_string, "%Y-%m-%d")
 

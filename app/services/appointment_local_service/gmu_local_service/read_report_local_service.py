@@ -15,7 +15,7 @@ class ReadReport:
         self.patient_not_replied_count = 0
         self.patient_data=[]
         
-    def read_appointment_file(self,filename):
+    async def read_appointment_file(self,filename):
         try:
             file_path = get_temp_filepath(filename)
             with open(file_path, "r") as file:
@@ -25,7 +25,7 @@ class ReadReport:
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
         
-    def read_appointment_summary(self,filename):
+    async def read_appointment_summary(self,filename):
         file_path = get_temp_filepath(filename)
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[3:])
@@ -61,8 +61,9 @@ class ReadReport:
       
         return(file_summary) 
     
-    def readfile_content_by_ph(self,file_path,phone_number):
+    async def readfile_content_by_ph(self,filename,phone_number):
         try:
+            file_path = get_temp_filepath(filename)
             with open(file_path, "r") as file:
                 json_content = json.load(file)
             for item in json_content:

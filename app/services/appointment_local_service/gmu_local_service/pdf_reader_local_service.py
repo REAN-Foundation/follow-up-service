@@ -34,7 +34,7 @@ class PdfReader:
         self.total_table_count = 0
         self.total_rows = 0
 
-    def extract_appointments_from_pdf(self, input_file_path):
+    async def extract_appointments_from_pdf(self, input_file_path):
         try:
             if not os.path.exists(input_file_path):
                 raise Exception(input_file_path + " does not exist.")
@@ -52,7 +52,7 @@ class PdfReader:
                 filename = "temp_appointments_" + str(i) + ".json"
                 temp_filepath = get_temp_filepath(filename)
                 tables[i].to_json(temp_filepath)
-                appointments = self.extract_table_appointments(temp_filepath)
+                appointments = await self.extract_table_appointments(temp_filepath)
                 all_appointments_.extend(appointments)
 
             self.all_appointments = all_appointments_
@@ -64,7 +64,7 @@ class PdfReader:
             print(e)
             return None
 
-    def extract_table_appointments(self, file_name):
+    async def extract_table_appointments(self, file_name):
 
         filepath = get_temp_filepath(file_name)
         if not os.path.exists(filepath):
@@ -104,10 +104,10 @@ class PdfReader:
                     self.invalid_record_count = self.invalid_record_count + 1
                     print('*Invalid record found: ', row)
                     self.invalid_appointments.append(row)
-        self.create_file_for_invalid_record(self.invalid_appointments)
+        await self.create_file_for_invalid_record(self.invalid_appointments)
         return all_appointments
 
-    def create_file_for_invalid_record(self,invalid_appointments):
+    async def create_file_for_invalid_record(self,invalid_appointments):
         filename=str('Invalid_Record.json')
         temp_folder = os.path.join(os.getcwd(), "temp")
         if not os.path.exists(temp_folder):
@@ -132,7 +132,7 @@ class PdfReader:
         temp = "+1-" + temp
         return temp
 
-    def extract_reminder_date(self, file_name):
+    async def extract_reminder_date(self, file_name):
         filepath = get_temp_filepath(file_name)
         if not os.path.exists(filepath):
             raise Exception(file_name + " does not exist.")
