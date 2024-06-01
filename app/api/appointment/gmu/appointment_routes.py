@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from app.api.appointment_local.gmu_local.appointment_local_handler import handle, read_appointment_file, readfile_content_by_phone, readfile_summary, recent_file, update_reply_by_ph
+from app.api.appointment.gmu.appointment_handler import handle, read_appointment_file, readfile_content_by_phone, readfile_summary, recent_file, update_reply_by_ph
 from app.common.cache import cache
 
 ###############################################################################
@@ -68,21 +68,18 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         filename = file_name.replace(' ', '')
         # file_path = get_temp_filepath(filename)
         content = new_data
-        updated_data = await update_reply_by_ph(filename,number, content)
+        updated_data = await update_reply_by_ph(filename, number, content)
         return updated_data
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+
 @router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
 async def read_file():
-    # code to get recent file in cache
-    # filename = cache.get('recent_file')
-    # print(" RECENT FILE:",filename)
-           
     file_prefix = "gmu_followup_file_"
     filename = await recent_file(file_prefix)
     print(filename)
-     
+    
     try:
         appointment_followup_data = await read_appointment_file(filename)        
         followup_summary = await readfile_summary(filename)
@@ -94,3 +91,4 @@ async def read_file():
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+

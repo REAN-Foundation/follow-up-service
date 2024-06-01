@@ -2,9 +2,11 @@ import json
 from app.common.enumclasses import PatientReplyEnum
 
 from app.common.appointment.appointment_utils import valid_patient_reply
+from app.common.utils import get_temp_filepath
 class UpdateFile:
         
-    def update_reply_by_phone(self,filename,file_path, phone_number, new_data):
+    def update_reply_by_phone(self,filename, phone_number, new_data):
+        file_path = get_temp_filepath(filename)
         print('Reply From WhatsApp',phone_number , ":", str(new_data))
         print("filename",filename)
         number = phone_number.replace(' ', '')

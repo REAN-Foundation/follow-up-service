@@ -2,12 +2,12 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.appointment_local.gghn_local.gghndb_local_handler import recent_file
+from app.common.appointment.appointment_utils import find_recent_file_from_atlas
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
-from app.api.appointment_local.gghn_local.gghndb_local_handler import read_appointment_file, readfile_content, readfile_summary, update_gghn_reply_by_ph
+from app.api.appointment.gghn.gghndb_handler import read_appointment_file, readfile_content, readfile_summary, recent_file, update_gghn_reply_by_ph
 from app.common.response_model import ResponseModel
-
+from app.common.utils import find_recent_file_with_prefix, get_temp_filepath
 ##################################################################################
 router = APIRouter(
     prefix="/appointment-schedules/gghn",
@@ -37,7 +37,7 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
         number = ph_number.replace(' ', '')
         file_name=(f"gghn_appointment_{date_str}.json")
         filename = file_name.replace(' ', '')
-       
+     
         content = new_data
         updated_data = await update_gghn_reply_by_ph(filename, number, content)
         return {
@@ -52,7 +52,7 @@ async def read_file():
     file_prefix = "gghn_appointment_"
     filename =  recent_file(file_prefix)
     print(filename)
-    
+
     try:
         gghn_appointment_followup_data = await read_appointment_file(filename)        
         followup_summary = await readfile_summary(filename)
@@ -69,7 +69,7 @@ async def read_file():
 async def read_file(date_str: str):
     file_name=(f"gghn_appointment_{date_str}.json")
     filename = file_name.replace(' ', '')
-    
+   
     try:
         appointment_followup_data = await read_appointment_file(filename)        
         followup_summary = await readfile_summary(filename)

@@ -1,14 +1,15 @@
 import shutil
 from fastapi import File, UploadFile
 from app.common.utils import is_date_valid
-from app.services.appointment_local_service.common_local_service.recent_file_local_service import RecentFile
-from app.services.appointment_local_service.common_local_service.update_AFReport_local_service import UpdateFile
-from app.services.appointment_local_service.common_local_service.login_service import UserLogin
-from app.services.appointment_local_service.gmu_local_service.pdf_reader_local_service import PdfReader
-from app.services.appointment_local_service.gmu_local_service.reminder_local_service import Reminder
-from app.services.appointment_local_service.gmu_local_service.notification_local_service import AdminNotification
+from app.services.appointment_service.common_service.recent_file_service import RecentFile
+from app.services.appointment_service.common_service.update_AFReport_service import UpdateFile
+from app.services.appointment_service.common_service.login_service import UserLogin
+from app.services.appointment_service.gghn_service.read_reply_report import GGHNReadReport
+from app.services.appointment_service.gmu_service.pdf_reader_service import PdfReader
+from app.services.appointment_service.gmu_service.reminder_service import Reminder
+from app.services.appointment_service.gmu_service.notification_service import AdminNotification
 import os
-from app.services.appointment_local_service.gmu_local_service.read_report_local_service import ReadReport
+from app.services.appointment_service.gmu_service.read_report import ReadReport
 ###############################################################################
 
 async def handle(file: UploadFile = File(...)):
@@ -30,7 +31,7 @@ async def handle(file: UploadFile = File(...)):
     if is_valid_date:
         # 3. Extract the PDF file
         appointments = reader.extract_appointments_from_pdf(file_path)
-
+        
         # 4. Send one-time-reminders
         reminder = Reminder()
         # reminder_date = '2023-11-08'
@@ -72,10 +73,11 @@ async def read_appointment_file(filename):
 async def readfile_content_by_phone(filename,phone_number):
     try:
         reportfile = ReadReport()
-        filecontent = reportfile.readfile_content_by_ph(filename,phone_number)
+        filecontent = reportfile.readfile_content_by_ph(filename, phone_number)
         return(filecontent)
     except Exception as e:
          raise e
+
 
 async def readfile_summary(filename):
     try:

@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from fastapi import HTTPException
 from pygments import highlight, lexers, formatters
 from app.common.enumclasses import AppStatusEnum,PatientReplyEnum
 from datetime import datetime
@@ -9,6 +10,8 @@ from datetime import *
 from app.common.cache import cache
 import urllib.parse
 import requests
+
+from app.services.appointment_service.common_service.db_service import DatabaseService
 ###############################################################################
 
 def validate_mobile(mobile):
@@ -93,3 +96,30 @@ def has_patient_replied_infile(prefix_string, mobile, reminder_date):
                             return False
                 return True
         return False
+
+def has_patient_replied(prefix_string, mobile, reminder_date,collect_prefix):
+        print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
+        db_connect = DatabaseService()
+        filename=str(prefix_string+reminder_date+'.json')
+        f_data=db_connect.search_file(filename,collect_prefix)
+        flag = 0
+        if(f_data == None):
+            print(f"No file exsist with name{filename}")
+        
+        else:
+            data = f_data
+            for element in data:
+                if element['Phone_number'] == mobile:
+                    flag = 1
+
+            if flag == 0:
+                return False
+            
+            for item in data:
+                if item['Phone_number'] == mobile:
+                    if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
+                        return False
+            return True
+        return False
+
+

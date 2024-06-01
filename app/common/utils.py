@@ -25,16 +25,7 @@ def get_temp_filepath(file_name):
         os.mkdir(temp_folder)
     return os.path.join(temp_folder, file_name)
    
-def find_recent_file_with_prefix(folder_path, prefix):
-    # Get a list of all files in the folder that start with the specified prefix
-    files = [f for f in os.listdir(folder_path) if f.startswith(prefix) and os.path.isfile(os.path.join(folder_path, f))]
-    
-    # If files are found, get the most recently modified file
-    if files:
-        most_recent_file = max(files, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
-        return most_recent_file
-    else:
-        return None
+
     
 def is_date_valid(date_string):
     # Convert date string to date object using EST time zone 

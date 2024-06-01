@@ -4,6 +4,7 @@ import os
 from fastapi import HTTPException
 import requests
 from app.common.cache import cache
+from app.common.utils import get_temp_filepath
 class ReadReport:
     def __init__(self):
         self.patients_count = 0
@@ -14,8 +15,9 @@ class ReadReport:
         self.patient_not_replied_count = 0
         self.patient_data=[]
         
-    def read_appointment_file(self,file_path):
+    def read_appointment_file(self,filename):
         try:
+            file_path = get_temp_filepath(filename)
             with open(file_path, "r") as file:
                 json_content = json.load(file)
             print(f"filename{ file_path}, content{ json_content}")
@@ -23,7 +25,8 @@ class ReadReport:
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
         
-    def read_appointment_summary(self,file_path,filename):
+    def read_appointment_summary(self,filename):
+        file_path = get_temp_filepath(filename)
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[3:])
         file_date = f_date.split('.')
