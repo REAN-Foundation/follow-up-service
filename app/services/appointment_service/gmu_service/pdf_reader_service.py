@@ -5,7 +5,7 @@ import camelot
 import pdfplumber
 from dateutil import parser
 from app.common.utils import get_temp_filepath
-from app.services.appointment.common_service.db_service import DatabaseService
+from app.services.appointment_service.common_service.db_service import DatabaseService
 import pandas as pd
 
 ###############################################################
