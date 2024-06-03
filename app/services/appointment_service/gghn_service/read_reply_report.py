@@ -52,25 +52,3 @@ class GGHNReadReport:
         return(file_summary) 
      
 
-# def readfile_content_by_ph(self,filename,phone_number):
-    #     try:
-    #         # with open(file_path, "r") as file:
-    #         #     json_content = json.load(file)
-    #         if filename.startswith('gmu_followup_file_'): 
-    #             self.collection_prefix = 'gmu' 
-    #             json_content = self.db_data.search_file(filename, self.collection_prefix) 
-    #             for item in json_content:
-    #                 if item['Phone_number'] == phone_number:
-    #                     data={
-    #                         'Name of patient': item['Name_of_patient'],
-    #                         'Rean patient userid': item['Rean_patient_userid'],
-    #                         'Appointment time':item['Appointment_time'],
-    #                         'Patient status': item['Patient_status'],
-    #                         'WhatsApp message id':item['WhatsApp_message_id'],
-    #                         'Patient replied':item['Patient_replied']
-    #                     }
-    #                     self.patient_data.append(data)
-    #             return(self.patient_data)
-                   
-    #     except FileNotFoundError:
-    #         raise HTTPException(status_code=404, detail="File not found")

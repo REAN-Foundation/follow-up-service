@@ -2,12 +2,12 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.common.appointment.appointment_utils import find_recent_file_from_atlas
+# from app.common.appointment.appointment_utils import find_recent_file_from_atlas
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from app.api.appointment.gghn.gghndb_handler import read_appointment_file, readfile_content, readfile_summary, recent_file, update_gghn_reply_by_ph
 from app.common.response_model import ResponseModel
-from app.common.utils import find_recent_file_with_prefix, get_temp_filepath
+# from app.common.utils import find_recent_file_with_prefix, get_temp_filepath
 ##################################################################################
 router = APIRouter(
     prefix="/appointment-schedules/gghn",

@@ -68,7 +68,7 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         number = ph_number.replace(' ', '')
         file_name=(f"gmu_followup_file_{date_str}.json")
         filename = file_name.replace(' ', '')
-        # file_path = get_temp_filepath(filename)
+        
         content = new_data
         updated_data = await update_reply_by_ph(filename, number, content)
         return updated_data

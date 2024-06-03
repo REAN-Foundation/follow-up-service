@@ -109,8 +109,7 @@ class ExtractPatientCode:
         file_data = open_file_in_readmode(filename)
         if(file_data == None):
             print(f"An unexpected error occurred while reading file{filename}")
-        # print("file data...",file_data)
-        # print("resp_data...",resp_data)
+       
         flag=0
         for rdata in resp_data:
             flag=0
@@ -146,8 +145,7 @@ class ExtractPatientCode:
                                  "fingerprint_recaptured":rdata['fingerprint_recaptured'], 
                                  "participant_code":rdata['participant_code']
                                  }
-                # print(type(additional_paitient))
-                # print(type(additional_data))
+                
                 additional_data.append(additional_paitient)
            
         print("additional paitients are",additional_data)
@@ -169,8 +167,7 @@ class ExtractPatientCode:
         file_data = open_file_in_readmode(filename)
         if(file_data == None):
             print(f"An unexpected error occurred while reading file {filename}")
-        # print("file data...",file_data)
-        # print("resp_data...",resp_data)
+       
         flag=0
         for rdata in resp_data:
             flag=0
@@ -187,8 +184,7 @@ class ExtractPatientCode:
                                 "WhatsApp_message_id": "",
                                 "Patient_replied": "Not replied",
                                 }
-                # print(type(additional_paitient))
-                # print(type(additional_data))
+               
                 additional_appointment.append(additional_app)
            
         print("additional paitients are",additional_appointment)

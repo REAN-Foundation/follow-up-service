@@ -62,7 +62,6 @@ async def handle_s3_event(message: Request):
         return ('Unable to find or unable to parse the date')
 
     # Compare file date with the todays date
-
     is_valid_date = await is_date_valid(reminder_date); 
     # 3. Extract the PDF file
     if is_valid_date:

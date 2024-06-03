@@ -50,13 +50,13 @@ class ExtractPatientCode:
             prefix="gghn_details_"
             file_name = await self.create_data_file(result,date,prefix)
             appointment_file = await self.extract_appointment(file_name,date)
-            # here static appointment fle can be set for tial when it is set also set date in send reminder 
-            # before checking patient reply 
-            appointment_file = "gghn_appointment_2024-05-2.json"
+            # # here static appointment fle can be set for tial when it is set also set date in send reminder 
+            # # before checking patient reply 
+            # appointment_file = "gghn_appointment_2024-05-2.json"
 
-            # updated_appointment_file = self.update_phone_by_EMRId(appointment_file,date)
-            # resp = self.send_reminder(updated_appointment_file,date)
-            resp = await self.send_reminder(appointment_file,date)
+            updated_appointment_file = await self.update_phone_by_EMRId(appointment_file,date)
+            resp = await self.send_reminder(updated_appointment_file,date)
+            # resp = await self.send_reminder(appointment_file,date)
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")

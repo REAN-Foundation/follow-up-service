@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, status, File, Uploa
 from fastapi.responses import JSONResponse
 import shutil
 import os
-from app.common.appointment.appointment_utils import find_recent_file_from_atlas
+# from app.common.appointment.appointment_utils import find_recent_file_from_atlas
 from app.common.base_response import BaseResponseModel
 from app.common.response_model import ResponseModel
 from app.common.utils import get_temp_filepath
@@ -36,7 +36,7 @@ async def read_file(phone_number: str, date_string: str):
     number = ph_number.replace(' ', '')
     file_name=(f"gmu_followup_file_{date_string}.json")
     filename = file_name.replace(' ', '')
-    # file_path = get_temp_filepath(filename)
+    
     try:
         return await readfile_content_by_phone(filename,number)
     except Exception as e:
@@ -47,7 +47,7 @@ async def read_file(phone_number: str, date_string: str):
 async def read_file(date_str: str):
     file_name=(f"gmu_followup_file_{date_str}.json")
     filename = file_name.replace(' ', '')
-    # file_path = get_temp_filepath(filename)
+    
     try:
         appointment_followup_data = await read_appointment_file(filename)        
         followup_summary = await readfile_summary(filename)
@@ -68,7 +68,7 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         number = ph_number.replace(' ', '')
         file_name=(f"gmu_followup_file_{date_str}.json")
         filename = file_name.replace(' ', '')
-        # file_path = get_temp_filepath(filename)
+       
         content = new_data
         updated_data = await update_reply_by_ph(filename, number, content)
         return updated_data
