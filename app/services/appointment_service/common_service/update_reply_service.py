@@ -3,7 +3,7 @@ from app.common.enumclasses import PatientReplyEnum
 
 from app.common.appointment.appointment_utils import valid_patient_reply
 from app.services.appointment_service.common_service.db_service import DatabaseService
-class UpdateFile:
+class UpdateReply:
     def __init__(self): 
          self.db_data = DatabaseService()
          self.collection_prefix = ''

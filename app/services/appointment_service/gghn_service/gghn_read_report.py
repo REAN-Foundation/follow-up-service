@@ -41,7 +41,6 @@ class GGHNReadReport:
                 self.patient_reply_no_count = self.patient_reply_no_count + 1
             if item['Patient_replied'] == 'Not replied':
                 self.patient_not_replied_count = self.patient_not_replied_count + 1
-    
         file_summary = {
             'Date': date_of_file,
             'Total patient': self.patients_count,
@@ -51,4 +50,4 @@ class GGHNReadReport:
                 }
         return(file_summary) 
      
-
+    

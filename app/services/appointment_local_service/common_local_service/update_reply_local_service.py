@@ -3,7 +3,7 @@ from app.common.enumclasses import PatientReplyEnum
 
 from app.common.appointment.appointment_utils import valid_patient_reply
 from app.common.utils import get_temp_filepath
-class UpdateFile:
+class UpdateReply:
         
     async def update_reply_by_phone(self,filename, phone_number, new_data):
         file_path = get_temp_filepath(filename)

@@ -4,7 +4,7 @@ import shutil
 import requests
 from app.common.appointment.appointment_utils import validate_mobile
 
-class AdminNotification:
+class GMUAdminNotification:
     def __init__(self):
         whatsapp_url = os.getenv("NOTIFICATION_URL") 
         whatsapp_id =  os.getenv("WHATSAPP_PHONE_ID")

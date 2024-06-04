@@ -1,8 +1,8 @@
 import os
 
 from fastapi import HTTPException
-
 from app.services.appointment_service.common_service.db_service import DatabaseService
+
 class RecentFile:
     async def find_recent_file(self, file_prefix):
         try:

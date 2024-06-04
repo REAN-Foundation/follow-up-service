@@ -27,7 +27,7 @@ months = {
 
 ###############################################################
 
-class PdfReader:
+class GMUPdfReader:
     def __init__(self):
         self.count = 0
         self.invalid_record_count = 0

@@ -1,15 +1,16 @@
 import shutil
 from fastapi import File, UploadFile
 from app.common.utils import is_date_valid
+
 from app.services.appointment_service.common_service.recent_file_service import RecentFile
-from app.services.appointment_service.common_service.update_AFReport_service import UpdateFile
-from app.services.appointment_service.common_service.login_service import UserLogin
-from app.services.appointment_service.gghn_service.read_reply_report import GGHNReadReport
-from app.services.appointment_service.gmu_service.pdf_reader_service import PdfReader
-from app.services.appointment_service.gmu_service.reminder_service import Reminder
-from app.services.appointment_service.gmu_service.notification_service import AdminNotification
+from app.services.appointment_service.common_service.update_reply_service import UpdateReply
+from app.services.appointment_service.common_service.rc_login_service import RCLogin
+from app.services.appointment_service.gghn_service.gghn_read_report import GGHNReadReport
+from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
+from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
+from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
 import os
-from app.services.appointment_service.gmu_service.read_report import ReadReport
+from app.services.appointment_service.gmu_service.gmu_read_report import GMUReadReport
 ###############################################################################
 
 async def handle(file: UploadFile = File(...)):
@@ -17,11 +18,11 @@ async def handle(file: UploadFile = File(...)):
     file_path = await store_uploaded_file(file)
 
     # 1. Login as tenant-admin or tenant-user
-    login = UserLogin()
+    login = RCLogin()
     await login.login()
 
     # 2. Extract the date from the PDF file
-    reader = PdfReader()
+    reader = GMUPdfReader()
     reminder_date = await reader.extract_reminder_date(file_path)
     if not reminder_date:
         return ('Unable to find or unable to parse the date')
@@ -33,12 +34,12 @@ async def handle(file: UploadFile = File(...)):
         appointments = await reader.extract_appointments_from_pdf(file_path)
         
         # 4. Send one-time-reminders
-        reminder = Reminder()
+        reminder = GMUAppointmentReminder()
         # reminder_date = '2023-11-08'
-        await reminder.create_one_time_reminders(reminder_date, appointments)
+        await reminder.create_reminder(reminder_date, appointments)
         reminder_summary = await reminder.summary()
 
-        admin_notification = AdminNotification()
+        admin_notification = GMUAdminNotification()
         await admin_notification.admin_notify(reminder_date,reminder_summary)
 
         return {
@@ -64,7 +65,7 @@ async def store_uploaded_file(file: UploadFile):
 
 async def read_appointment_file(filename):
     try:
-        reportfile = ReadReport()
+        reportfile = GMUReadReport()
         filecontent = await reportfile.read_appointment_file(filename)
         return(filecontent)
     except Exception as e:
@@ -72,7 +73,7 @@ async def read_appointment_file(filename):
 
 async def readfile_content_by_phone(filename,phone_number):
     try:
-        reportfile = ReadReport()
+        reportfile = GMUReadReport()
         filecontent = await reportfile.readfile_content_by_ph(filename, phone_number)
         return(filecontent)
     except Exception as e:
@@ -81,7 +82,7 @@ async def readfile_content_by_phone(filename,phone_number):
 
 async def readfile_summary(filename):
     try:
-        reportfile = ReadReport()
+        reportfile = GMUReadReport()
         filesummary = await reportfile.read_appointment_summary(filename)
         return(filesummary)
     except Exception as e:
@@ -89,7 +90,7 @@ async def readfile_summary(filename):
 
 async def update_reply_by_ph(filename, phone_number, new_data):
     try:
-        updatefile = UpdateFile()
+        updatefile = UpdateReply()
         updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data)
         return(updated_data)
     except Exception as e:

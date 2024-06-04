@@ -5,7 +5,7 @@ from fastapi import HTTPException
 import requests
 from app.common.cache import cache
 from app.services.appointment_service.common_service.db_service import DatabaseService
-class ReadReport:
+class GMUReadReport:
     def __init__(self):
         self.patients_count = 0
         self.arrived_patient_count = 0

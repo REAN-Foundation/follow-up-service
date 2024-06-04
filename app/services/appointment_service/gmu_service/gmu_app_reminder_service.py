@@ -11,6 +11,7 @@ from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get
 from app.common.cache import cache
 import pytz
 
+from app.services.appointment_reminder_interface import AppointmentReminderI
 from app.services.appointment_service.common_service.db_service import DatabaseService
 
 ###############################################################
@@ -19,7 +20,7 @@ PENDING_ARRIVAL = 'Pending arrival'
 
 ###############################################################
 
-class Reminder:
+class GMUAppointmentReminder(AppointmentReminderI):
     def __init__(self):
 
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
@@ -43,7 +44,7 @@ class Reminder:
         self.db_data = DatabaseService()
         self.collect_prefix = 'gmu'
 
-    async def create_one_time_reminders(self, reminder_date, appointments):
+    async def create_reminder(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
         summary_data = []
@@ -115,10 +116,10 @@ class Reminder:
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
 
-        await self.create_report(summary_data,reminder_date)
+        await self.create_reports(summary_data,reminder_date)
 
 
-    async def create_report(self,summary_data,reminder_date):
+    async def create_reports(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
         data = await self.db_data.search_file(filename, self.collect_prefix)

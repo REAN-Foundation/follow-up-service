@@ -6,7 +6,9 @@ from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
 from app.common.utils import get_temp_filepath, open_file_in_readmode
-class ExtractPatientCode:
+from app.services.appointment_reminder_interface import AppointmentReminderI
+
+class GGHNAppointmentReminder(AppointmentReminderI):
     def __init__(self):
         summary_data=[]
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
@@ -44,18 +46,18 @@ class ExtractPatientCode:
 
             print("result of post---",result)
             prefix="gghn_details_"
-            file_name = await self.create_data_file(result,date,prefix)
+            file_name = await self.create_reports(result,date,prefix)
             appointment_file = await  self.extract_appointment(file_name,date)
             # appointment_file = "add example phone numer file here"
             updated_appointment_file = await self.update_phone_by_EMRId(appointment_file,date)
-            resp = await self.send_reminder(updated_appointment_file,date)
+            resp = await self.create_reminder(updated_appointment_file,date)
             
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
 
     #Create/update a detail file of api out put 
-    async def create_data_file(self,resp_data,enquiry_date,prefix):
+    async def create_reports(self,resp_data,enquiry_date,prefix):
         filename=str(prefix+enquiry_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
         if os.path.exists(f_path):
@@ -101,7 +103,7 @@ class ExtractPatientCode:
         print("patient_code_count",self.patient_code_count)
         # print("appointments-----",appointment_details)  
         prefix = "gghn_appointment_"  
-        file_name = await self.create_data_file(appointment_details,date,prefix)
+        file_name = await self.create_reports(appointment_details,date,prefix)
         return(file_name)
       
     async def update_content(self,filename,resp_data,enquiry_date,prefix):
@@ -202,7 +204,7 @@ class ExtractPatientCode:
             print(f"An unexpected error occurred while writing into file{filename}: {e}")
 
 
-    async def send_reminder(self,appointment_file,date):
+    async def create_reminder(self,appointment_file,date):
         count = 0
         filedata = open_file_in_readmode(appointment_file) 
         if(filedata == None):

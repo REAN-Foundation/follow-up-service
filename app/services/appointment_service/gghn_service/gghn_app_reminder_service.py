@@ -5,9 +5,11 @@ from app.common.appointment.appointment_utils import has_patient_replied, time_o
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
-from app.common.utils import get_temp_filepath, open_file_in_readmode
+# from app.common.utils import get_temp_filepath, open_file_in_readmode
+from app.services.appointment_reminder_interface import AppointmentReminderI
 from app.services.appointment_service.common_service.db_service import DatabaseService
-class ExtractPatientCode:
+
+class GGHNAppointmentReminder(AppointmentReminderI):
     def __init__(self):
         summary_data=[]
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
@@ -41,21 +43,21 @@ class ExtractPatientCode:
             # 'Content-Type': 'application/json'
             }
             try:
-                response = requests.post(url,headers = headers)
+                response = requests.post(url, headers = headers)
                 result = response.json()
             except HTTPError as e:
                 print(f"HTTP Error {e.status_code}: {e.message}")
 
             print("result of post---",result)
             prefix="gghn_details_"
-            file_name = await self.create_data_file(result,date,prefix)
+            file_name = await self.create_reports(result,date,prefix)
             appointment_file = await self.extract_appointment(file_name,date)
             # # here static appointment fle can be set for tial when it is set also set date in send reminder 
             # # before checking patient reply 
             # appointment_file = "gghn_appointment_2024-05-2.json"
 
             updated_appointment_file = await self.update_phone_by_EMRId(appointment_file,date)
-            resp = await self.send_reminder(updated_appointment_file,date)
+            resp = await self.create_reminder(updated_appointment_file,date)
             # resp = await self.send_reminder(appointment_file,date)
             return(resp)
         except HTTPError:
@@ -63,7 +65,7 @@ class ExtractPatientCode:
 
 
     #Create/update a detail file of api out put 
-    async def create_data_file(self,resp_data,enquiry_date,prefix):
+    async def create_reports(self,resp_data,enquiry_date,prefix):
         filename=str(prefix+enquiry_date+'.json')
         response = await self.db_data.search_file(filename,self.collect_prefix)
         if response == None:
@@ -99,7 +101,7 @@ class ExtractPatientCode:
             self.patient_code_count= self.patient_code_count+1
         print("patient_code_count",self.patient_code_count)  
         prefix = "gghn_appointment_"  
-        file_name = await self.create_data_file(appointment_details,date,prefix)
+        file_name = await self.create_reports(appointment_details,date,prefix)
         return(file_name)
 
 
@@ -208,7 +210,7 @@ class ExtractPatientCode:
             print(f"An unexpected error occurred while writing into{filename}: {e}")
 
 
-    async def send_reminder(self,appointment_file,date):
+    async def create_reminder(self,appointment_file,date):
         count = 0
         filedata = await self.db_data.search_file(appointment_file,self.collect_prefix)
         if(filedata == None):

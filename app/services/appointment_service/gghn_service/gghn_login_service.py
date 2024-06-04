@@ -7,7 +7,7 @@ from app.common.exceptions import HTTPError
 
 ###############################################################
 
-class GghnUserLogin:
+class GGHNLogin:
     def __init__(self):
 
         gghn_base_url = os.getenv("GGHN_BASE_URL")

@@ -11,13 +11,15 @@ from app.common.utils import  get_temp_filepath
 from app.common.cache import cache
 import pytz
 
+from app.services.appointment_reminder_interface import AppointmentReminderI
+
 ###############################################################
 
 PENDING_ARRIVAL = 'Pending arrival'
 
 ###############################################################
 
-class Reminder:
+class GMUAppointmentReminder(AppointmentReminderI):
     def __init__(self):
 
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
@@ -39,7 +41,7 @@ class Reminder:
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
 
-    async def create_one_time_reminders(self, reminder_date, appointments):
+    async def create_reminder(self, reminder_date, appointments):
 
         self.access_token = cache.get('access_token')
         summary_data = []
@@ -113,10 +115,10 @@ class Reminder:
             #     self.schedule_reminder(schedule_model)
             else:
                 print("No phone number found to set remnder")
-        await self.create_report(summary_data,reminder_date)
+        await self.create_reports(summary_data,reminder_date)
 
    
-    async def create_report(self,summary_data,reminder_date):
+    async def create_reports(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
         f_path=(os.getcwd()+"/temp/"+filename)
@@ -124,7 +126,7 @@ class Reminder:
             print(f"The file {filename} already exists. Please choose a different name.")
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
-            self.replace_file(json_object,f_path)
+            await self.replace_file(json_object,f_path)
             print(json_string)
             return(json_string)
         else:

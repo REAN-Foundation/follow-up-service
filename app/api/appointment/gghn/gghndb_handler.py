@@ -2,21 +2,21 @@
 
 from fastapi import APIRouter, HTTPException, Request
 import boto3
-from app.services.appointment_service.common_service.update_AFReport_service import UpdateFile
-from app.services.appointment_service.gghn_service.gghn_login_service import GghnUserLogin 
-from app.services.appointment_service.gghn_service.gghn_patient_code_service import ExtractPatientCode
-from app.services.appointment_service.gghn_service.read_reply_report import GGHNReadReport
-from app.services.appointment_service.common_service.login_service import UserLogin
+from app.services.appointment_service.common_service.update_reply_service import UpdateReply
+from app.services.appointment_service.gghn_service.gghn_login_service import GGHNLogin 
+from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
+from app.services.appointment_service.gghn_service.gghn_read_report import GGHNReadReport
+from app.services.appointment_service.common_service.rc_login_service import RCLogin
 from app.services.appointment_service.common_service.recent_file_service import RecentFile
 
 async def readfile_content(date):
     try:
         print (date)
-        login = GghnUserLogin()
+        login = GGHNLogin()
         await login.gghnlogin()
-        login = UserLogin()
+        login = RCLogin()
         await login.login()
-        patientextraction = ExtractPatientCode()
+        patientextraction = GGHNAppointmentReminder()
         appointmentcontent = await patientextraction.read_content(date)
         return(appointmentcontent)
         # return()
@@ -25,7 +25,7 @@ async def readfile_content(date):
     
 async def update_gghn_reply_by_ph(filename,phone_number, new_data):
     try:
-        updatefile =  UpdateFile()
+        updatefile =  UpdateReply()
         updated_data = await updatefile.update_reply_by_phone(filename,phone_number,new_data)
         return(updated_data)
     except Exception as e:

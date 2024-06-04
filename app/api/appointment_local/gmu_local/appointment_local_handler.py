@@ -4,15 +4,15 @@ import httpx
 from app.common.utils import get_temp_filepath
 from app.common.utils import is_date_valid
 from app.services.appointment_local_service.common_local_service.recent_file_local_service import RecentFile
-from app.services.appointment_local_service.common_local_service.update_AFReport_local_service import UpdateFile
-from app.services.appointment_local_service.common_local_service.login_service import UserLogin
-from app.services.appointment_local_service.gmu_local_service.pdf_reader_local_service import PdfReader
-from app.services.appointment_local_service.gmu_local_service.reminder_local_service import Reminder
-from app.services.appointment_local_service.gmu_local_service.notification_local_service import AdminNotification
+from app.services.appointment_local_service.common_local_service.update_reply_local_service import UpdateReply
+from app.services.appointment_local_service.common_local_service.rc_login_service import RCLogin
+from app.services.appointment_local_service.gmu_local_service.gmu_pdf_reader_local_service import GMUPdfReader
+from app.services.appointment_local_service.gmu_local_service.gmu_app_reminder_local_service import  GMUAppointmentReminder
+from app.services.appointment_local_service.gmu_local_service.gmu_admin_notification_local_service import GMUAdminNotification
 import json
 import os
 
-from app.services.appointment_local_service.gmu_local_service.read_report_local_service import ReadReport
+from app.services.appointment_local_service.gmu_local_service.gmu_read_report_local_service import GMUReadReport
 
 
 ###############################################################################
@@ -52,11 +52,11 @@ async def handle_s3_event(message: Request):
     file_path = await download(message)
 
     # 1. Login as tenant-admin or tenant-user
-    login = UserLogin()
+    login = RCLogin()
     await login.login()
 
     # 2. Extract the date from the PDF file
-    reader = PdfReader()
+    reader = GMUPdfReader()
     reminder_date = await reader.extract_reminder_date(file_path)
     if not reminder_date:
         return ('Unable to find or unable to parse the date')
@@ -70,12 +70,12 @@ async def handle_s3_event(message: Request):
         appointments = await reader.extract_appointments_from_pdf(file_path)
 
         # 4. Send one-time-reminders
-        reminder = Reminder()
-        await reminder.create_one_time_reminders(reminder_date, appointments)
+        reminder = GMUAppointmentReminder()
+        await reminder.create_reminder(reminder_date, appointments)
         reminder_summary = await reminder.summary()
 
         
-        admin_notification = AdminNotification()
+        admin_notification = GMUAdminNotification()
         await admin_notification.admin_notify(reminder_date,reminder_summary)
 
         return {
@@ -116,7 +116,7 @@ async def download_pdf_from_s3(bucket_name, object_key):
 #Other routes of file handling
 async def read_appointment_file(filename):
     try:
-        reportfile = ReadReport()
+        reportfile = GMUReadReport()
         filecontent = await reportfile.read_appointment_file(filename)
         return(filecontent)
     except Exception as e:
@@ -125,7 +125,7 @@ async def read_appointment_file(filename):
 async def readfile_content_by_phone(filename,phone_number):
     try:
 
-        reportfile = ReadReport()
+        reportfile = GMUReadReport()
         filecontent = await reportfile.readfile_content_by_ph(filename,phone_number)
         return(filecontent)
     except Exception as e:
@@ -133,7 +133,7 @@ async def readfile_content_by_phone(filename,phone_number):
 
 async def readfile_summary(filename):
     try:
-        reportfile = ReadReport()
+        reportfile =GMUReadReport()
         filesummary = await reportfile.read_appointment_summary(filename)
         return(filesummary)
     except Exception as e:
@@ -141,7 +141,7 @@ async def readfile_summary(filename):
 
 async def update_reply_by_ph(filename, phone_number, new_data):
     try:
-        updatefile = UpdateFile()
+        updatefile = UpdateReply()
         updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data)
         return(updated_data)
     except Exception as e:
