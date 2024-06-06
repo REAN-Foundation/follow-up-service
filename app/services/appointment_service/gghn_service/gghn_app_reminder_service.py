@@ -286,7 +286,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             'NotificationType': 'WhatsApp',
             'RawContent':json.dumps(raw_content)
         }
-    # As GGHN do not provie when time so the when time is trial testing time
+    # As GGHN do not provide when time so the when time is trial testing time
 
 
     async def schedule_reminder(self, schedule_create_model):

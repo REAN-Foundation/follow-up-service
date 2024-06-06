@@ -67,7 +67,7 @@ async def time_of_first_reminder(patient_mobile_number):
                 desired_timezone_obj = pytz.timezone(desired_timezone)
                 current_time = utc_now.replace(tzinfo=pytz.utc).astimezone(desired_timezone_obj)
 
-            new_time = str(current_time + timedelta(minutes=6))
+            new_time = str(current_time + timedelta(minutes=20))
             date_element = new_time.split(' ')
             time_element = date_element[1].split('.')
             first_reminder_time = time_element[0]
