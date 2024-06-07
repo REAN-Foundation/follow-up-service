@@ -20,6 +20,11 @@ router = APIRouter(
 async def read_file(date_string: str):
     try:
         response = await readfile_content(date_string)
+        if(response == None):
+            return{
+                "Message":"No Appointments available",
+                "Data":response 
+            }
         return {
             "Message" : "Reminders created successfully",
             "Data" : response

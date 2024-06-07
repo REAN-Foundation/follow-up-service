@@ -41,6 +41,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             try:
                 response = requests.post(url,headers = headers)
                 result = response.json()
+                if not result:
+                    return(None)
             except HTTPError as e:
                 print(f"HTTP Error {e.status_code}: {e.message}")
 
