@@ -11,7 +11,7 @@ from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get
 from app.common.cache import cache
 import pytz
 
-from app.services.appointment_reminder_interface import AppointmentReminderI
+from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.appointment_service.common_service.db_service import DatabaseService
 
 ###############################################################

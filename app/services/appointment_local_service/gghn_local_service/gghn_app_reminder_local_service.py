@@ -6,7 +6,7 @@ from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
 from app.common.utils import get_temp_filepath, open_file_in_readmode
-from app.services.appointment_reminder_interface import AppointmentReminderI
+from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 
 class GGHNAppointmentReminder(AppointmentReminderI):
     def __init__(self):

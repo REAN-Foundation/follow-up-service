@@ -11,7 +11,7 @@ from app.common.utils import  get_temp_filepath
 from app.common.cache import cache
 import pytz
 
-from app.services.appointment_reminder_interface import AppointmentReminderI
+from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 
 ###############################################################
 
