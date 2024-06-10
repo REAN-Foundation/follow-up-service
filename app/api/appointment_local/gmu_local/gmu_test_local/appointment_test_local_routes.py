@@ -3,10 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, Path, status, File, Uploa
 from fastapi.responses import JSONResponse
 import shutil
 import os
+from app.api.appointment_local.gmu_local.appointment_local_handler import recent_file
 from app.common.base_response import BaseResponseModel
 from app.common.response_model import ResponseModel
-from app.common.utils import  find_recent_file_with_prefix, get_temp_filepath
-from .appointment_test_handler import handle,readfile,update_reply_by_ph,readfile_summary,readfile_content_by_phone
+# from app.common.utils import  find_recent_file_with_prefix, get_temp_filepath
+from .appointment_test_local_handler import handle, read_appointment_file,update_reply_by_ph,readfile_summary,readfile_content_by_phone
 from app.common.cache import cache
 ###############################################################################
 
@@ -35,9 +36,9 @@ async def read_file(phone_number: str, date_string: str):
     number = ph_number.replace(' ', '')
     file_name=(f"gmu_followup_file_{date_string}.json")
     filename = file_name.replace(' ', '')
-    file_path = get_temp_filepath(filename)
+    # file_path = get_temp_filepath(filename)
     try:
-        return await readfile_content_by_phone(file_path,number)
+        return await readfile_content_by_phone(filename,number)
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
@@ -46,10 +47,10 @@ async def read_file(phone_number: str, date_string: str):
 async def read_file(date_str: str):
     file_name=(f"gmu_followup_file_{date_str}.json")
     filename = file_name.replace(' ', '')
-    file_path = get_temp_filepath(filename)
+    # file_path = get_temp_filepath(filename)
     try:
-        appointment_followup_data = await readfile(file_path)        
-        followup_summary = await readfile_summary(file_path,filename)
+        appointment_followup_data = await read_appointment_file(filename)        
+        followup_summary = await readfile_summary(filename)
         data = {
             "File_data":appointment_followup_data,
             "Summary":followup_summary 
@@ -67,9 +68,9 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         number = ph_number.replace(' ', '')
         file_name=(f"gmu_followup_file_{date_str}.json")
         filename = file_name.replace(' ', '')
-        file_path = get_temp_filepath(filename)
+        
         content = new_data
-        updated_data = await update_reply_by_ph(file_path, number, content)
+        updated_data = await update_reply_by_ph(filename, number, content)
         return updated_data
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -81,15 +82,13 @@ async def read_file():
     # print(" RECENT FILE:",filename)
     
     # code to get recent file from dir list created at timestamp
-    folder_path = os.path.join(os.getcwd(), "temp")
-    prefix = "gmu_followup_file_"
-    filename =find_recent_file_with_prefix(folder_path, prefix)
-    
+    file_prefix = "gmu_followup_file_"
+    filename =  await recent_file(file_prefix)
     print(filename)
-    file_path = get_temp_filepath(filename)
+    
     try:
-        appointment_followup_data = await readfile(file_path)        
-        followup_summary = await readfile_summary(file_path,filename)
+        appointment_followup_data = await read_appointment_file(filename)        
+        followup_summary = await readfile_summary(filename)
         data = {
             "File_data":appointment_followup_data,
             "Summary":followup_summary 
