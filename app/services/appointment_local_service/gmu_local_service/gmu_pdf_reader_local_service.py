@@ -5,6 +5,7 @@ import camelot
 import pdfplumber
 from dateutil import parser
 from app.common.utils import get_temp_filepath
+from app.services.appointment_local_service.common_local_service.file_service import FileStorageService
 
 ###############################################################
 
@@ -33,6 +34,7 @@ class GMUPdfReader:
         self.invalid_appointments = []
         self.total_table_count = 0
         self.total_rows = 0
+        self.file_storage = FileStorageService()
 
     async def extract_appointments_from_pdf(self, input_file_path):
         try:
@@ -50,9 +52,18 @@ class GMUPdfReader:
                 row_count, column_count = self.get_shape(tables[i].df)
                 self.total_rows = self.total_rows + row_count
                 filename = "temp_appointments_" + str(i) + ".json"
-                temp_filepath = get_temp_filepath(filename)
-                tables[i].to_json(temp_filepath)
-                appointments = await self.extract_table_appointments(temp_filepath)
+                df = tables[i].df
+                # Convert the DataFrame to a JSON string
+                json_string = df.to_json(orient='records')
+                # temp_filepath = get_temp_filepath(filename)
+                # tables[i].to_json(temp_filepath)
+                print("json_string..",json_string)
+                content = await self.file_storage.search_file(filename)
+                if(content != None):
+                    await self.file_storage.update_file(filename, json_string)
+                else:
+                    await self.file_storage.store_file(filename, json_string)
+                appointments = await self.extract_table_appointments(filename)
                 all_appointments_.extend(appointments)
 
             self.all_appointments = all_appointments_
@@ -64,14 +75,12 @@ class GMUPdfReader:
             print(e)
             return None
 
-    async def extract_table_appointments(self, file_name):
-
-        filepath = get_temp_filepath(file_name)
-        if not os.path.exists(filepath):
-            raise Exception(file_name + " does not exist.")
-
-        file=open(filepath,"r")
-        file_content=file.read()
+    async def extract_table_appointments(self, filename):
+        file_content = await self.file_storage.search_file(filename)
+        if not file_content:
+            raise Exception(filename + " does not exist.")
+        # file=open(filepath,"r")
+        # file_content=file.read()
         table_data=json.loads(file_content)
 
         all_appointments = []
@@ -104,7 +113,7 @@ class GMUPdfReader:
                     self.invalid_record_count = self.invalid_record_count + 1
                     print('*Invalid record found: ', row)
                     self.invalid_appointments.append(row)
-        await self.create_file_for_invalid_record(self.invalid_appointments)
+        # await self.create_file_for_invalid_record(self.invalid_appointments)
         return all_appointments
 
     async def create_file_for_invalid_record(self,invalid_appointments):
@@ -132,11 +141,11 @@ class GMUPdfReader:
         temp = "+1-" + temp
         return temp
 
-    async def extract_reminder_date(self, file_name):
-        filepath = get_temp_filepath(file_name)
+    async def extract_reminder_date(self, filepath):
+        # filepath = get_temp_filepath(file_name)
         if not os.path.exists(filepath):
-            raise Exception(file_name + " does not exist.")
-        with pdfplumber.open(file_name) as pdf:
+            raise Exception(filepath + " does not exist.")
+        with pdfplumber.open(filepath) as pdf:
             page_data = pdf.pages[0].extract_text().split('\n')[0].split(',')
             if len(page_data) >= 2:
                 mmdd = page_data[1].strip().split(' ')

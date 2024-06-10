@@ -85,12 +85,8 @@ class GMUPdfReader:
 
     async def extract_table_appointments(self, filename):
         file_content = await self.db_data.search_file(filename,self.collect_prefix)
-        # filepath = get_temp_filepath(file_name)
-        # if not os.path.exists(filepath):
-        #     raise Exception(filepath + " does not exist.")
-
-        # file=open(filepath,"r")
-        # file_content=file.read()
+        if not file_content:
+            raise Exception(filename + " does not exist.")
         table_data=json.loads(file_content)
         print("...", table_data)
 

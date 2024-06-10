@@ -1,3 +1,5 @@
+import json
+import os
 from app.interfaces.appointment_storage_interface import DatabaseStorageI
 
 
@@ -22,7 +24,7 @@ class FileStorageService(DatabaseStorageI):
         except Exception as e:
             print(f"An error occurred while connecting to file storage : {e}")
     
-    async def store_file(self,filename,content,intend_no):
+    async def store_file(self,filename,content, intend_no = 1):
         try:
             f_path = await self.connect_storage(filename)
             with open(f_path, 'w') as json_file:
@@ -31,20 +33,20 @@ class FileStorageService(DatabaseStorageI):
         except Exception as e:
             print(f"An error occurred while storing in file: {e}")
 
-    async def search_file(self,filename, collect_prefix):
+    async def search_file(self,filename):
         try:
             f_path=(os.getcwd()+"/temp/"+filename)
             if not os.path.exists(f_path):
                 return None
             else:
-                file=open(filepath,"r")
+                file=open(f_path,"r")
                 file_content=file.read()
                 data=json.loads(file_content)
                 return data
         except Exception as e:
             print(f"An error occurred while searching file: {e}")
     
-    async def update_file(self, filename, content, intend_no):
+    async def update_file(self, filename, content, intend_no = 1):
         f_path = await self.connect_storage(filename)
         with open(f_path, 'w') as json_file:
                 json.dump(content, json_file, indent=intend_no)

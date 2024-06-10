@@ -3,14 +3,16 @@ import os
 import pymongo
 from pymongo import MongoClient
 from dotenv import load_dotenv
-from pymongo.mongo_client import MongoClient 
+from pymongo.mongo_client import MongoClient
+
+from app.interfaces.appointment_storage_interface import DatabaseStorageI 
 load_dotenv()
 
-class DatabaseService:
+class DatabaseService(DatabaseStorageI):
     def __init__(self):
         pass
 
-    async def connect_atlas(self,collect_prefix):
+    async def connect_storage(self,collect_prefix):
         connection_url = os.getenv("MONGODB_URL")
         client = MongoClient(connection_url)
         # db = client['document_db']
@@ -23,7 +25,7 @@ class DatabaseService:
             return(record)
     
     async def store_file(self,filename,content,collect_prefix):
-        collection = await self.connect_atlas(collect_prefix)
+        collection = await self.connect_storage(collect_prefix)
         time_stamp  = datetime.utcnow()
         document = {
                         "filename": filename,
@@ -40,7 +42,7 @@ class DatabaseService:
     async def search_file(self, query, collect_prefix):
         try:
             # MongoDB Atlas connection string
-            collection = await self.connect_atlas(collect_prefix)
+            collection = await self.connect_storage(collect_prefix)
             # Define the query to filter documents
             query = {"filename": query}
             # Retrieve documents matching the query
@@ -61,7 +63,7 @@ class DatabaseService:
     
     async def update_file(self, filename, update_content, collect_prefix):
         file_name = filename
-        collection = await self.connect_atlas(collect_prefix)
+        collection = await self.connect_storage(collect_prefix)
         filter = {"filename":file_name}
         resp = await self.search_file(file_name,collect_prefix)
         if resp != None:
@@ -83,7 +85,7 @@ class DatabaseService:
         return(data)
     
     async def find_recent_documents(self, file_prefix, collect_prefix):
-        collection = await self.connect_atlas(collect_prefix)
+        collection = await self.connect_storage(collect_prefix)
         query = {'filename': {'$regex': f'^{file_prefix}'}}
         cursor = collection.find(query).sort('updatedAt', -1).limit(1)
         return cursor.next() if cursor.count() > 0 else None
