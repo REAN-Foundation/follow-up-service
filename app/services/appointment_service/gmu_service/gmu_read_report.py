@@ -82,9 +82,6 @@ class GMUReadReport:
                         }
                         self.patient_data.append(data)
                 return(self.patient_data)
-            else:
-                print("No file found")
-                raise HTTPException(status_code=404, detail="File not found")    
             
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")

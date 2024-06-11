@@ -94,16 +94,17 @@ class GMUAppointmentReminder(AppointmentReminderI):
             # First reminder set as soon as pdf upload
             print(f'patient phone number {patient_mobile_number}')
             first_reminder = await time_of_first_reminder(patient_mobile_number)
-            print(f'time of reminder after pdfupload {first_reminder}')
-            schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
-            
-            # Check the patient replied status
-            prefix_string = 'gmu_followup_file_'
-            already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date, self.collect_prefix)
-            # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
-            
-            if not already_replied:
-                response = await self.schedule_reminder(schedule_model)
+            if(first_reminder != None):
+                print(f'time of reminder after pdfupload {first_reminder}')
+                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
+                
+                # Check the patient replied status
+                prefix_string = 'gmu_followup_file_'
+                already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date, self.collect_prefix)
+                # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
+                
+                if not already_replied:
+                    response = await self.schedule_reminder(schedule_model)
 
             #  Send reminders 10 min before and after
 
@@ -115,7 +116,8 @@ class GMUAppointmentReminder(AppointmentReminderI):
             # if not is_reminder_set:
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
-
+        else:
+            print("No phone number found to set remnder")
         await self.create_reports(summary_data,reminder_date)
 
 

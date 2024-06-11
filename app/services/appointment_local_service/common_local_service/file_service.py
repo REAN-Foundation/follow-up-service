@@ -24,11 +24,11 @@ class FileStorageService(DatabaseStorageI):
         except Exception as e:
             print(f"An error occurred while connecting to file storage : {e}")
     
-    async def store_file(self,filename,content, intend_no = 1):
+    async def store_file(self, filename, content, indent_given = 1):
         try:
             f_path = await self.connect_storage(filename)
             with open(f_path, 'w') as json_file:
-                json.dump(content, json_file, indent=intend_no)
+                json.dump(content, json_file, indent = indent_given )
             return(filename)
         except Exception as e:
             print(f"An error occurred while storing in file: {e}")
@@ -46,10 +46,10 @@ class FileStorageService(DatabaseStorageI):
         except Exception as e:
             print(f"An error occurred while searching file: {e}")
     
-    async def update_file(self, filename, content, intend_no = 1):
+    async def update_file(self, filename, content, indent_given = 1):
         f_path = await self.connect_storage(filename)
         with open(f_path, 'w') as json_file:
-                json.dump(content, json_file, indent=intend_no)
+                json.dump(content, json_file,indent = indent_given)
         return(filename)
     
     async def find_recent_documents(self, prefix):

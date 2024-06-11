@@ -12,6 +12,7 @@ from app.common.cache import cache
 import pytz
 
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
+from app.services.appointment_local_service.common_local_service.file_service import FileStorageService
 
 ###############################################################
 
@@ -40,6 +41,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         self.pending_arrival_count = 0
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
+        self.file_storage = FileStorageService()
 
     async def create_reminder(self, reminder_date, appointments):
 
@@ -121,34 +123,40 @@ class GMUAppointmentReminder(AppointmentReminderI):
     async def create_reports(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
-        f_path=(os.getcwd()+"/temp/"+filename)
-        if os.path.exists(f_path):
+        data = await self.file_storage.search_file(filename)
+        if(data != None):
             print(f"The file {filename} already exists. Please choose a different name.")
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
-            await self.replace_file(json_object,f_path)
-            print(json_string)
-            return(json_string)
+            data_replaced = await self.replace_file(json_object,filename)
+            content_data = await self.file_storage.update_file(filename, data_replaced,7)
+            print(content_data)
+            return(content_data)
         else:
-            temp_folder = os.path.join(os.getcwd(), "temp")
-            if not os.path.exists(temp_folder):
-                os.mkdir(temp_folder)
-            filepresent  = os.path.join(temp_folder, filename)
-            with open(filepresent, 'w') as json_file:
-                json.dump(summary_data, json_file, indent=7)
-
             json_string = json.dumps(summary_data, indent=7)
+            json_object = json.loads(json_string)
+            content_data = await self.file_storage.store_file(filename, json_object,7)
+            # temp_folder = os.path.join(os.getcwd(), "temp")
+            # if not os.path.exists(temp_folder):
+            #     os.mkdir(temp_folder)
+            # filepresent  = os.path.join(temp_folder, filename)
+            # with open(filepresent, 'w') as json_file:
+            #     json.dump(summary_data, json_file, indent=7)
+
+            # json_string = json.dumps(summary_data, indent=7)
 
             # code to set recent file in cache
             # self.recent_file = filename
             # cache.set('recent_file', self.recent_file)
             # recent_file = cache.get('recent_file')
             # print("RECENT FILE IN CACHE",recent_file)
-            return(json_string)
+            print(content_data)
+            return(content_data)
 
-    async def replace_file(self,json_object,f_path):
-        with open(f_path, 'r') as file:
-            data = json.load(file)
+    async def replace_file(self,json_object,filename):
+        # with open(f_path, 'r') as file:
+        #     data = json.load(file)
+        data = await self.file_storage.search_file(filename)
         for item in data:
             if item['Patient_status'] == 'Pending arrival':
                for record in json_object:
@@ -167,8 +175,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 flag = 0
             flag = 0
       
-        with open(f_path, 'w') as file:
-           json.dump(data, file, indent=7)
+        return(data)
 
 
 

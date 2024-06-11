@@ -82,7 +82,7 @@ class GMUPdfReader:
         # file=open(filepath,"r")
         # file_content=file.read()
         table_data=json.loads(file_content)
-
+        print("...", table_data)
         all_appointments = []
 
         for row in table_data:
