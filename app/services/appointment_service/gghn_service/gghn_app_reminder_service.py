@@ -73,7 +73,6 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         if response == None:
             await self.db_data.store_file(filename,resp_data, self.collect_prefix)
         else:
-        
             print(f"The file {filename} already exists!")
             if(prefix=='gghn_details_'):
                await self.update_content(filename,resp_data,enquiry_date,prefix)
@@ -229,7 +228,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                         print("first reminder time for GGHN patient",first_reminder)
                         prefix_str = 'gghn_appointment_'
                         #for trial date made static
-                        date = '2024-05-2'
+                        # date = '2024-05-2'
 
                         already_replied = await has_patient_replied(prefix_str, phone_number, date,self.collect_prefix)
                         if not already_replied:

@@ -7,6 +7,7 @@ from app.common.exceptions import HTTPError, NotFound
 from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
 from app.common.utils import get_temp_filepath, open_file_in_readmode
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
+from app.services.appointment_local_service.common_local_service.file_service import FileStorageService
 
 class GGHNAppointmentReminder(AppointmentReminderI):
     def __init__(self):
@@ -17,6 +18,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         self.patient_code_count = 0
         self.reminders_sent_count = 0
         self.appointment_details= []
+        self.file_storage = FileStorageService()
 
         gghn_base_url = os.getenv("GGHN_BASE_URL")
         if gghn_base_url == None:
@@ -61,8 +63,10 @@ class GGHNAppointmentReminder(AppointmentReminderI):
     #Create/update a detail file of api out put 
     async def create_reports(self,resp_data,enquiry_date,prefix):
         filename=str(prefix+enquiry_date+'.json')
-        f_path=(os.getcwd()+"/temp/"+filename)
-        if os.path.exists(f_path):
+        response = await self.file_storage.search_file(filename)
+        if response == None:
+            await self.file_storage.store_file(filename,resp_data,25)
+        else:
             print(f"The file {filename} already exists!")
             if(prefix=='gghn_details_'):
                 await self.update_content(filename,resp_data,enquiry_date,prefix)
@@ -71,25 +75,23 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                 # with open(f_path, 'w') as json_file:
                 #          json.dump(resp_data, json_file, indent=25)
                 # return(filename)
-        else: 
-            temp_folder = os.path.join(os.getcwd(), "temp")
-            if not os.path.exists(temp_folder):
-                os.mkdir(temp_folder)
-            filepresent  = os.path.join(temp_folder, filename)
-            with open(filepresent, 'w') as json_file:
-                json.dump(resp_data, json_file, indent=25)
+        # else: 
+        #     temp_folder = os.path.join(os.getcwd(), "temp")
+        #     if not os.path.exists(temp_folder):
+        #         os.mkdir(temp_folder)
+        #     filepresent  = os.path.join(temp_folder, filename)
+        #     with open(filepresent, 'w') as json_file:
+        #         json.dump(resp_data, json_file, indent=25)
         return(filename)        
       
     #Create a file with only necessary details for appointment    
     async def extract_appointment(self, file_name,date):
-
-        filepath = get_temp_filepath(file_name)
-        if not os.path.exists(filepath):
+        response = await self.file_storage.search_file(file_name)
+        if response == None:
             raise Exception(file_name + " does not exist.")
-
-        file=open(filepath,"r")
-        file_content=file.read()
-        appointment_data=json.loads(file_content)
+       
+        # appointment_data=json.loads(file_content)
+        appointment_data = response
         appointment_details= []
         for data in appointment_data:
             patient_code_details={
@@ -110,10 +112,12 @@ class GGHNAppointmentReminder(AppointmentReminderI):
       
     async def update_content(self,filename,resp_data,enquiry_date,prefix):
         additional_data=[]
-        file_data = open_file_in_readmode(filename)
-        if(file_data == None):
-            print(f"An unexpected error occurred while reading file{filename}")
-       
+        file_content = await self.file_storage.search_file(filename)
+        if(file_content == None):
+            print(f"An unexpected error occurred while reading {filename}")
+          
+        file_data = (file_content) 
+        print("file data...",file_data)
         flag=0
         for rdata in resp_data:
             flag=0
@@ -158,20 +162,21 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         print("Length of the additional_data:", length_of_list)
         file_data.extend(additional_data)
         try:
-            filepath = get_temp_filepath(filename)
-            with open(filepath, 'w') as json_file:
-                json.dump(file_data, json_file, indent=25)
+            await self.file_storage.update_file(filename,file_data,25)
             return(filename)
         except Exception as e:
         # Handle other exceptions
-            print(f"An unexpected error occurred while writing into file{filename}: {e}")
+            print(f"An unexpected error occurred while updating{filename}: {e}")
+
 
     async def update_appointment_content(self,filename,resp_data,enquiry_date,prefix):
         additional_appointment=[]
-        file_data = open_file_in_readmode(filename)
-        if(file_data == None):
-            print(f"An unexpected error occurred while reading file {filename}")
-       
+        file_content = await self.file_storage.search_file(filename)
+        if(file_content == None):
+            print(f"An unexpected error occurred while reading {filename}")
+        
+        file_data = (file_content)     
+        print("file data...",file_data)
         flag=0
         for rdata in resp_data:
             flag=0
@@ -197,18 +202,16 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         print("Length of the additional_appointment:", length_of_list)
         file_data.extend(additional_appointment)
         try:
-            filepath = get_temp_filepath(filename)
-            with open(filepath, 'w') as json_file:
-                json.dump(file_data, json_file, indent=25)
+            await self.file_storage.update_file(filename,file_data,6)
             return(filename)
         except Exception as e:
         # Handle other exceptions
-            print(f"An unexpected error occurred while writing into file{filename}: {e}")
+            print(f"An unexpected error occurred while writing into{filename}: {e}")
 
 
     async def create_reminder(self,appointment_file,date):
         count = 0
-        filedata = open_file_in_readmode(appointment_file) 
+        filedata = await self.file_storage.search_file(appointment_file)
         if(filedata == None):
             print(f"An unexpected error occurred while reading file{appointment_file}")
         for item in filedata:
@@ -296,13 +299,11 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
     async def update_phone_by_EMRId(self, file_name, date):
         recent_data=[]
-        filepath = get_temp_filepath(file_name)
-        if not os.path.exists(filepath):
-            raise Exception(file_name + " does not exist.")
+        file_data = await self.file_storage.search_file(file_name)
+        if(file_data == None):
+            print(f"An unexpected error occurred in update_phone_by_EMRId while reading {file_name}")
 
-        file=open(filepath,"r")
-        file_content=file.read()
-        appointment_data=json.loads(file_content)
+        appointment_data = file_data
         print("appointment file data",appointment_data)
         for app_data in appointment_data:
             EMRId=app_data['Participant_code']
@@ -312,12 +313,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             else:
                 app_data['Phone_number'] = ''
 
-        with open(filepath, 'w') as file:
-            json.dump(appointment_data, file, indent=6)
-        
-        with open(filepath, 'r') as file:
-            retrived_data = json.load(file)
-
+        retrived_data = await self.file_storage.update_file(file_name,appointment_data,6)
+        data = retrived_data
         return(file_name)
 
             
