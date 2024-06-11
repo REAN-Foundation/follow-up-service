@@ -58,7 +58,7 @@ Jinja2
 jmespath
 JPype1
 jsonschema
-jsonschema-specificatons
+jsonschema-specifications
 keyring
 linecache2
 lockfile
@@ -68,7 +68,6 @@ mdurl
 more-itertools
 msgpack
 numpy
-opencv-python
 openpyxl
 orjson
 packaging
@@ -141,8 +140,3 @@ websockets
 wrapt
 zipp
 zope.interface
-
-
-
-
-
