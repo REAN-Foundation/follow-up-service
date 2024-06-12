@@ -136,20 +136,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
             content_data = await self.file_storage.store_file(filename, json_object,7)
-            # temp_folder = os.path.join(os.getcwd(), "temp")
-            # if not os.path.exists(temp_folder):
-            #     os.mkdir(temp_folder)
-            # filepresent  = os.path.join(temp_folder, filename)
-            # with open(filepresent, 'w') as json_file:
-            #     json.dump(summary_data, json_file, indent=7)
-
-            # json_string = json.dumps(summary_data, indent=7)
-
-            # code to set recent file in cache
-            # self.recent_file = filename
-            # cache.set('recent_file', self.recent_file)
-            # recent_file = cache.get('recent_file')
-            # print("RECENT FILE IN CACHE",recent_file)
+            
             print(content_data)
             return(content_data)
 
@@ -324,8 +311,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         appoint = str(time)
         time_str = appoint
         time_object = datetime.strptime(time_str, '%H:%M:%S').time()
-        # print(type(time_object))
-        # print(time_object)
+        
         timestr = str(time_object)
         # print(type(timestr))
         t = timestr.split(':')

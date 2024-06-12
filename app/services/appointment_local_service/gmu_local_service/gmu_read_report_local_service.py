@@ -27,24 +27,14 @@ class GMUReadReport:
                 
         except FileNotFoundError:
                 raise HTTPException(status_code=404, detail="File not found")
-        # try:
-        #     file_path = get_temp_filepath(filename)
-        #     with open(file_path, "r") as file:
-        #         json_content = json.load(file)
-        #     print(f"filename{ file_path}, content{ json_content}")
-        #     return(json_content)
-        # except FileNotFoundError:
-        #     raise HTTPException(status_code=404, detail="File not found")
-        
+                
     async def read_appointment_summary(self,filename):
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[3:])
         file_date = f_date.split('.')
         date_of_file = file_date[0]
         print(date_of_file) 
-               
-        # with open(file_path, 'r') as file:
-        #     data = json.load(file)
+        
         data = await self.file_storage.search_file(filename)
         if(data!= None):
 
@@ -78,9 +68,7 @@ class GMUReadReport:
     
     async def readfile_content_by_ph(self,filename,phone_number):
         try:
-            # file_path = get_temp_filepath(filename)
-            # with open(file_path, "r") as file:
-            #     json_content = json.load(file)
+           
             data = await self.file_storage.search_file(filename)
             
             if(data!= None):

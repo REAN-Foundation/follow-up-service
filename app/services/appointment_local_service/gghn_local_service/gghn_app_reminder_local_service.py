@@ -72,16 +72,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                 await self.update_content(filename,resp_data,enquiry_date,prefix)
             else:
                 await self.update_appointment_content(filename,resp_data,enquiry_date,prefix)
-                # with open(f_path, 'w') as json_file:
-                #          json.dump(resp_data, json_file, indent=25)
-                # return(filename)
-        # else: 
-        #     temp_folder = os.path.join(os.getcwd(), "temp")
-        #     if not os.path.exists(temp_folder):
-        #         os.mkdir(temp_folder)
-        #     filepresent  = os.path.join(temp_folder, filename)
-        #     with open(filepresent, 'w') as json_file:
-        #         json.dump(resp_data, json_file, indent=25)
+          
         return(filename)        
       
     #Create a file with only necessary details for appointment    
