@@ -2,10 +2,10 @@ import json
 from app.common.enumclasses import PatientReplyEnum
 
 from app.common.appointment.appointment_utils import valid_patient_reply
-from app.services.appointment_service.common_service.db_service import DatabaseService
+from app.services.common_service.db_service import DatabaseService
 class UpdateReply:
     def __init__(self): 
-         self.db_data = DatabaseService()
+        self.db_data = DatabaseService()
          
 
     async def update_reply_by_phone(self, filename, phone_number, new_data):

@@ -1,12 +1,13 @@
 import os
 
-from app.services.appointment_local_service.common_local_service.file_service import FileStorageService
+from app.services.common_service.db_service import DatabaseService
+
 
 class RecentFile:
     async def find_recent_file(self, prefix):
         try:
-            file_connect = FileStorageService()
-            file_name = await file_connect.find_recent_documents(prefix)
+            self.db_data = DatabaseService()
+            file_name = await self.db_data.find_recent_documents(prefix)
             if file_name:
                 return file_name
             else:

@@ -4,8 +4,6 @@ import httpx
 from app.common.utils import get_temp_filepath
 from app.common.utils import is_date_valid
 from app.common.reancareapi.rc_login_service import RCLogin
-from app.services.appointment_service.common_service.recent_file_service import RecentFile
-from app.services.appointment_service.common_service.update_reply_service import UpdateReply
 from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
 from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
 from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
@@ -13,6 +11,7 @@ import json
 import os
 
 from app.services.appointment_service.gmu_service.gmu_read_report import GMUReadReport
+from app.services.common_service.update_reply_service import UpdateReply
 
 
 ###############################################################################

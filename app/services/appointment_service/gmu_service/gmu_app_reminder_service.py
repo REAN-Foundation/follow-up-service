@@ -12,7 +12,8 @@ from app.common.cache import cache
 import pytz
 
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
-from app.services.appointment_service.common_service.db_service import DatabaseService
+from app.services.common_service.db_service import DatabaseService
+
 
 ###############################################################
 

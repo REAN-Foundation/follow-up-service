@@ -5,8 +5,9 @@ import camelot
 import pdfplumber
 from dateutil import parser
 from app.common.utils import get_temp_filepath
-from app.services.appointment_service.common_service.db_service import DatabaseService
 import pandas as pd
+
+from app.services.common_service.db_service import DatabaseService
 
 ###############################################################
 
@@ -50,7 +51,7 @@ class GMUPdfReader:
                 raise Exception("No tables inside the pdf.")
 
             all_appointments_ = []
-            invalid_data_ = []
+            # invalid_data_ = []
 
             for i in range(self.total_table_count):
                 row_count, column_count = self.get_shape(tables[i].df)
