@@ -6,7 +6,7 @@ from app.services.appointment_service.common_service.db_service import DatabaseS
 class UpdateReply:
     def __init__(self): 
          self.db_data = DatabaseService()
-         self.collection_prefix = ''
+         
 
     async def update_reply_by_phone(self, filename, phone_number, new_data):
         print('Reply From WhatsApp',phone_number , ":", str(new_data))
@@ -15,7 +15,6 @@ class UpdateReply:
         print(number)
        
         if filename.startswith('gmu_followup_file_'):
-            self.collection_prefix = 'gmu'
             data = await self.db_data.search_file(filename)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
                 
@@ -37,7 +36,6 @@ class UpdateReply:
                 return(e)
             
         if filename.startswith('gghn_appointment_'):
-            self.collection_prefix = 'gghn'
             data = await self.db_data.search_file(filename)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
         # Updating patient reply for status ANY

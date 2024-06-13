@@ -59,9 +59,11 @@ class FileStorageService(DatabaseStorageI):
                 indent_given = 6  
             indent_given = 7 
             f_path = await self.connect_storage(filename)
-            with open(f_path, 'w') as json_file:
-                json.dump(content, json_file,indent = indent_given)
-            return(filename)
+            if(f_path):
+                with open(f_path, 'w') as json_file:
+                    json.dump(content, json_file,indent = indent_given)
+                data = await self.search_file(filename)
+                return(data)
         except Exception as e:
             print(f"An error occurred while updating in file: {e}")
     
