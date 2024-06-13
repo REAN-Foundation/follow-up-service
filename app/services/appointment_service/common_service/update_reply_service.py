@@ -16,7 +16,7 @@ class UpdateReply:
        
         if filename.startswith('gmu_followup_file_'):
             self.collection_prefix = 'gmu'
-            data = await self.db_data.search_file(filename,self.collection_prefix)
+            data = await self.db_data.search_file(filename)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
                 
         # Updating patient reply for status Pending arrival
@@ -29,7 +29,7 @@ class UpdateReply:
                             item['WhatsApp_message_id'] = new_data['WhatsApp_message_id']
 
             try:
-                content = await self.db_data.update_file(filename, data, self.collection_prefix)
+                content = await self.db_data.update_file(filename, data)
                 return(content)
             except Exception as e:
             # Handle other exceptions
@@ -38,7 +38,7 @@ class UpdateReply:
             
         if filename.startswith('gghn_appointment_'):
             self.collection_prefix = 'gghn'
-            data = await self.db_data.search_file(filename, self.collection_prefix)
+            data = await self.db_data.search_file(filename)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
         # Updating patient reply for status ANY
             for item in data:
@@ -49,7 +49,7 @@ class UpdateReply:
                         item['WhatsApp_message_id'] =new_data['WhatsApp_message_id']
 
             try:
-                content = await self.db_data.update_file(filename,data,self.collection_prefix)
+                content = await self.db_data.update_file(filename,data)
                 return(content)
             except Exception as e:
             # Handle other exceptions

@@ -97,11 +97,14 @@ async def has_patient_replied_infile(prefix_string, mobile, reminder_date):
                 return True
         return False
 
-async def has_patient_replied(prefix_string, mobile, reminder_date,collect_prefix):
+async def has_patient_replied(prefix_string, mobile, reminder_date,):
+        # initial = prefix_string
+        # ini_prefix = initial.split('_')
+        # collect_prefix = ini_prefix[0]
         print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
         db_connect = DatabaseService()
         filename=str(prefix_string+reminder_date+'.json')
-        f_data= await db_connect.search_file(filename,collect_prefix)
+        f_data= await db_connect.search_file(filename)
         flag = 0
         if(f_data == None):
             print(f"No file exsist with name{filename}")

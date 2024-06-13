@@ -2,11 +2,11 @@ from fastapi import APIRouter, HTTPException, Request
 import boto3
 # from app.common.utils import get_temp_filepath
 from app.services.appointment_local_service.common_local_service.update_reply_local_service import UpdateReply
-from app.services.appointment_local_service.gghn_local_service.gghn_login_local_service import GGHNLogin
+from app.common.appointment.gghn_login_local_service import GGHNLogin
 from app.services.appointment_local_service.gghn_local_service.gghn_app_reminder_local_service import  GGHNAppointmentReminder
 from app.services.appointment_local_service.common_local_service.recent_file_local_service import RecentFile
 from app.services.appointment_local_service.gghn_local_service.gghn_read_report_local_service import GGHNReadReport
-from app.services.appointment_local_service.common_local_service.rc_login_service import RCLogin
+from app.common.reancareapi.rc_login_service import RCLogin
 
 
 async def readfile_content(date):

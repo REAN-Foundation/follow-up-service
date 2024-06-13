@@ -116,7 +116,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
             else:
-                print("No phone number found to set remnder")
+                print("Patient have already replied hence no reminder set")
         await self.create_reports(summary_data,reminder_date)
 
    
@@ -129,13 +129,13 @@ class GMUAppointmentReminder(AppointmentReminderI):
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
             data_replaced = await self.replace_file(json_object,filename)
-            content_data = await self.file_storage.update_file(filename, data_replaced,7)
+            content_data = await self.file_storage.update_file(filename, data_replaced)
             print(content_data)
             return(content_data)
         else:
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
-            content_data = await self.file_storage.store_file(filename, json_object,7)
+            content_data = await self.file_storage.store_file(filename, json_object)
             
             print(content_data)
             return(content_data)

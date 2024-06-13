@@ -9,7 +9,7 @@ class RecentFile:
             prefix = file_prefix.split('_')
             collection_prefix = prefix[0]
             db_connect = DatabaseService()
-            most_recent_file = await db_connect.find_recent_documents(file_prefix, collection_prefix)
+            most_recent_file = await db_connect.find_recent_documents(file_prefix)
             file_name =  most_recent_file['filename']
             return file_name
         except Exception as e:

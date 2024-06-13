@@ -42,7 +42,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
         self.db_data = DatabaseService()
-        self.collect_prefix = 'gmu'
+      
 
     async def create_reminder(self, reminder_date, appointments):
 
@@ -100,7 +100,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 
                 # Check the patient replied status
                 prefix_string = 'gmu_followup_file_'
-                already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date, self.collect_prefix)
+                already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date)
                 # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
                 
                 if not already_replied:
@@ -117,27 +117,27 @@ class GMUAppointmentReminder(AppointmentReminderI):
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
         else:
-            print("No phone number found to set remnder")
+            print("Patient have already replied hence no reminder set")
         await self.create_reports(summary_data,reminder_date)
 
 
     async def create_reports(self,summary_data,reminder_date):
         print('SUMMARY:',summary_data)
         filename=str('gmu_followup_file_'+reminder_date+'.json')
-        data = await self.db_data.search_file(filename, self.collect_prefix)
+        data = await self.db_data.search_file(filename)
         # f_path=(os.getcwd()+"/temp/"+filename)
         if(data != None):
             print(f"The file {filename} already exists. ")
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
             data_replaced = await self.replace_file(json_object,filename)
-            content_data = await self.db_data.update_file(filename, data_replaced, self.collect_prefix)
+            content_data = await self.db_data.update_file(filename, data_replaced)
             print(content_data)
             return(content_data)
         else:
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
-            content_data = await self.db_data.store_file(filename, json_object, self.collect_prefix)
+            content_data = await self.db_data.store_file(filename, json_object)
             # temp_folder = os.path.join(os.getcwd(), "temp")
             # if not os.path.exists(temp_folder):
             #     os.mkdir(temp_folder)
@@ -157,7 +157,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
 
     async def replace_file(self,json_object,filename):
         # with open(f_path, 'r') as file:
-        data = await self.db_data.search_file(filename, self.collect_prefix)
+        data = await self.db_data.search_file(filename)
         for item in data:
             if item['Patient_status'] == 'Pending arrival':
                for record in json_object:

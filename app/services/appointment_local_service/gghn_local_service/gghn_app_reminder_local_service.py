@@ -65,7 +65,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         filename=str(prefix+enquiry_date+'.json')
         response = await self.file_storage.search_file(filename)
         if response == None:
-            await self.file_storage.store_file(filename,resp_data,25)
+            # await self.file_storage.store_file(filename,resp_data,25)
+            await self.file_storage.store_file(filename,resp_data)
         else:
             print(f"The file {filename} already exists!")
             if(prefix=='gghn_details_'):
@@ -153,7 +154,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         print("Length of the additional_data:", length_of_list)
         file_data.extend(additional_data)
         try:
-            await self.file_storage.update_file(filename,file_data,25)
+            # await self.file_storage.update_file(filename,file_data,25)
+            await self.file_storage.update_file(filename,file_data)
             return(filename)
         except Exception as e:
         # Handle other exceptions
@@ -193,7 +195,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         print("Length of the additional_appointment:", length_of_list)
         file_data.extend(additional_appointment)
         try:
-            await self.file_storage.update_file(filename,file_data,6)
+            # await self.file_storage.update_file(filename,file_data,6)
+            await self.file_storage.update_file(filename,file_data)
             return(filename)
         except Exception as e:
         # Handle other exceptions
@@ -304,7 +307,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             else:
                 app_data['Phone_number'] = ''
 
-        retrived_data = await self.file_storage.update_file(file_name,appointment_data,6)
+        # retrived_data = await self.file_storage.update_file(file_name,appointment_data,6)
+        retrived_data = await self.file_storage.update_file(file_name,appointment_data)
         data = retrived_data
         return(file_name)
 

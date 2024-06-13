@@ -3,7 +3,7 @@ from fastapi import File, UploadFile
 from app.common.utils import is_date_valid
 from app.services.appointment_local_service.common_local_service.recent_file_local_service import RecentFile
 from app.services.appointment_local_service.common_local_service.update_reply_local_service import  UpdateReply
-from app.services.appointment_local_service.common_local_service.rc_login_service import RCLogin
+from app.common.reancareapi.rc_login_service import RCLogin
 from app.services.appointment_local_service.gmu_local_service.gmu_pdf_reader_local_service import GMUPdfReader
 from app.services.appointment_local_service.gmu_local_service.gmu_app_reminder_local_service import  GMUAppointmentReminder
 from app.services.appointment_local_service.gmu_local_service.gmu_admin_notification_local_service import  GMUAdminNotification

@@ -19,8 +19,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         self.reminders_sent_count = 0
         self.appointment_details= []
         self.db_data = DatabaseService()
-        self.collect_prefix = 'gghn'
-
+        
         gghn_base_url = os.getenv("GGHN_BASE_URL")
         if gghn_base_url == None:
             raise Exception('GGHN_BASE_URL is not set')
@@ -69,9 +68,9 @@ class GGHNAppointmentReminder(AppointmentReminderI):
     #Create/update a detail file of api out put 
     async def create_reports(self,resp_data,enquiry_date,prefix):
         filename=str(prefix+enquiry_date+'.json')
-        response = await self.db_data.search_file(filename,self.collect_prefix)
+        response = await self.db_data.search_file(filename)
         if response == None:
-            await self.db_data.store_file(filename,resp_data, self.collect_prefix)
+            await self.db_data.store_file(filename,resp_data)
         else:
             print(f"The file {filename} already exists!")
             if(prefix=='gghn_details_'):
@@ -83,7 +82,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
     #Create a file with only necessary details for appointment    
     async def extract_appointment(self, file_name,date):
-        response = await self.db_data.search_file(file_name,self.collect_prefix)
+        response = await self.db_data.search_file(file_name)
         if response == None:
             raise Exception(file_name + " does not exist.")
        
@@ -109,7 +108,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
     # Update gghn details file  
     async def update_content(self,filename,resp_data,enquiry_date,prefix):
         additional_data=[]
-        file_content = await self.db_data.search_file(filename,self.collect_prefix)
+        file_content = await self.db_data.search_file(filename)
         if(file_content == None):
             print(f"An unexpected error occurred while reading {filename}")
           
@@ -161,7 +160,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         file_data.extend(additional_data)
        
         try:
-            await self.db_data.update_file(filename,file_data,self.collect_prefix)
+            await self.db_data.update_file(filename,file_data)
             return(filename)
         except Exception as e:
         # Handle other exceptions
@@ -171,7 +170,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
     # Update gghn appointment file  
     async def update_appointment_content(self,filename,resp_data,enquiry_date,prefix):
         additional_appointment=[]
-        file_content = await self.db_data.search_file(filename,self.collect_prefix)
+        file_content = await self.db_data.search_file(filename)
         if(file_content == None):
             print(f"An unexpected error occurred while reading {filename}")
         
@@ -204,7 +203,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         file_data.extend(additional_appointment)
         
         try:
-            await self.db_data.update_file(filename,file_data,self.collect_prefix)
+            await self.db_data.update_file(filename,file_data)
             return(filename)
         except Exception as e:
         # Handle other exceptions
@@ -213,7 +212,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
     async def create_reminder(self,appointment_file,date):
         count = 0
-        filedata = await self.db_data.search_file(appointment_file,self.collect_prefix)
+        filedata = await self.db_data.search_file(appointment_file)
         if(filedata == None):
             print(f"An unexpected error occurred while reading{appointment_file}")
         for item in filedata:
@@ -230,7 +229,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                         #for trial date made static
                         # date = '2024-05-2'
 
-                        already_replied = await has_patient_replied(prefix_str, phone_number, date,self.collect_prefix)
+                        already_replied = await has_patient_replied(prefix_str, phone_number, date)
                         if not already_replied:
                             schedule_model = await self.get_schedule_create_model(patient_data,patient_code,first_reminder,date)
                             response = await self.schedule_reminder(schedule_model)
@@ -303,7 +302,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
     # Update phone number in appointment file of GGHN
     async def update_phone_by_EMRId(self, file_name, date):
         recent_data=[]
-        file_data = await self.db_data.search_file(file_name,self.collect_prefix)
+        file_data = await self.db_data.search_file(file_name)
         if(file_data == None):
             print(f"An unexpected error occurred in update_phone_by_EMRId while reading {file_name}")
         
@@ -317,7 +316,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             else:
                 app_data['Phone_number'] = ''
 
-        retrived_data = await self.db_data.update_file(file_name,appointment_data,self.collect_prefix)
+        retrived_data = await self.db_data.update_file(file_name,appointment_data)
         data = retrived_data
         return(file_name)
 

@@ -24,8 +24,13 @@ class FileStorageService(DatabaseStorageI):
         except Exception as e:
             print(f"An error occurred while connecting to file storage : {e}")
     
-    async def store_file(self, filename, content, indent_given = 1):
+    async def store_file(self, filename, content):
         try:
+            if filename.startswith("gghn_details"):
+                indent_given = 25
+            if filename.startswith("gghn_appointment"):
+                indent_given = 6  
+            indent_given = 7      
             f_path = await self.connect_storage(filename)
             with open(f_path, 'w') as json_file:
                 json.dump(content, json_file, indent = indent_given )
@@ -46,11 +51,19 @@ class FileStorageService(DatabaseStorageI):
         except Exception as e:
             print(f"An error occurred while searching file: {e}")
     
-    async def update_file(self, filename, content, indent_given = 1):
-        f_path = await self.connect_storage(filename)
-        with open(f_path, 'w') as json_file:
+    async def update_file(self, filename, content):
+        try:
+            if filename.startswith("gghn_details"):
+                indent_given = 25
+            if filename.startswith("gghn_appointment"):
+                indent_given = 6  
+            indent_given = 7 
+            f_path = await self.connect_storage(filename)
+            with open(f_path, 'w') as json_file:
                 json.dump(content, json_file,indent = indent_given)
-        return(filename)
+            return(filename)
+        except Exception as e:
+            print(f"An error occurred while updating in file: {e}")
     
     async def find_recent_documents(self, prefix):
         folder_path = os.path.join(os.getcwd(), "temp")

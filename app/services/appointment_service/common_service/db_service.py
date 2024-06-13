@@ -24,8 +24,10 @@ class DatabaseService(DatabaseStorageI):
             record = db.get_collection(os.getenv("GMU_COLLECTION_NAME"))
             return(record)
     
-    async def store_file(self,filename,content,collect_prefix):
-        collection = await self.connect_storage(collect_prefix)
+    async def store_file(self,filename,content):
+        prefix =  filename.split('_')
+        collection_prefix = prefix[0]
+        collection = await self.connect_storage(collection_prefix)
         time_stamp  = datetime.utcnow()
         document = {
                         "filename": filename,
@@ -39,10 +41,15 @@ class DatabaseService(DatabaseStorageI):
         cnt = collection.count_documents({})
         print("count of records in collection",cnt)
 
-    async def search_file(self, query, collect_prefix):
+    async def search_file(self, query):
         try:
+            filename = query
+            prefix =  filename.split('_')
+            collection_prefix = prefix[0]
+            if(collection_prefix == 'temp'):
+                collection_prefix = 'gmu'
             # MongoDB Atlas connection string
-            collection = await self.connect_storage(collect_prefix)
+            collection = await self.connect_storage(collection_prefix)
             # Define the query to filter documents
             query = {"filename": query}
             # Retrieve documents matching the query
@@ -61,11 +68,15 @@ class DatabaseService(DatabaseStorageI):
         except pymongo.errors.PyMongoError as e:
             print(f"An error occurred: {e}")
     
-    async def update_file(self, filename, update_content, collect_prefix):
+    async def update_file(self, filename, update_content):
         file_name = filename
-        collection = await self.connect_storage(collect_prefix)
+        prefix =  filename.split('_')
+        collection_prefix = prefix[0]
+        if(collection_prefix == 'temp'):
+                collection_prefix = 'gmu'
+        collection = await self.connect_storage(collection_prefix)
         filter = {"filename":file_name}
-        resp = await self.search_file(file_name,collect_prefix)
+        resp = await self.search_file(file_name)
         if resp != None:
             print(type(update_content)) 
             update_fields = {
@@ -78,14 +89,18 @@ class DatabaseService(DatabaseStorageI):
             result = collection.update_one(filter, update)
             if result.matched_count > 0:
                 print(f"Successfully updated {result.modified_count} document(s).")
-                data = await self.search_file(file_name,collect_prefix)
+                data = await self.search_file(file_name)
             else:
                 print("No documents matched the filter.")
                 data = None
         return(data)
     
-    async def find_recent_documents(self, file_prefix, collect_prefix):
-        collection = await self.connect_storage(collect_prefix)
+    async def find_recent_documents(self, file_prefix):
+        initial = file_prefix
+        prefix =  initial.split('_')
+        collection_prefix = prefix[0]
+        print("initial",collection_prefix)
+        collection = await self.connect_storage(collection_prefix)
         query = {'filename': {'$regex': f'^{file_prefix}'}}
         cursor = collection.find(query).sort('updatedAt', -1).limit(1)
         return cursor.next() if cursor.count() > 0 else None

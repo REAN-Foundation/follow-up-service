@@ -37,8 +37,7 @@ class GMUPdfReader:
         self.total_rows = 0
         self.data = {}
         self.db_data = DatabaseService()
-        self.collect_prefix = 'gmu'
-
+       
 
     async def extract_appointments_from_pdf(self, input_file_path):
         try:
@@ -63,11 +62,11 @@ class GMUPdfReader:
                 json_string = df.to_json(orient='records')
                 # json_string = tables[i].to_json()
                 print("json_string..",json_string)
-                content = await self.db_data.search_file(filename, self.collect_prefix)
+                content = await self.db_data.search_file(filename)
                 if(content != None):
-                    await self.db_data.update_file(filename, json_string, self.collect_prefix)
+                    await self.db_data.update_file(filename, json_string)
                 else:
-                    await self.db_data.store_file(filename, json_string, self.collect_prefix)
+                    await self.db_data.store_file(filename, json_string)
                 # temp_filepath = get_temp_filepath(filename)
                 # tables[i].to_json(temp_filepath)
                 appointments = await self.extract_table_appointments(filename)
@@ -84,7 +83,7 @@ class GMUPdfReader:
             return None
 
     async def extract_table_appointments(self, filename):
-        file_content = await self.db_data.search_file(filename,self.collect_prefix)
+        file_content = await self.db_data.search_file(filename)
         if not file_content:
             raise Exception(filename + " does not exist.")
         table_data=json.loads(file_content)

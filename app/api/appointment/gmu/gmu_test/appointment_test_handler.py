@@ -1,10 +1,10 @@
 import shutil
 from fastapi import File, UploadFile
+from app.common.reancareapi.rc_login_service import RCLogin
 from app.common.utils import is_date_valid
 
 from app.services.appointment_service.common_service.recent_file_service import RecentFile
 from app.services.appointment_service.common_service.update_reply_service import UpdateReply
-from app.services.appointment_service.common_service.rc_login_service import RCLogin
 from app.services.appointment_service.gghn_service.gghn_read_report import GGHNReadReport
 from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
 from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
