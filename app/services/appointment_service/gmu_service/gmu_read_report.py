@@ -4,7 +4,7 @@ import os
 from fastapi import HTTPException
 import requests
 from app.common.cache import cache
-from app.services.common_service.db_service import DatabaseService
+# from app.services.common_service.db_service import DatabaseService
 class GMUReadReport:
     def __init__(self):
         self.patients_count = 0
@@ -14,11 +14,11 @@ class GMUReadReport:
         self.patient_reply_no_count = 0
         self.patient_not_replied_count = 0
         self.patient_data=[]
-        self.db_data = DatabaseService()
+        # self.db_data = DatabaseService()
         
-    async def read_appointment_file(self,filename):
+    async def read_appointment_file(self,filename,storage_service):
         try:
-            data = await self.db_data.search_file(filename)
+            data = await storage_service.search_file(filename)
             if(data!= None):
                 return(data)
             else:
@@ -27,14 +27,14 @@ class GMUReadReport:
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
         
-    async def read_appointment_summary(self,filename):
+    async def read_appointment_summary(self,filename,storage_service):
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[3:])
         file_date = f_date.split('.')
         date_of_file = file_date[0]
         print(date_of_file) 
                
-        data = await self.db_data.search_file(filename)
+        data = await storage_service.search_file(filename)
         if(data!= None):
             for item in data:
                 self.patients_count = self.patients_count + 1
@@ -64,9 +64,9 @@ class GMUReadReport:
                 print("No file found")
                 raise HTTPException(status_code=404, detail="File not found") 
     
-    async def readfile_content_by_ph(self, filename, phone_number):
+    async def readfile_content_by_ph(self, filename, phone_number,storage_service):
         try:
-            data = await self.db_data.search_file(filename)
+            data = await storage_service.search_file(filename)
             
             if(data!= None):
                 for item in data:

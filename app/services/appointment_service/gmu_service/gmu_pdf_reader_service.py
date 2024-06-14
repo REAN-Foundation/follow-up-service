@@ -7,7 +7,7 @@ from dateutil import parser
 from app.common.utils import get_temp_filepath
 import pandas as pd
 
-from app.services.common_service.db_service import DatabaseService
+# from app.services.common_service.db_service import DatabaseService
 
 ###############################################################
 
@@ -37,10 +37,10 @@ class GMUPdfReader:
         self.total_table_count = 0
         self.total_rows = 0
         self.data = {}
-        self.db_data = DatabaseService()
+        # self.db_data = DatabaseService()
        
 
-    async def extract_appointments_from_pdf(self, input_file_path):
+    async def extract_appointments_from_pdf(self, input_file_path,storage_service):
         try:
             if not os.path.exists(input_file_path):
                 raise Exception(input_file_path + " does not exist.")
@@ -63,14 +63,14 @@ class GMUPdfReader:
                 json_string = df.to_json(orient='records')
                 # json_string = tables[i].to_json()
                 print("json_string..",json_string)
-                content = await self.db_data.search_file(filename)
+                content = await storage_service.search_file(filename)
                 if(content != None):
-                    await self.db_data.update_file(filename, json_string)
+                    await storage_service.update_file(filename, json_string)
                 else:
-                    await self.db_data.store_file(filename, json_string)
+                    await storage_service.store_file(filename, json_string)
                 # temp_filepath = get_temp_filepath(filename)
                 # tables[i].to_json(temp_filepath)
-                appointments = await self.extract_table_appointments(filename)
+                appointments = await self.extract_table_appointments(filename,storage_service)
                 all_appointments_.extend(appointments)
                
 
@@ -83,8 +83,8 @@ class GMUPdfReader:
             print(e)
             return None
 
-    async def extract_table_appointments(self, filename):
-        file_content = await self.db_data.search_file(filename)
+    async def extract_table_appointments(self, filename,storage_service):
+        file_content = await storage_service.search_file(filename)
         if not file_content:
             raise Exception(filename + " does not exist.")
         table_data=json.loads(file_content)

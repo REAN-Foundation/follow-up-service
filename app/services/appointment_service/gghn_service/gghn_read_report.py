@@ -15,25 +15,25 @@ class GGHNReadReport:
         self.patient_reply_no_count = 0
         self.patient_not_replied_count = 0
         self.patient_data=[]
-        self.db_data = DatabaseService()
+        # self.db_data = DatabaseService()
        
 
-    async def gghn_read_appointment_file(self,filename):
+    async def gghn_read_appointment_file(self,filename,storage_service):
         try:
-            data = await self.db_data.search_file(filename)
+            data = await storage_service.search_file(filename)
             return(data)
             
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
         
-    async def gghn_read_appointment_summary(self,filename):
+    async def gghn_read_appointment_summary(self,filename,storage_service):
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[2:])
         file_date = f_date.split('.')
         date_of_file = file_date[0]
         print(date_of_file)
          
-        data = await self.db_data.search_file(filename)    
+        data = await storage_service.search_file(filename)    
         for item in data:
             self.patients_count = self.patients_count + 1
             if item['Patient_replied'] == 'Yes':

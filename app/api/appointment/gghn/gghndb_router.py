@@ -8,6 +8,13 @@ from app.common.cache import cache
 from app.api.appointment.gghn.gghndb_handler import read_appointment_file, readfile_content, readfile_summary, recent_file, update_gghn_reply_by_ph
 from app.common.response_model import ResponseModel
 # from app.common.utils import find_recent_file_with_prefix, get_temp_filepath
+
+from fastapi import FastAPI, Depends
+
+from app.dependency import get_storage_service
+from app.interfaces.appointment_storage_interface import DatabaseStorageI
+
+
 ##################################################################################
 router = APIRouter(
     prefix="/appointment-schedules/gghn",
@@ -17,9 +24,9 @@ router = APIRouter(
 )
 #################################################################################
 @router.post("/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
-async def read_file(date_string: str):
+async def read_file(date_string: str,storage_service: DatabaseStorageI = Depends(get_storage_service)):
     try:
-        response = await readfile_content(date_string)
+        response = await readfile_content(date_string,storage_service)
         if(response == None):
             return{
                 "Message":"No Appointments available",
@@ -35,7 +42,7 @@ async def read_file(date_string: str):
 
  # Here i have changed the route from appointment-status to appointment-reply       
 @router.put("/appointment-reply/{phone_number}/day/{date_str}",  status_code=status.HTTP_201_CREATED)
-async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str):
+async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str,storage_service: DatabaseStorageI = Depends(get_storage_service)):
     try:
         print(phone_number)
         ph_number = (f"+{phone_number}")
@@ -44,7 +51,7 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
         filename = file_name.replace(' ', '')
      
         content = new_data
-        updated_data = await update_gghn_reply_by_ph(filename, number, content)
+        updated_data = await update_gghn_reply_by_ph(filename, number, content,storage_service)
         return {
             "Message" : "Updated response successfully",
             "Data" : updated_data
@@ -53,14 +60,14 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
         raise HTTPException(status_code=404, detail=str(e))
     
 @router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
-async def read_file():
+async def read_file(storage_service: DatabaseStorageI = Depends(get_storage_service)):
     file_prefix = "gghn_appointment_"
-    filename = await recent_file(file_prefix)
+    filename = await recent_file(file_prefix,storage_service)
     print(filename)
 
     try:
-        gghn_appointment_followup_data = await read_appointment_file(filename)        
-        followup_summary = await readfile_summary(filename)
+        gghn_appointment_followup_data = await read_appointment_file(filename,storage_service)        
+        followup_summary = await readfile_summary(filename,storage_service)
         data = {
             "Summary":followup_summary,
             "File_data":gghn_appointment_followup_data,
@@ -71,13 +78,13 @@ async def read_file():
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Recent file error"})
 
 @router.get("/status-report/{date_str}", status_code=status.HTTP_200_OK)
-async def read_file(date_str: str):
+async def read_file(date_str: str,storage_service: DatabaseStorageI = Depends(get_storage_service)):
     file_name=(f"gghn_appointment_{date_str}.json")
     filename = file_name.replace(' ', '')
    
     try:
-        appointment_followup_data = await read_appointment_file(filename)        
-        followup_summary = await readfile_summary(filename)
+        appointment_followup_data = await read_appointment_file(filename,storage_service)        
+        followup_summary = await readfile_summary(filename,storage_service)
         data = {
             "Summary":followup_summary,
             "File_data":appointment_followup_data

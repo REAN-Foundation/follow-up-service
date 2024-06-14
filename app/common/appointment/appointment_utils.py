@@ -11,7 +11,7 @@ from app.common.cache import cache
 import urllib.parse
 import requests
 
-from app.services.common_service.db_service import DatabaseService
+# from app.services.common_service.db_service import DatabaseService
 
 
 ###############################################################################
@@ -99,14 +99,14 @@ async def has_patient_replied_infile(prefix_string, mobile, reminder_date):
                 return True
         return False
 
-async def has_patient_replied(prefix_string, mobile, reminder_date,):
+async def has_patient_replied(prefix_string, mobile, reminder_date,storage_service):
         # initial = prefix_string
         # ini_prefix = initial.split('_')
         # collect_prefix = ini_prefix[0]
         print(f'validating whether Patient already replyed for {mobile} : {reminder_date}')
-        db_connect = DatabaseService()
+        # db_connect = DatabaseService()
         filename=str(prefix_string+reminder_date+'.json')
-        f_data= await db_connect.search_file(filename)
+        f_data= await storage_service.search_file(filename)
         flag = 0
         if(f_data == None):
             print(f"No file exsist with name{filename}")

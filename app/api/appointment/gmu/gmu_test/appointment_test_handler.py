@@ -12,7 +12,7 @@ from app.services.common_service.recent_file_service import RecentFile
 from app.services.common_service.update_reply_service import UpdateReply
 ###############################################################################
 
-async def handle(file: UploadFile = File(...)):
+async def handle(storage_service,file: UploadFile = File(...)):
 
     file_path = await store_uploaded_file(file)
 
@@ -30,12 +30,12 @@ async def handle(file: UploadFile = File(...)):
     # 3. Extract the PDF file
     if is_valid_date:
         # 3. Extract the PDF file
-        appointments = await reader.extract_appointments_from_pdf(file_path)
+        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
         
         # 4. Send one-time-reminders
         reminder = GMUAppointmentReminder()
         # reminder_date = '2023-11-08'
-        await reminder.create_reminder(reminder_date, appointments)
+        await reminder.create_reminder(reminder_date, appointments,storage_service)
         reminder_summary = await reminder.summary()
 
         admin_notification = GMUAdminNotification()
@@ -62,40 +62,40 @@ async def store_uploaded_file(file: UploadFile):
         shutil.copyfileobj(file.file, buffer)
     return file_path
 
-async def read_appointment_file(filename):
+async def read_appointment_file(filename,storage_service):
     try:
         reportfile = GMUReadReport()
-        filecontent = await reportfile.read_appointment_file(filename)
+        filecontent = await reportfile.read_appointment_file(filename,storage_service)
         return(filecontent)
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(filename,phone_number):
+async def readfile_content_by_phone(filename,phone_number,storage_service):
     try:
         reportfile = GMUReadReport()
-        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number)
+        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number,storage_service)
         return(filecontent)
     except Exception as e:
          raise e
 
 
-async def readfile_summary(filename):
+async def readfile_summary(filename,storage_service):
     try:
         reportfile = GMUReadReport()
-        filesummary = await reportfile.read_appointment_summary(filename)
+        filesummary = await reportfile.read_appointment_summary(filename,storage_service)
         return(filesummary)
     except Exception as e:
          raise e
 
-async def update_reply_by_ph(filename, phone_number, new_data):
+async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
     try:
         updatefile = UpdateReply()
-        updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data)
+        updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data,storage_service)
         return(updated_data)
     except Exception as e:
          raise e
 
-async def recent_file(file_prefix):
+async def recent_file(file_prefix,storage_service):
     recentfile = RecentFile()
-    filename = await recentfile.find_recent_file(file_prefix)   
+    filename = await recentfile.find_recent_file(file_prefix,storage_service)   
     return filename

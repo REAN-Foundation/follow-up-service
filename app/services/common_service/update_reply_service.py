@@ -5,17 +5,17 @@ from app.common.appointment.appointment_utils import valid_patient_reply
 from app.services.common_service.db_service import DatabaseService
 class UpdateReply:
     def __init__(self): 
-        self.db_data = DatabaseService()
-         
+        # self.db_data = DatabaseService()
+        pass
 
-    async def update_reply_by_phone(self, filename, phone_number, new_data):
+    async def update_reply_by_phone(self, filename, phone_number, new_data,storage_service):
         print('Reply From WhatsApp',phone_number , ":", str(new_data))
         print("filename",filename)
         number = phone_number.replace(' ', '')
         print(number)
        
         if filename.startswith('gmu_followup_file_'):
-            data = await self.db_data.search_file(filename)
+            data = await storage_service.search_file(filename)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
                 
         # Updating patient reply for status Pending arrival
@@ -28,7 +28,7 @@ class UpdateReply:
                             item['WhatsApp_message_id'] = new_data['WhatsApp_message_id']
 
             try:
-                content = await self.db_data.update_file(filename, data)
+                content = await storage_service.update_file(filename, data)
                 return(content)
             except Exception as e:
             # Handle other exceptions
@@ -36,7 +36,7 @@ class UpdateReply:
                 return(e)
             
         if filename.startswith('gghn_appointment_'):
-            data = await self.db_data.search_file(filename)
+            data = await storage_service.search_file(filename)
             patient_reply = valid_patient_reply(new_data['Patient_replied'])
         # Updating patient reply for status ANY
             for item in data:
@@ -47,7 +47,7 @@ class UpdateReply:
                         item['WhatsApp_message_id'] =new_data['WhatsApp_message_id']
 
             try:
-                content = await self.db_data.update_file(filename,data)
+                content = await storage_service.update_file(filename,data)
                 return(content)
             except Exception as e:
             # Handle other exceptions

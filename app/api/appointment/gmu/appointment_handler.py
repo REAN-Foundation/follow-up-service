@@ -17,7 +17,7 @@ from app.services.common_service.update_reply_service import UpdateReply
 
 ###############################################################################
 
-async def handle(message: Request):
+async def handle(message: Request,storage_service):
     try:
         message_data = await message.json()
         subscription_confirmation = 'Type' in message_data and message_data['Type'] == 'SubscriptionConfirmation'
@@ -25,7 +25,7 @@ async def handle(message: Request):
             return await handle_subscription_confirmation(message_data)
         else:
             print('handling s3 event')
-            return await handle_s3_event(message)
+            return await handle_s3_event(message,storage_service)
     except KeyError:
             raise HTTPException(status_code=400, detail='Unable to handle SNS notification')
 
@@ -47,7 +47,7 @@ async def handle_subscription_confirmation(message_data):
             # Subscription confirmation failed
         raise HTTPException(status_code=400, detail='Subscription confirmation failed')
 
-async def handle_s3_event(message: Request):
+async def handle_s3_event(message: Request,storage_service):
 
     file_path = await download(message)
 
@@ -66,16 +66,16 @@ async def handle_s3_event(message: Request):
     # 3. Extract the PDF file
     if is_valid_date:
         print('Extracting pdf data')
-        appointments = await reader.extract_appointments_from_pdf(file_path)
+        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
 
         # 4. Send one-time-reminders
         reminder = GMUAppointmentReminder()
-        await reminder.create_reminder(reminder_date, appointments)
+        await reminder.create_reminder(reminder_date, appointments,storage_service)
         reminder_summary = await reminder.summary()
 
         
         admin_notification = GMUAdminNotification()
-        await admin_notification.admin_notify(reminder_date,reminder_summary)
+        await admin_notification.admin_notify(reminder_date,reminder_summary,storage_service)
 
         return {
             "message" : "Reminders created successfully",
@@ -114,40 +114,40 @@ async def download_pdf_from_s3(bucket_name, object_key):
 
 #Other routes of file handling
 
-async def read_appointment_file(filename):
+async def read_appointment_file(filename,storage_service):
     try:
         reportfile = GMUReadReport()
-        filecontent = await reportfile.read_appointment_file(filename)
+        filecontent = await reportfile.read_appointment_file(filename,storage_service)
         return(filecontent)
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(filename,phone_number):
+async def readfile_content_by_phone(filename,phone_number,storage_service):
     try:
         reportfile = GMUReadReport()
-        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number)
+        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number,storage_service)
         return(filecontent)
     except Exception as e:
          raise e
 
 
-async def readfile_summary(filename):
+async def readfile_summary(filename,storage_service):
     try:
         reportfile = GMUReadReport()
-        filesummary = await reportfile.read_appointment_summary(filename)
+        filesummary = await reportfile.read_appointment_summary(filename,storage_service)
         return(filesummary)
     except Exception as e:
          raise e
 
-async def update_reply_by_ph(filename, phone_number, new_data):
+async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
     try:
         updatefile = UpdateReply()
-        updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data)
+        updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data,storage_service)
         return(updated_data)
     except Exception as e:
          raise e
 
-async def recent_file(file_prefix):
+async def recent_file(file_prefix,storage_service):
     recentfile = RecentFile()
-    filename = await recentfile.find_recent_file(file_prefix)   
+    filename = await recentfile.find_recent_file(file_prefix,storage_service)   
     return filename
