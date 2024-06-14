@@ -27,6 +27,8 @@ class DatabaseService(DatabaseStorageI):
     async def store_file(self,filename,content):
         prefix =  filename.split('_')
         collection_prefix = prefix[0]
+        if(collection_prefix == 'temp'):
+                collection_prefix = 'gmu'
         collection = await self.connect_storage(collection_prefix)
         time_stamp  = datetime.utcnow()
         document = {
@@ -63,7 +65,7 @@ class DatabaseService(DatabaseStorageI):
                 content = documents['content']
                 print(content)
                 return(content)
-        except pymongo.errors.ConnectionError as e:
+        except pymongo.errors.ConnectionFailure as e:
             print(f"Could not connect to MongoDB: {e}")
         except pymongo.errors.PyMongoError as e:
             print(f"An error occurred: {e}")
@@ -103,11 +105,11 @@ class DatabaseService(DatabaseStorageI):
         collection = await self.connect_storage(collection_prefix)
         query = {'filename': {'$regex': f'^{file_prefix}'}}
         cursor = collection.find(query).sort('updatedAt', -1).limit(1)
-        if (cursor.count() > 0):
-             most_recent_file =  cursor.next() 
-             return (most_recent_file['filename'])
+        most_recent_file = next(cursor, None)
+        if most_recent_file:
+            return most_recent_file['filename']
         else:
-            None
+             return None
 
 
        
