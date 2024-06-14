@@ -103,7 +103,11 @@ class DatabaseService(DatabaseStorageI):
         collection = await self.connect_storage(collection_prefix)
         query = {'filename': {'$regex': f'^{file_prefix}'}}
         cursor = collection.find(query).sort('updatedAt', -1).limit(1)
-        return cursor.next() if cursor.count() > 0 else None
+        if (cursor.count() > 0):
+             most_recent_file =  cursor.next() 
+             return (most_recent_file['filename'])
+        else:
+            None
 
 
        

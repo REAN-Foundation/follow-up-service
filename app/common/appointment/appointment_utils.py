@@ -11,7 +11,9 @@ from app.common.cache import cache
 import urllib.parse
 import requests
 
-from app.services.appointment_service.common_service.db_service import DatabaseService
+from app.services.common_service.db_service import DatabaseService
+
+
 ###############################################################################
 
 def validate_mobile(mobile):
