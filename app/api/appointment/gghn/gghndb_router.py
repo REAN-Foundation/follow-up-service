@@ -12,7 +12,7 @@ from app.common.response_model import ResponseModel
 from fastapi import FastAPI, Depends
 
 from app.dependency import get_storage_service
-from app.interfaces.appointment_storage_interface import DatabaseStorageI
+from app.interfaces.appointment_storage_interface import IStorageService
 
 
 ##################################################################################
@@ -24,7 +24,7 @@ router = APIRouter(
 )
 #################################################################################
 @router.post("/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
-async def read_file(date_string: str,storage_service: DatabaseStorageI = Depends(get_storage_service)):
+async def read_file(date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
         response = await readfile_content(date_string,storage_service)
         if(response == None):
@@ -42,7 +42,7 @@ async def read_file(date_string: str,storage_service: DatabaseStorageI = Depends
 
  # Here i have changed the route from appointment-status to appointment-reply       
 @router.put("/appointment-reply/{phone_number}/day/{date_str}",  status_code=status.HTTP_201_CREATED)
-async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str,storage_service: DatabaseStorageI = Depends(get_storage_service)):
+async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str,storage_service:IStorageService = Depends(get_storage_service)):
     try:
         print(phone_number)
         ph_number = (f"+{phone_number}")
@@ -60,7 +60,7 @@ async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, d
         raise HTTPException(status_code=404, detail=str(e))
     
 @router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
-async def read_file(storage_service: DatabaseStorageI = Depends(get_storage_service)):
+async def read_file(storage_service: IStorageService = Depends(get_storage_service)):
     file_prefix = "gghn_appointment_"
     filename = await recent_file(file_prefix,storage_service)
     print(filename)
@@ -78,7 +78,7 @@ async def read_file(storage_service: DatabaseStorageI = Depends(get_storage_serv
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Recent file error"})
 
 @router.get("/status-report/{date_str}", status_code=status.HTTP_200_OK)
-async def read_file(date_str: str,storage_service: DatabaseStorageI = Depends(get_storage_service)):
+async def read_file(date_str: str,storage_service: IStorageService = Depends(get_storage_service)):
     file_name=(f"gghn_appointment_{date_str}.json")
     filename = file_name.replace(' ', '')
    

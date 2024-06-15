@@ -5,10 +5,10 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 
-from app.interfaces.appointment_storage_interface import DatabaseStorageI 
+from app.interfaces.appointment_storage_interface import IStorageService 
 load_dotenv()
 
-class DatabaseService(DatabaseStorageI):
+class DatabaseService(IStorageService):
     def __init__(self):
         pass
 

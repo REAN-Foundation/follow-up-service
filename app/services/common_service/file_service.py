@@ -1,9 +1,9 @@
 import json
 import os
-from app.interfaces.appointment_storage_interface import DatabaseStorageI
+from app.interfaces.appointment_storage_interface import IStorageService
 
 
-class FileStorageService(DatabaseStorageI):
+class FileStorageService(IStorageService):
     def __init__(self):
         pass
 

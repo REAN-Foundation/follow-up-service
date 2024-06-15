@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class DatabaseStorageI(ABC):
+class IStorageService(ABC):
     @abstractmethod
     async def connect_storage():pass
 
