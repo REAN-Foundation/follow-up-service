@@ -117,8 +117,10 @@ class GMUAppointmentReminder(AppointmentReminderI):
             # if not is_reminder_set:
             #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
             #     self.schedule_reminder(schedule_model)
-        else:
-            print("Patient have already replied hence no reminder set")
+                else:
+                     print("Patient have already replied hence no reminder set")
+            else:
+                print("Patient phone number not set!")
         await self.create_reports(summary_data,reminder_date,storage_service)
 
 
