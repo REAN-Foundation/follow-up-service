@@ -1,8 +1,3 @@
-# from fastapi import APIRouter
-# from .appointment_local.gmu_local.appointment_local_routes import router as appointment_router
-# from .appointment_local.gmu_local.gmu_test_local.appointment_test_local_routes import router as test_router
-# from .appointment_local.gghn_local.gghndb_local_router import router as gghn_router
-# import os
 
 from fastapi import APIRouter
 from .appointment.gmu.appointment_routes import router as appointment_router
