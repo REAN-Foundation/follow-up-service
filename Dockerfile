@@ -1,6 +1,9 @@
 FROM python:3.12-alpine
+
 ARG OPENCV_VERSION=4.8.1
+
 WORKDIR /opt/build
+
 RUN set -ex \
     && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
     && echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
@@ -95,6 +98,7 @@ RUN set -ex \
     #     py3-numpy-dev \
     #     python3-dev \
     #     linux-headers
+
 ADD . /app
 RUN apk add bash
 WORKDIR /app
@@ -105,13 +109,16 @@ RUN apk add --no-cache \
     libxrender \
     libxext-dev \
     ghostscript \
-    aws-cli \
     dos2unix
 COPY requirements.txt /app/
+RUN pip install awscli
 RUN pip install setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . /app
+
 EXPOSE 3000
+
 COPY entrypoint.sh /app/entrypoint.sh
 
 RUN dos2unix /app/entrypoint.sh && \
