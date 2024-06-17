@@ -113,7 +113,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 EXPOSE 3000
 COPY entrypoint.sh /app/entrypoint.sh
+
 RUN dos2unix /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
-# ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
-CMD ["python","main.py"]
+
+ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
