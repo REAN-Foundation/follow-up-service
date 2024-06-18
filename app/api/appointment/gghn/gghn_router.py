@@ -37,7 +37,7 @@ async def read_file(date_string: str,storage_service: IStorageService = Depends(
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
 
      
-@router.put("/appointment-reply/{phone_number}/day/{date_str}",  status_code=status.HTTP_201_CREATED)
+@router.put("/appointment-status/{phone_number}/days/{date_str}",  status_code=status.HTTP_201_CREATED)
 async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str,storage_service:IStorageService = Depends(get_storage_service)):
     try:
         print(phone_number)
