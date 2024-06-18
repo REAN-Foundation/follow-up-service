@@ -63,7 +63,7 @@ class DatabaseService(IStorageService):
             else:
                 # Process and print each document
                 content = documents['content']
-                print(content)
+                # print(content)
                 return(content)
         except pymongo.errors.ConnectionFailure as e:
             print(f"Could not connect to MongoDB: {e}")

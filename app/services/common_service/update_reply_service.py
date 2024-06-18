@@ -1,7 +1,6 @@
 import json
+from app.common.appointment_api.appointment_utils import valid_patient_reply
 from app.common.enumclasses import PatientReplyEnum
-
-from app.common.appointment.appointment_utils import valid_patient_reply
 from app.services.common_service.db_service import DatabaseService
 class UpdateReply:
     def __init__(self): 
@@ -16,7 +15,7 @@ class UpdateReply:
        
         if filename.startswith('gmu_followup_file_'):
             data = await storage_service.search_file(filename)
-            patient_reply = valid_patient_reply(new_data['Patient_replied'])
+            patient_reply = await valid_patient_reply(new_data['Patient_replied'])
                 
         # Updating patient reply for status Pending arrival
             for item in data:
@@ -37,7 +36,7 @@ class UpdateReply:
             
         if filename.startswith('gghn_appointment_'):
             data = await storage_service.search_file(filename)
-            patient_reply = valid_patient_reply(new_data['Patient_replied'])
+            patient_reply = await valid_patient_reply(new_data['Patient_replied'])
         # Updating patient reply for status ANY
             for item in data:
                 if item['Phone_number'] == number:

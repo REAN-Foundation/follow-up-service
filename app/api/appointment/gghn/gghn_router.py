@@ -2,15 +2,11 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-# from app.common.appointment.appointment_utils import find_recent_file_from_atlas
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
-from app.api.appointment.gghn.gghndb_handler import read_appointment_file, readfile_content, readfile_summary, recent_file, update_gghn_reply_by_ph
+from app.api.appointment.gghn.gghn_handler import read_appointment_file, readfile_content, readfile_summary, recent_file, update_gghn_reply_by_ph
 from app.common.response_model import ResponseModel
-# from app.common.utils import find_recent_file_with_prefix, get_temp_filepath
-
 from fastapi import FastAPI, Depends
-
 from app.dependency import get_storage_service
 from app.interfaces.appointment_storage_interface import IStorageService
 
@@ -40,7 +36,7 @@ async def read_file(date_string: str,storage_service: IStorageService = Depends(
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
 
- # Here i have changed the route from appointment-status to appointment-reply       
+     
 @router.put("/appointment-reply/{phone_number}/day/{date_str}",  status_code=status.HTTP_201_CREATED)
 async def update_reply_and_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str,storage_service:IStorageService = Depends(get_storage_service)):
     try:

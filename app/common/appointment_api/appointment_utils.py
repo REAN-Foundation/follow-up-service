@@ -35,8 +35,7 @@ def valid_appointment_status(status):
     if status == AppStatusEnum.Pending_Arrival:
         return(AppStatusEnum.Pending_Arrival)
     
-
-def valid_patient_reply(reply):
+async def valid_patient_reply(reply):
     if reply == PatientReplyEnum.Patient_Replied_Yes:
         return(PatientReplyEnum.Patient_Replied_Yes)
     if reply == PatientReplyEnum.Patient_Replied_No:

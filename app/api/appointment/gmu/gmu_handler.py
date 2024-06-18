@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request
 import boto3
 import httpx
+from app.common.reancare_api.rc_login_service import RCLogin
 from app.common.utils import get_temp_filepath
 from app.common.utils import is_date_valid
-from app.common.reancareapi.rc_login_service import RCLogin
 from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
 from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
 from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification

@@ -2,7 +2,9 @@ import os
 import json
 import shutil
 import requests
-from app.common.appointment.appointment_utils import validate_mobile
+
+from app.common.appointment_api.appointment_utils import validate_mobile
+
 
 class GMUAdminNotification:
     def __init__(self):

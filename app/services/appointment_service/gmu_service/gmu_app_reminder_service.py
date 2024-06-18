@@ -4,13 +4,12 @@ import json
 import os
 import requests
 import urllib.parse
-from app.common.appointment.appointment_utils import has_patient_replied, time_of_first_reminder, valid_appointment_status, validate_mobile
+from app.common.appointment_api.appointment_utils import has_patient_replied, time_of_first_reminder, valid_appointment_status, validate_mobile
 from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
-from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
-# from app.common.utils import  get_temp_filepath
 from app.common.cache import cache
 import pytz
 
+from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.common_service.db_service import DatabaseService
 
@@ -135,7 +134,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
             json_object = json.loads(json_string)
             data_replaced = await self.replace_file(json_object,filename,storage_service)
             content_data = await storage_service.update_file(filename, data_replaced)
-            print(content_data)
+            # print(content_data)
             return(content_data)
         else:
             json_string = json.dumps(summary_data, indent=7)

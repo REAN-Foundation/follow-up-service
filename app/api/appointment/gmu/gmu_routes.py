@@ -1,39 +1,37 @@
-import json
-from fastapi import APIRouter, Depends, HTTPException, Path, status, File, UploadFile
-from fastapi.responses import JSONResponse
-import shutil
 import os
-# from app.common.appointment.appointment_utils import find_recent_file_from_atlas
-from app.common.base_response import BaseResponseModel
-from app.common.response_model import ResponseModel
-from app.common.utils import get_temp_filepath
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+from app.api.appointment.gmu.gmu_handler import handle, read_appointment_file, readfile_content_by_phone, readfile_summary, recent_file, update_reply_by_ph
+from app.common.cache import cache
 from app.dependency import get_storage_service
 from app.interfaces.appointment_storage_interface import IStorageService
-from .appointment_test_handler import handle, read_appointment_file, recent_file,update_reply_by_ph,readfile_summary,readfile_content_by_phone
-from app.common.cache import cache
+
 ###############################################################################
 
 router = APIRouter(
-    prefix="/appointments/tests",
-    tags=["tests"],
+    prefix="/appointment-schedules/gmu",
+    tags=["appointment-schedules", "gmu"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
 )
 
 ###############################################################################
 
-# Test route
-
-@router.post("/upload", status_code=status.HTTP_201_CREATED, response_model=ResponseModel[BaseResponseModel|None])
-async def test(file: UploadFile = File(...),storage_service: IStorageService = Depends(get_storage_service)):
+@router.post("/upload")
+async def handle_sns_notification(message: Request,storage_service: IStorageService = Depends(get_storage_service)):
     try:
-        return await handle(storage_service,file)
+        print("Notification received")
+        result = await handle(message,storage_service)
+        return JSONResponse(content=result)
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
 
-@router.get("/gmu/appointment-status/{phone_number}/days/{date_string}", status_code=status.HTTP_200_OK)
-async def read_file(phone_number: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
+
+@router.get("/appointment-status/{phone_number}/days/{date_string}", status_code=status.HTTP_200_OK)
+async def read_file(phone_number: str, date_string: str,storage_service: IStorageService  = Depends(get_storage_service)):
     ph_number = (f"+{phone_number}")
     number = ph_number.replace(' ', '')
     file_name=(f"gmu_followup_file_{date_string}.json")
@@ -45,7 +43,7 @@ async def read_file(phone_number: str, date_string: str,storage_service: IStorag
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
 
-@router.get("/gmu/status-report/{date_str}", status_code=status.HTTP_200_OK)
+@router.get("/status-report/{date_str}", status_code=status.HTTP_200_OK)
 async def read_file(date_str: str,storage_service: IStorageService = Depends(get_storage_service)):
     file_name=(f"gmu_followup_file_{date_str}.json")
     filename = file_name.replace(' ', '')
@@ -62,7 +60,7 @@ async def read_file(date_str: str,storage_service: IStorageService = Depends(get
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
 
-@router.put("/gmu/appointment-status/{phone_number}/days/{date_str}",  status_code=status.HTTP_201_CREATED)
+@router.put("/appointment-status/{phone_number}/days/{date_str}",  status_code=status.HTTP_201_CREATED)
 async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_str: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
         print(phone_number)
@@ -70,7 +68,7 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         number = ph_number.replace(' ', '')
         file_name=(f"gmu_followup_file_{date_str}.json")
         filename = file_name.replace(' ', '')
-       
+        
         content = new_data
         updated_data = await update_reply_by_ph(filename, number, content,storage_service)
         return updated_data
@@ -78,12 +76,12 @@ async def update_reply_whatsappid_by_ph(phone_number: str, new_data: dict, date_
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/gmu/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
+@router.get("/recent-status-report/recent-file", status_code=status.HTTP_200_OK)
 async def read_file(storage_service: IStorageService = Depends(get_storage_service)):
     file_prefix = "gmu_followup_file_"
-    filename =  await recent_file(file_prefix,storage_service)
+    filename = await recent_file(file_prefix,storage_service)
     print(filename)
-      
+    
     try:
         appointment_followup_data = await read_appointment_file(filename,storage_service)        
         followup_summary = await readfile_summary(filename,storage_service)
@@ -95,3 +93,4 @@ async def read_file(storage_service: IStorageService = Depends(get_storage_servi
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+

@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, HTTPException, Request
 import boto3
-from app.common.appointment.gghn_login_local_service import GGHNLogin
-from app.common.reancareapi.rc_login_service import RCLogin
+from app.common.reancare_api.rc_login_service import RCLogin
+from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
 from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
 from app.services.appointment_service.gghn_service.gghn_read_report import GGHNReadReport
 from app.services.common_service.recent_file_service import RecentFile

@@ -1,11 +1,10 @@
 import json
 import os
 import requests
-from app.common.appointment.appointment_utils import has_patient_replied, time_of_first_reminder
+from app.common.appointment_api.appointment_utils import has_patient_replied, time_of_first_reminder
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
-from app.common.reancareapi.reancareapi_utils import find_patient_by_mobile, get_headers
-# from app.common.utils import get_temp_filepath, open_file_in_readmode
+from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.common_service.db_service import DatabaseService
 

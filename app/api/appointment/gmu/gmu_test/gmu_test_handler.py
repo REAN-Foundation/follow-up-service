@@ -1,6 +1,6 @@
 import shutil
 from fastapi import File, UploadFile
-from app.common.reancareapi.rc_login_service import RCLogin
+from app.common.reancare_api.rc_login_service import RCLogin
 from app.common.utils import is_date_valid
 from app.services.appointment_service.gghn_service.gghn_read_report import GGHNReadReport
 from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
