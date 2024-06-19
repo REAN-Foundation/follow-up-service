@@ -1,21 +1,23 @@
 from fastapi import APIRouter, HTTPException, Request
 import boto3
 import httpx
+from app.common.reancare_api.rc_login_service import RCLogin
 from app.common.utils import get_temp_filepath
 from app.common.utils import is_date_valid
-from app.services.login_service import UserLogin
-from app.services.pdf_reader_service import PdfReader
-from app.services.reminder_service import Reminder
-from app.services.notification_service import AdminNotification
+from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
+from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
+from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
 import json
 import os
 
-from app.services.read_report import ReadReport
-from  app.services.update_service import UpdateFile
+from app.services.appointment_service.gmu_service.gmu_read_report import GMUReadReport
+from app.services.common_service.recent_file_service import RecentFile
+from app.services.common_service.update_reply_service import UpdateReply
+
 
 ###############################################################################
 
-async def handle(message: Request):
+async def handle(message: Request,storage_service):
     try:
         message_data = await message.json()
         subscription_confirmation = 'Type' in message_data and message_data['Type'] == 'SubscriptionConfirmation'
@@ -23,7 +25,7 @@ async def handle(message: Request):
             return await handle_subscription_confirmation(message_data)
         else:
             print('handling s3 event')
-            return await handle_s3_event(message)
+            return await handle_s3_event(message,storage_service)
     except KeyError:
             raise HTTPException(status_code=400, detail='Unable to handle SNS notification')
 
@@ -45,36 +47,35 @@ async def handle_subscription_confirmation(message_data):
             # Subscription confirmation failed
         raise HTTPException(status_code=400, detail='Subscription confirmation failed')
 
-async def handle_s3_event(message: Request):
+async def handle_s3_event(message: Request,storage_service):
 
     file_path = await download(message)
 
     # 1. Login as tenant-admin or tenant-user
-    login = UserLogin()
-    login.login()
+    login = RCLogin()
+    await login.login()
 
     # 2. Extract the date from the PDF file
-    reader = PdfReader()
-    reminder_date = reader.extract_reminder_date(file_path)
+    reader = GMUPdfReader()
+    reminder_date = await reader.extract_reminder_date(file_path)
     if not reminder_date:
         return ('Unable to find or unable to parse the date')
 
     # Compare file date with the todays date
-
-    is_valid_date = is_date_valid(reminder_date); 
+    is_valid_date = await is_date_valid(reminder_date); 
     # 3. Extract the PDF file
     if is_valid_date:
         print('Extracting pdf data')
-        appointments = reader.extract_appointments_from_pdf(file_path)
+        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
 
         # 4. Send one-time-reminders
-        reminder = Reminder()
-        reminder.create_one_time_reminders(reminder_date, appointments)
-        reminder_summary = reminder.summary()
+        reminder = GMUAppointmentReminder()
+        await reminder.create_reminder(reminder_date, appointments,storage_service)
+        reminder_summary = await reminder.summary()
 
         
-        admin_notification = AdminNotification()
-        admin_notification.admin_notify(reminder_date,reminder_summary)
+        admin_notification = GMUAdminNotification()
+        await admin_notification.admin_notify(reminder_date,reminder_summary,storage_service)
 
         return {
             "message" : "Reminders created successfully",
@@ -105,42 +106,48 @@ async def download_pdf_from_s3(bucket_name, object_key):
             aws_access_key_id=str(os.getenv("AWS_ACCESS_KEY")),
             aws_secret_access_key=str(os.getenv("AWS_SECRET_ACCESS_KEY"))
         )
-        local_file_path = get_temp_filepath(object_key)
+        local_file_path = await get_temp_filepath(object_key)
         s3.download_file(bucket_name, object_key, local_file_path)
         return local_file_path
     except Exception as e:
         return None
 
 #Other routes of file handling
-async def readfile(file_path):
+
+async def read_appointment_file(filename,storage_service):
     try:
-        reportfile = ReadReport()
-        filecontent = reportfile.read_report_file(file_path)
+        reportfile = GMUReadReport()
+        filecontent = await reportfile.read_appointment_file(filename,storage_service)
         return(filecontent)
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(file_path,phone_number):
+async def readfile_content_by_phone(filename,phone_number,storage_service):
     try:
-        reportfile = ReadReport()
-        filecontent = reportfile.readfile_content_by_ph(file_path,phone_number)
+        reportfile = GMUReadReport()
+        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number,storage_service)
         return(filecontent)
     except Exception as e:
          raise e
 
-async def readfile_summary(file_path,filename):
+
+async def readfile_summary(filename,storage_service):
     try:
-        reportfile = ReadReport()
-        filesummary = reportfile.read_report_summary(file_path,filename)
+        reportfile = GMUReadReport()
+        filesummary = await reportfile.read_appointment_summary(filename,storage_service)
         return(filesummary)
     except Exception as e:
          raise e
 
-async def update_reply_by_ph(file_path, phone_number, new_data):
+async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
     try:
-        updatefile = UpdateFile()
-        updated_data = updatefile.update_reply_by_phone(file_path, phone_number,new_data)
+        updatefile = UpdateReply()
+        updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data,storage_service)
         return(updated_data)
     except Exception as e:
          raise e
 
+async def recent_file(file_prefix,storage_service):
+    recentfile = RecentFile()
+    filename = await recentfile.find_recent_file(file_prefix,storage_service)   
+    return filename

@@ -5,6 +5,10 @@ from pygments import highlight, lexers, formatters
 from app.common.enumclasses import AppStatusEnum,PatientReplyEnum
 from datetime import datetime
 import pytz
+from datetime import *
+from app.common.cache import cache
+import urllib.parse
+import requests
 ###############################################################################
 
 def print_colorized_json(obj):
@@ -20,46 +24,10 @@ def get_temp_filepath(file_name):
     if not os.path.exists(temp_folder):
         os.mkdir(temp_folder)
     return os.path.join(temp_folder, file_name)
-
-def validate_mobile(mobile):
-    # if not bool(mobile.strip()) or not mobile.startswith('+1-'):
-        if not bool(mobile.strip()):
-            print('Invalid Mobile Number ', mobile)
-            return False
-        ten_digit = mobile.split('-')[1]
-        if len(ten_digit) == 10 and ten_digit.isnumeric():
-            return True
-
-def valid_appointment_status(status):
-    if status == AppStatusEnum.Patient_In_Lobby:
-        return(AppStatusEnum.Patient_In_Lobby)
-    if status == AppStatusEnum.Patient_Seen:
-        return(AppStatusEnum.Patient_Seen)
-    if status  == AppStatusEnum.Patient_Cancelled:
-        return(AppStatusEnum.Patient_Cancelled)
-    if status == AppStatusEnum.Pending_Arrival:
-        return(AppStatusEnum.Pending_Arrival)
-    
-
-def valid_patient_reply(reply):
-    if reply == PatientReplyEnum.Patient_Replied_Yes:
-        return(PatientReplyEnum.Patient_Replied_Yes)
-    if reply == PatientReplyEnum.Patient_Replied_No:
-        return(PatientReplyEnum.Patient_Replied_No)
-    return(PatientReplyEnum.Invalid_Patient_Reply)
    
-def find_recent_file_with_prefix(folder_path, prefix):
-    # Get a list of all files in the folder that start with the specified prefix
-    files = [f for f in os.listdir(folder_path) if f.startswith(prefix) and os.path.isfile(os.path.join(folder_path, f))]
+
     
-    # If files are found, get the most recently modified file
-    if files:
-        most_recent_file = max(files, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
-        return most_recent_file
-    else:
-        return None
-    
-def is_date_valid(date_string):
+async def is_date_valid(date_string):
     # Convert date string to date object using EST time zone 
     date_object = datetime.strptime(date_string, "%Y-%m-%d")
 
@@ -83,3 +51,15 @@ def is_date_valid(date_string):
     if est_date_object < est_today:
         return False
     return True
+
+def open_file_in_readmode(filename):        
+        try:
+            filepath = get_temp_filepath(filename)
+            with open(filepath, 'r') as file:
+                file_data = json.load(file)
+            return(file_data)
+        except Exception as e:
+            # Handle other exceptions
+            print(f"An unexpected error occurred in open file in readmode{filename}: {e}")
+            return None
+        

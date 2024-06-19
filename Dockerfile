@@ -1,9 +1,6 @@
 FROM python:3.12-alpine
-
 ARG OPENCV_VERSION=4.8.1
-
 WORKDIR /opt/build
-
 RUN set -ex \
     && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
     && echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
@@ -22,13 +19,15 @@ RUN set -ex \
         libtbb@testing libtbb-dev@testing \
         eigen eigen-dev \
         tesseract-ocr tesseract-ocr-data-por tesseract-ocr-dev \
-        py3-pip python3-dev \
+        py3-pip python3-dev py3-numpy-dev \
         linux-headers \
     && pip install -q numpy \
+    && ln -s /usr/lib/python3.12/site-packages/numpy/core/include/numpy /usr/include/numpy \
     && wget -q https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -O opencv.zip \
     && wget -q https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -O opencv_contrib.zip \
     && unzip -qq opencv.zip -d /opt && rm -rf opencv.zip \
     && unzip -qq opencv_contrib.zip -d /opt && rm -rf opencv_contrib.zip \
+    && mkdir -p /opt/build/opencv && cd /opt/build/opencv \
     && cmake \
         -D CMAKE_BUILD_TYPE=RELEASE \
         -D CMAKE_INSTALL_PREFIX=/usr/local \
@@ -79,7 +78,7 @@ RUN set -ex \
         /opt/opencv-${OPENCV_VERSION} \
     && make -j$(nproc) \
     && make install \
-    && rm -rf /opt/build/* \
+    && cd / && rm -rf /opt/build/* \
     && rm -rf /opt/opencv-${OPENCV_VERSION} \
     && rm -rf /opt/opencv_contrib-${OPENCV_VERSION}
     # && apk del -q --no-cache \
@@ -98,7 +97,6 @@ RUN set -ex \
     #     py3-numpy-dev \
     #     python3-dev \
     #     linux-headers
-
 ADD . /app
 RUN apk add bash
 WORKDIR /app
@@ -114,14 +112,9 @@ COPY requirements.txt /app/
 RUN pip install awscli
 RUN pip install setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
-
 COPY . /app
-
 EXPOSE 3000
-
 COPY entrypoint.sh /app/entrypoint.sh
-
 RUN dos2unix /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
-
 ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]

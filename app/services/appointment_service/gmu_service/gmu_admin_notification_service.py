@@ -2,9 +2,11 @@ import os
 import json
 import shutil
 import requests
-from app.common.utils import validate_mobile
 
-class AdminNotification:
+from app.common.appointment_api.appointment_utils import validate_mobile
+
+
+class GMUAdminNotification:
     def __init__(self):
         whatsapp_url = os.getenv("NOTIFICATION_URL") 
         whatsapp_id =  os.getenv("WHATSAPP_PHONE_ID")
@@ -15,7 +17,7 @@ class AdminNotification:
         
         self.notification_token = "Bearer " + whatsapp_token
 
-    def admin_notify(self,reminder_date,summary):
+    async def admin_notify(self,reminder_date,summary):
         print('Sending message to admins')
         file_name = 'GMU_admin.json'
         current_path = os.getcwd()
@@ -34,9 +36,9 @@ class AdminNotification:
                     print('*Invalid phone-number - ', admin_phone)
                 phone_nos=self.reform(admin_phone)
                 print(phone_nos)
-                self.send_whatapp_to_GMU_admin(phone_nos,reminder_date,summary)  
+                await self.send_whatapp_to_GMU_admin(phone_nos,reminder_date,summary)  
 
-    def send_whatapp_to_GMU_admin(self,phone_nos,reminder_date,summary):
+    async def send_whatapp_to_GMU_admin(self,phone_nos,reminder_date,summary):
         total_patient = summary['Appointments processed']
         # reminder_set = round(int(summary['Reminders sent'])/2)
         reminder_set = round(int(summary['Reminders sent']))

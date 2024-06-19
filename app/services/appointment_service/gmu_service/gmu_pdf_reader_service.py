@@ -5,6 +5,9 @@ import camelot
 import pdfplumber
 from dateutil import parser
 from app.common.utils import get_temp_filepath
+import pandas as pd
+
+# from app.services.common_service.db_service import DatabaseService
 
 ###############################################################
 
@@ -25,7 +28,7 @@ months = {
 
 ###############################################################
 
-class PdfReader:
+class GMUPdfReader:
     def __init__(self):
         self.count = 0
         self.invalid_record_count = 0
@@ -33,8 +36,11 @@ class PdfReader:
         self.invalid_appointments = []
         self.total_table_count = 0
         self.total_rows = 0
+        self.data = {}
+        # self.db_data = DatabaseService()
+       
 
-    def extract_appointments_from_pdf(self, input_file_path):
+    async def extract_appointments_from_pdf(self, input_file_path,storage_service):
         try:
             if not os.path.exists(input_file_path):
                 raise Exception(input_file_path + " does not exist.")
@@ -45,18 +51,31 @@ class PdfReader:
                 raise Exception("No tables inside the pdf.")
 
             all_appointments_ = []
+            # invalid_data_ = []
 
             for i in range(self.total_table_count):
                 row_count, column_count = self.get_shape(tables[i].df)
                 self.total_rows = self.total_rows + row_count
                 filename = "temp_appointments_" + str(i) + ".json"
-                temp_filepath = get_temp_filepath(filename)
-                tables[i].to_json(temp_filepath)
-                appointments = self.extract_table_appointments(temp_filepath)
+                # Convert the Camelot Table to a pandas DataFrame
+                df = tables[i].df
+                # Convert the DataFrame to a JSON string
+                json_string = df.to_json(orient='records')
+                # json_string = tables[i].to_json()
+                print("json_string..",json_string)
+                content = await storage_service.search_file(filename)
+                if(content != None):
+                    await storage_service.update_file(filename, json_string)
+                else:
+                    await storage_service.store_file(filename, json_string)
+                # temp_filepath = get_temp_filepath(filename)
+                # tables[i].to_json(temp_filepath)
+                appointments = await self.extract_table_appointments(filename,storage_service)
                 all_appointments_.extend(appointments)
+               
 
             self.all_appointments = all_appointments_
-            self.debug_log(self.all_appointments)
+            # self.debug_log(self.all_appointments)
             print('All Appointments extracted successfully')
             return self.all_appointments
 
@@ -64,15 +83,12 @@ class PdfReader:
             print(e)
             return None
 
-    def extract_table_appointments(self, file_name):
-
-        filepath = get_temp_filepath(file_name)
-        if not os.path.exists(filepath):
-            raise Exception(file_name + " does not exist.")
-
-        file=open(filepath,"r")
-        file_content=file.read()
+    async def extract_table_appointments(self, filename,storage_service):
+        file_content = await storage_service.search_file(filename)
+        if not file_content:
+            raise Exception(filename + " does not exist.")
         table_data=json.loads(file_content)
+        print("...", table_data)
 
         all_appointments = []
 
@@ -104,10 +120,11 @@ class PdfReader:
                     self.invalid_record_count = self.invalid_record_count + 1
                     print('*Invalid record found: ', row)
                     self.invalid_appointments.append(row)
-        self.create_file_for_invalid_record(self.invalid_appointments)
+        # self.create_file_for_invalid_record(self.invalid_appointments)
         return all_appointments
-
-    def create_file_for_invalid_record(self,invalid_appointments):
+        # return (self.data)
+    
+    async def create_file_for_invalid_record(self,invalid_appointments):
         filename=str('Invalid_Record.json')
         temp_folder = os.path.join(os.getcwd(), "temp")
         if not os.path.exists(temp_folder):
@@ -132,11 +149,11 @@ class PdfReader:
         temp = "+1-" + temp
         return temp
 
-    def extract_reminder_date(self, file_name):
-        filepath = get_temp_filepath(file_name)
+    async def extract_reminder_date(self, filepath):
+        # filepath = get_temp_filepath(file_name)
         if not os.path.exists(filepath):
-            raise Exception(file_name + " does not exist.")
-        with pdfplumber.open(file_name) as pdf:
+            raise Exception(filepath + " does not exist.")
+        with pdfplumber.open(filepath) as pdf:
             page_data = pdf.pages[0].extract_text().split('\n')[0].split(',')
             if len(page_data) >= 2:
                 mmdd = page_data[1].strip().split(' ')
