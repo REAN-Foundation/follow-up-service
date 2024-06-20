@@ -14,7 +14,9 @@ class DatabaseService(IStorageService):
 
     async def connect_storage(self,collect_prefix):
         connection_url = os.getenv("MONGODB_URL")
-        client = MongoClient(connection_url)
+        ssl_cert = os.getenv("SSL_CERT_REQS")
+        allow_invalid = os.getenv("ALLOW_INVALID_CERT")
+        client = MongoClient(connection_url, ssl_cert_reqs = ssl_cert, tlsAllowInvalidCertificates = allow_invalid)
         # db = client['document_db']
         db = client.get_database(os.getenv("DATABASE_NAME"))
         if(collect_prefix == 'gghn'):
