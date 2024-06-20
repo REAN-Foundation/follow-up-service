@@ -21,8 +21,7 @@ RUN set -ex \
         tesseract-ocr tesseract-ocr-data-por tesseract-ocr-dev \
         py3-pip python3-dev py3-numpy-dev \
         linux-headers \
-    && pip install -q numpy \
-    && ln -s /usr/lib/python3.12/site-packages/numpy/core/include/numpy /usr/include/numpy \
+        && ln -s /usr/lib/python3.12/site-packages/numpy/core/include/numpy /usr/include/numpy \
     && wget -q https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -O opencv.zip \
     && wget -q https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -O opencv_contrib.zip \
     && unzip -qq opencv.zip -d /opt && rm -rf opencv.zip \
@@ -97,7 +96,6 @@ RUN set -ex \
     #     py3-numpy-dev \
     #     python3-dev \
     #     linux-headers
-ADD . /app
 RUN apk add bash
 WORKDIR /app
 RUN apk update
@@ -110,7 +108,8 @@ RUN apk add --no-cache \
     dos2unix
 COPY requirements.txt /app/
 RUN pip install awscli
-RUN pip install setuptools wheel
+RUN pip install setuptools wheel \
+    && pip install -q numpy==1.26
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 EXPOSE 3000
