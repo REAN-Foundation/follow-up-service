@@ -97,7 +97,6 @@ RUN set -ex \
     #     py3-numpy-dev \
     #     python3-dev \
     #     linux-headers
-ADD . /app
 RUN apk add bash
 WORKDIR /app
 RUN apk update
