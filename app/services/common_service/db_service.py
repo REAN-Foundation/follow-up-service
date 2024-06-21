@@ -15,7 +15,6 @@ class DatabaseService(IStorageService):
     async def connect_storage(self,collect_prefix):
         connection_url = os.getenv("MONGODB_URL")
         client = MongoClient(connection_url)
-        # db = client['document_db']
         db = client.get_database(os.getenv("DATABASE_NAME"))
         if(collect_prefix == 'gghn'):
             record = db.get_collection(os.getenv("GGHN_COLLECTION_NAME"))
