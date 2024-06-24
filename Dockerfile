@@ -109,7 +109,8 @@ RUN apk add --no-cache \
 COPY requirements.txt /app/
 RUN pip install awscli
 RUN pip install setuptools wheel \
-    && pip install -q numpy==1.26
+    && pip install -q numpy==1.26 \
+    && pip install ghostscript
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 EXPOSE 3000
