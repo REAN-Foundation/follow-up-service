@@ -1,6 +1,7 @@
 FROM python:3.12-alpine
 ARG OPENCV_VERSION=4.8.1
 WORKDIR /opt/build
+
 RUN set -ex \
     && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
     && echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
@@ -22,7 +23,7 @@ RUN set -ex \
         py3-pip python3-dev py3-numpy-dev \
         linux-headers \
         ghostscript \
-        && ln -s /usr/lib/python3.12/site-packages/numpy/core/include/numpy /usr/include/numpy \
+    && ln -s /usr/lib/python3.12/site-packages/numpy/core/include/numpy /usr/include/numpy \
     && wget -q https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip -O opencv.zip \
     && wget -q https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip -O opencv_contrib.zip \
     && unzip -qq opencv.zip -d /opt && rm -rf opencv.zip \
@@ -81,24 +82,10 @@ RUN set -ex \
     && cd / && rm -rf /opt/build/* \
     && rm -rf /opt/opencv-${OPENCV_VERSION} \
     && rm -rf /opt/opencv_contrib-${OPENCV_VERSION}
-    # && apk del -q --no-cache \
-    #     build-base cmake \
-    #     hdf5-dev \
-    #     protobuf-dev \
-    #     openblas-dev \
-    #     libjpeg-turbo-dev \
-    #     libpng-dev \
-    #     tiff-dev \
-    #     libwebp-dev \
-    #     openjpeg-dev \
-    #     libtbb-dev \
-    #     eigen-dev \
-    #     tesseract-ocr-dev \
-    #     py3-numpy-dev \
-    #     python3-dev \
-    #     linux-headers
+
 RUN apk add bash
 WORKDIR /app
+
 RUN apk update
 RUN apk add --no-cache \
     ffmpeg \
@@ -107,14 +94,20 @@ RUN apk add --no-cache \
     libxext-dev \
     ghostscript \
     dos2unix
+
 COPY requirements.txt /app/
 RUN pip install awscli
 RUN pip install setuptools wheel \
     && pip install -q numpy==1.26
 RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . /app
 EXPOSE 3000
+
 COPY entrypoint.sh /app/entrypoint.sh
 RUN dos2unix /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
+
 ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
+
+#CMD ["python", "main.py"]
