@@ -282,7 +282,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             # 'Name': 'Hey {}, you have an appointment schedule at {} with {}'.format(patient_name, patient['AppointmentTime'], patient['Provider']),
             'Name': 'appointment reminder',
             'WhenDate': when_date,
-            'WhenTime': '18:00:00',
+            'WhenTime': reminder_time,
             'NotificationType': 'WhatsApp',
             'RawContent':json.dumps(raw_content)
         }
