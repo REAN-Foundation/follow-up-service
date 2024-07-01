@@ -34,6 +34,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         self.api_key = os.getenv("REANCARE_API_KEY")
         self.access_token = cache.get('access_token')
         self.recent_file = ''
+        self.client_name = os.getenv("BOT_CLIENT_NAME")
         self.tenant_id = tenant_id
 
         self.new_patients_added_count = 0
@@ -273,7 +274,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 "Reminder_Reply_No"
             ],
             # "ClientName": "GMU"
-            "ClientName": "REAN_BOT",
+            "ClientName": self.client_name, 
             "AppointmentDate": patient['AppointmentTime']
         }
 
