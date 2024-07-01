@@ -19,7 +19,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         self.reminders_sent_count = 0
         self.appointment_details= []
         self.db_data = ''
-        
+        self.client_name = os.getenv("BOT_CLIENT_NAME")
         gghn_base_url = os.getenv("GGHN_BASE_URL")
         if gghn_base_url == None:
             raise Exception('GGHN_BASE_URL is not set')
@@ -273,7 +273,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                 "Reminder_Reply_No"
             ],
             # "ClientName": "GMU"
-            "ClientName": "REAN_BOT",
+            "ClientName": self.client_name,
             "AppointmentDate": when_date
         }
 
