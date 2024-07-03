@@ -36,11 +36,11 @@ class GGHNReadReport:
         data = await storage_service.search_file(filename)    
         for item in data:
             self.patients_count = self.patients_count + 1
-            if item['Patient_replied'] == 'Yes':
+            if item['patient_replied'] == 'Yes':
                 self.patient_reply_yes_count = self.patient_reply_yes_count + 1
-            if item['Patient_replied'] == 'No':
+            if item['patient_replied'] == 'No':
                 self.patient_reply_no_count = self.patient_reply_no_count + 1
-            if item['Patient_replied'] == 'Not replied':
+            if item['patient_replied'] == 'Not replied':
                 self.patient_not_replied_count = self.patient_not_replied_count + 1
         file_summary = {
             'Date': date_of_file,

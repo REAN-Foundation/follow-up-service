@@ -36,7 +36,7 @@ class RCLogin:
             self.login_url, headers = headers, data = json.dumps(body))
 
         result = response.json()
-        if result['Status'] == 'Failure':
+        if result['Status'] == 'failure':
             raise Exception(result['Message'])
         self.access_token = result['Data']['AccessToken']
 

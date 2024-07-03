@@ -85,15 +85,15 @@ async def has_patient_replied_infile(prefix_string, mobile, reminder_date):
                 data = json.load(file)
 
                 for element in data:
-                    if element['Phone_number'] == mobile:
+                    if element['phone_number'] == mobile:
                         flag = 1
 
                 if flag == 0:
                     return False
                 
                 for item in data:
-                    if item['Phone_number'] == mobile:
-                        if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
+                    if item['phone_number'] == mobile:
+                        if item['patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
                             return False
                 return True
         return False
@@ -113,15 +113,15 @@ async def has_patient_replied(prefix_string, mobile, reminder_date,storage_servi
         else:
             data = f_data
             for element in data:
-                if element['Phone_number'] == mobile:
+                if element['phone_number'] == mobile:
                     flag = 1
 
             if flag == 0:
                 return False
             
             for item in data:
-                if item['Phone_number'] == mobile:
-                    if item['Patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
+                if item['phone_number'] == mobile:
+                    if item['patient_replied'] == PatientReplyEnum.Invalid_Patient_Reply:
                         return False
             return True
         return False

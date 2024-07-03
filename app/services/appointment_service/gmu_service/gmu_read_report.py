@@ -38,15 +38,15 @@ class GMUReadReport:
         if(data!= None):
             for item in data:
                 self.patients_count = self.patients_count + 1
-                if item['Patient_status'] == 'Pending arrival':
+                if item['patient_status'] == 'Pending arrival':
                     self.pending_arrival_patient_count = self.pending_arrival_patient_count + 1
-                if item['Patient_status'] == 'In lobby':
+                if item['patient_status'] == 'In lobby':
                     self.arrived_patient_count = self.arrived_patient_count + 1
-                if item['Patient_replied'] == 'Yes':
+                if item['patient_replied'] == 'Yes':
                     self.patient_reply_yes_count = self.patient_reply_yes_count + 1
-                if item['Patient_replied'] == 'No':
+                if item['patient_replied'] == 'No':
                     self.patient_reply_no_count = self.patient_reply_no_count + 1
-                if item['Patient_replied'] == 'Not replied':
+                if item['patient_replied'] == 'Not replied':
                     self.patient_not_replied_count = self.patient_not_replied_count + 1
             
             file_summary = {
@@ -70,14 +70,16 @@ class GMUReadReport:
             
             if(data!= None):
                 for item in data:
-                    if item['Phone_number'] == phone_number:
+                    if item['phone_number'] == phone_number:
                         data={
-                            'Name of patient': item['Name_of_patient'],
-                            'Rean patient userid': item['Rean_patient_userid'],
-                            'Appointment time':item['Appointment_time'],
-                            'Patient status': item['Patient_status'],
-                            'WhatsApp message id':item['WhatsApp_message_id'],
-                            'Patient replied':item['Patient_replied']
+                            'Name of patient': item['name_of_patient'],
+                            'Facility name':"",
+                            'Rean patient userid': item['rean_patient_userid'],
+                            'Appointment time':item['appointment_time'],
+                            'Participant code':'',
+                            'Patient status': item['patient_status'],
+                            'WhatsApp message id':item['whatsapp_message_id'],
+                            'Patient replied':item['patient_replied']
                         }
                         self.patient_data.append(data)
                 return(self.patient_data)
