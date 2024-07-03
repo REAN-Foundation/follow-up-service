@@ -7,11 +7,11 @@ from app.api.appointment.gmu.gmu_handler import handle, read_appointment_file, r
 from app.common.cache import cache
 from app.dependency import get_storage_service
 from app.interfaces.appointment_storage_interface import IStorageService
-
+client_bot_name = os.getenv("GMU_BOT_CLIENT_NAME")
 ###############################################################################
 
 router = APIRouter(
-    prefix="/appointment-schedules/gmu",
+    prefix=f"/appointment-schedules/{client_bot_name}",
     tags=["appointment-schedules", "gmu"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
