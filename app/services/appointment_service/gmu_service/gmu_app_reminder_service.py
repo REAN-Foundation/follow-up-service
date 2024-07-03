@@ -34,7 +34,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         self.api_key = os.getenv("REANCARE_API_KEY")
         self.access_token = cache.get('access_token')
         self.recent_file = ''
-        self.client_name = os.getenv("BOT_CLIENT_NAME")
+        self.gmu_bot_client_name = os.getenv("GMU_BOT_CLIENT_NAME")
         self.tenant_id = tenant_id
 
         self.new_patients_added_count = 0
@@ -77,13 +77,15 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 await self.update_patient(user_id, user_model)
 
             data = {
-                "Name_of_patient":appointment['PatientName'],
-                "Rean_patient_userid":user_id,
-                "Phone_number":patient_mobile_number,
-                "Appointment_time":appointment['AppointmentTime'],
-                "Patient_status":valid_appointment_status(appointment['Status']),
-                "WhatsApp_message_id":"",
-                "Patient_replied": "N/A" if valid_appointment_status(appointment['Status'])!=AppStatusEnum.Pending_Arrival else "Not replied",
+                "name_of_patient":appointment['PatientName'],
+                "facility_name":"",
+                "rean_patient_userid":user_id,
+                "phone_number":patient_mobile_number,
+                "appointment_time":appointment['AppointmentTime'],
+                "participant_code":"",
+                "patient_status":valid_appointment_status(appointment['Status']),
+                "whatsapp_message_id":"",
+                "patient_replied": "N/A" if valid_appointment_status(appointment['Status'])!=AppStatusEnum.Pending_Arrival else "Not replied",
                   }
             summary_data.append(data)
 
@@ -162,17 +164,17 @@ class GMUAppointmentReminder(AppointmentReminderI):
         # with open(f_path, 'r') as file:
         data = await storage_service.search_file(filename)
         for item in data:
-            if item['Patient_status'] == 'Pending arrival':
+            if item['patient_status'] == 'Pending arrival':
                for record in json_object:
-                    if record['Phone_number'] == item['Phone_number']:
-                       if item['Name_of_patient'] == record['Name_of_patient']:
-                           item['Patient_status'] = record['Patient_status']
+                    if record['phone_number'] == item['phone_number']:
+                       if item['name_of_patient'] == record['name_of_patient']:
+                           item['patient_status'] = record['patient_status']
                         #    item['Patient_replied'] = record['Patient_replied']
 
         flag = 0
         for item in json_object:
             for record in data:
-                if item['Phone_number'] == record['Phone_number']:
+                if item['phone_number'] == record['phone_number']:
                     flag = 1
             if flag != 1:
                 data.append(item)
@@ -274,7 +276,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 "Reminder_Reply_No"
             ],
             # "ClientName": "GMU"
-            "ClientName": self.client_name, 
+            "ClientName": self.gmu_bot_client_name, 
             "AppointmentDate": patient['AppointmentTime']
         }
 

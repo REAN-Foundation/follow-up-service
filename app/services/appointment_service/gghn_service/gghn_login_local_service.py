@@ -27,6 +27,8 @@ class GGHNLogin:
         try:
             health_check_resp = requests.get(base_url_)
             print("health check resp", health_check_resp)
+            if (health_check_resp.headers.get('Content-Type') != 'application/json'):
+                print("Received non-JSON response")
         except HTTPError as e:
                 print(f"HTTP Error {e.status_code}: {e.message}")
 

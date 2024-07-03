@@ -19,7 +19,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         self.reminders_sent_count = 0
         self.appointment_details= []
         self.db_data = ''
-        self.client_name = os.getenv("BOT_CLIENT_NAME")
+        self.client_name = os.getenv("GGHN_BOT_CLIENT_NAME")
         gghn_base_url = os.getenv("GGHN_BASE_URL")
         if gghn_base_url == None:
             raise Exception('GGHN_BASE_URL is not set')
@@ -90,12 +90,15 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         appointment_details= []
         for data in appointment_data:
             patient_code_details={
-                "Facilityname":data['facilityname'],
-                "Next_appointment_date":data['next_appointment_date'],
-                "Participant_code":data['participant_code'],
-                "Phone_number":"",
-                "WhatsApp_message_id": "",
-                "Patient_replied":"Not replied"
+                "name_of_patient":"",
+                "facility_name":data['facilityname'],
+                "rean_patient_userid":"",
+                "phone_number":"",
+                "appointment_time":data['next_appointment_date'],
+                "participant_code":data['participant_code'],
+                "patient_status":"",
+                "whatsapp_message_id": "",
+                "patient_replied":"Not replied"
             }
             appointment_details.append(patient_code_details)
             self.patient_code_count= self.patient_code_count+1
@@ -181,17 +184,20 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         for rdata in resp_data:
             flag=0
             for fdata in file_data:
-                if rdata['Participant_code'] == fdata['Participant_code']:
+                if rdata['participant_code'] == fdata['participant_code']:
                     flag=1
                 # print("value of flag",flag)  
             if flag==0:
                 additional_app={
-                                "Facilityname": rdata['Facilityname'],
-                                "Next_appointment_date":rdata['Next_appointment_date'],
-                                "Participant_code":rdata['Participant_code'],
-                                "Phone_number": "",
-                                "WhatsApp_message_id": "",
-                                "Patient_replied": "Not replied",
+                                "name_of_patient":"",                  
+                                "facility_name": rdata['facility_name'],
+                                "rean_patient_userid":"",
+                                "phone_number": "",
+                                "appointment_time":rdata['appointment_time'],
+                                "participant_code":rdata['participant_code'],
+                                "patient_status":"",
+                                "whatsapp_message_id": "",
+                                "patient_replied": "Not replied",
                                 }
                
                 additional_appointment.append(additional_app)
@@ -217,8 +223,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print(f"An unexpected error occurred while reading{appointment_file}")
         for item in filedata:
             try:
-                    phone_number = item['Phone_number']
-                    patient_code = item['Participant_code']
+                    phone_number = item['phone_number']
+                    patient_code = item['participant_code']
                     print("GGHN patient phone number is:",phone_number)
                     if(phone_number != ''):
                         patient_data = await find_patient_by_mobile(phone_number)
@@ -309,12 +315,12 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         appointment_data = file_data
         print("appointment file data",appointment_data)
         for app_data in appointment_data:
-            EMRId=app_data['Participant_code']
+            EMRId=app_data['participant_code']
             phone_nos = await self.search_phone_by_EMRId(file_name, date, EMRId)
             if(phone_nos != None):
-                app_data['Phone_number'] = phone_nos
+                app_data['phone_number'] = phone_nos
             else:
-                app_data['Phone_number'] = ''
+                app_data['phone_number'] = ''
 
         retrived_data = await storage_service.update_file(file_name,appointment_data)
         data = retrived_data

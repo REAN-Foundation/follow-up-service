@@ -10,10 +10,11 @@ from fastapi import FastAPI, Depends
 from app.dependency import get_storage_service
 from app.interfaces.appointment_storage_interface import IStorageService
 
-
+client_bot_name = os.getenv("GGHN_BOT_CLIENT_NAME")
 ##################################################################################
 router = APIRouter(
-    prefix="/appointment-schedules/gghn",
+ 
+    prefix=f"/appointment-schedules/{client_bot_name}",
     tags=["appointment-schedules", "gghn"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
