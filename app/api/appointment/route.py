@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.appointment.controller import handle, handle_aws, read_appointment_file, readfile_content, readfile_summary, recent_file, update_reply_by_ph
+from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_summary, recent_file, update_reply_by_ph
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from fastapi import FastAPI, Depends
