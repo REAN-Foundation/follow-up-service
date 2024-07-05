@@ -1,23 +1,38 @@
-from fastapi import APIRouter, HTTPException, Request
-import boto3
-import httpx
-from app.common.reancare_api.rc_login_service import RCLogin
-from app.common.utils import get_temp_filepath
-from app.common.utils import is_date_valid
-from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
-from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
-from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
+# ############gghn############
 import json
 import os
-
-from app.services.appointment_service.gmu_service.gmu_read_report import GMUReadReport
+import shutil
+import boto3
+from fastapi import File, HTTPException, Request, UploadFile
+import httpx
+from app.common.reancare_api.rc_login_service import RCLogin
+from app.common.utils import get_temp_filepath, is_date_valid
+from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
+from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
+from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
+from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
+from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
+from app.services.common_service.read_report import ReadReport
 from app.services.common_service.recent_file_service import RecentFile
 from app.services.common_service.update_reply_service import UpdateReply
 
 
-###############################################################################
-
-async def handle(message: Request,storage_service):
+async def readfile_content(date, storage_service):
+    try:
+        print (date)
+        login = GGHNLogin()
+        await login.gghnlogin()
+        login = RCLogin()
+        await login.login()
+        patientextraction = GGHNAppointmentReminder()
+        appointmentcontent = await patientextraction.read_content(date,storage_service)
+        return(appointmentcontent)
+        # return()
+    except Exception as e:
+         raise e
+    
+#####################gmu########
+async def handle_aws(message: Request,storage_service):
     try:
         message_data = await message.json()
         subscription_confirmation = 'Type' in message_data and message_data['Type'] == 'SubscriptionConfirmation'
@@ -112,33 +127,72 @@ async def download_pdf_from_s3(bucket_name, object_key):
     except Exception as e:
         return None
 
-#Other routes of file handling
+############################gmu_test################
+async def handle(storage_service,file: UploadFile = File(...)):
 
-async def read_appointment_file(filename,storage_service):
+    file_path = await store_uploaded_file(file)
+
+    # 1. Login as tenant-admin or tenant-user
+    login = RCLogin()
+    await login.login()
+
+    # 2. Extract the date from the PDF file
+    reader = GMUPdfReader()
+    reminder_date = await reader.extract_reminder_date(file_path)
+    if not reminder_date:
+        return ('Unable to find or unable to parse the date')
+    # Compare file date with the todays date
+    is_valid_date = await is_date_valid(reminder_date); 
+    # 3. Extract the PDF file
+    if is_valid_date:
+        # 3. Extract the PDF file
+        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
+        
+        # 4. Send one-time-reminders
+        reminder = GMUAppointmentReminder()
+        # reminder_date = '2023-11-08'
+        await reminder.create_reminder(reminder_date, appointments,storage_service)
+        reminder_summary = await reminder.summary()
+
+        admin_notification = GMUAdminNotification()
+        await admin_notification.admin_notify(reminder_date,reminder_summary)
+
+        return {
+            "Message" : "Reminders created successfully",
+            "Data" : reminder_summary,
+        }
+
+    return {
+            "Message" : "Can not process appontment pdf with previous dates",
+            "Data": None 
+        }
+async def store_uploaded_file(file: UploadFile):
+    current_path = os.getcwd()
+    folder_path = os.path.join(current_path, "temp")
+    exists = os.path.exists(folder_path)
+    if not exists:
+        os.mkdir(folder_path)
+    file_path = os.path.join(folder_path, file.filename)
+    # print(file_path)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return file_path
+
+async def readfile_content(date, storage_service):
     try:
-        reportfile = GMUReadReport()
-        filecontent = await reportfile.read_appointment_file(filename,storage_service)
-        return(filecontent)
+        print (date)
+        login = GGHNLogin()
+        await login.gghnlogin()
+        login = RCLogin()
+        await login.login()
+        patientextraction = GGHNAppointmentReminder()
+        appointmentcontent = await patientextraction.read_content(date,storage_service)
+        return(appointmentcontent)
+        # return()
     except Exception as e:
          raise e
-
-async def readfile_content_by_phone(filename,phone_number,storage_service):
-    try:
-        reportfile = GMUReadReport()
-        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number,storage_service)
-        return(filecontent)
-    except Exception as e:
-         raise e
-
-
-async def readfile_summary(filename,storage_service):
-    try:
-        reportfile = GMUReadReport()
-        filesummary = await reportfile.read_appointment_summary(filename,storage_service)
-        return(filesummary)
-    except Exception as e:
-         raise e
-
+    
+    
 async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
     try:
         updatefile = UpdateReply()
@@ -147,7 +201,38 @@ async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
     except Exception as e:
          raise e
 
+
 async def recent_file(file_prefix,storage_service):
+    fileprefix = file_prefix
+    print(f"fileprefix {fileprefix}")
     recentfile = RecentFile()
-    filename = await recentfile.find_recent_file(file_prefix,storage_service)   
+    filename = await recentfile.find_recent_file(fileprefix,storage_service)   
     return filename
+
+
+async def read_appointment_file(filename,storage_service):
+    try:
+        reportfile = ReadReport()
+        filecontent = await reportfile.read_appointment_file(filename,storage_service)
+        return(filecontent)
+    except Exception as e:
+         raise e
+
+async def readfile_content_by_phone(filename,phone_number,storage_service):
+    try:
+        reportfile = ReadReport()
+        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number,storage_service)
+        return(filecontent)
+    except Exception as e:
+         raise e
+
+
+async def readfile_summary(filename,storage_service):
+    try:
+        reportfile = ReadReport()
+        filesummary = await reportfile.read_appointment_summary(filename,storage_service)
+        return(filesummary)
+    except Exception as e:
+         raise e
+
+

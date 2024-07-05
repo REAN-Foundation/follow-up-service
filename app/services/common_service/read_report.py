@@ -5,7 +5,7 @@ from fastapi import HTTPException
 import requests
 from app.common.cache import cache
 # from app.services.common_service.db_service import DatabaseService
-class GMUReadReport:
+class ReadReport:
     def __init__(self):
         self.patients_count = 0
         self.arrived_patient_count = 0
@@ -29,7 +29,7 @@ class GMUReadReport:
         
     async def read_appointment_summary(self,filename,storage_service):
         file_name = filename.split('_')
-        f_date  = '_'.join(file_name[3:])
+        f_date  = '_'.join(file_name[2:])
         file_date = f_date.split('.')
         date_of_file = file_date[0]
         print(date_of_file) 

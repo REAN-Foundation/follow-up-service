@@ -102,7 +102,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment,first_reminder, reminder_date)
                 
                 # Check the patient replied status
-                prefix_string = 'gmu_followup_file_'
+                prefix_string = 'gmu_appointment_'
                 already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date,storage_service)
                 # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
                 
@@ -128,7 +128,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
 
     async def create_reports(self,summary_data,reminder_date,storage_service):
         print('SUMMARY:',summary_data)
-        filename=str('gmu_followup_file_'+reminder_date+'.json')
+        filename=str('gmu_appointment_'+reminder_date+'.json')
         data = await storage_service.search_file(filename)
         # f_path=(os.getcwd()+"/temp/"+filename)
         if(data != None):
