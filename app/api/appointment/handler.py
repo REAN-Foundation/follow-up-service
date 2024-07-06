@@ -218,13 +218,13 @@ async def read_appointment_file(filename,storage_service):
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(filename,phone_number,storage_service):
-    try:
+async def readfile_content_by_phone(filename,number,storage_service):
+    try:    
         reportfile = ReadReport()
-        filecontent = await reportfile.readfile_content_by_ph(filename, phone_number,storage_service)
+        filecontent = await reportfile.readfile_content_by_ph(filename,number,storage_service)
         return(filecontent)
     except Exception as e:
-         raise e
+        raise e
 
 
 async def readfile_summary(filename,storage_service):

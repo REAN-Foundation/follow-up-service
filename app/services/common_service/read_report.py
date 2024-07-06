@@ -73,10 +73,9 @@ class ReadReport:
                     if item['phone_number'] == phone_number:
                         data={
                             'Name of patient': item['name_of_patient'],
-                            'Facility name':"",
-                            'Rean patient userid': item['rean_patient_userid'],
+                            'Facility name': item['facility_name'],
                             'Appointment time':item['appointment_time'],
-                            'Participant code':'',
+                            'Participant code': item['participant_code'],
                             'Patient status': item['patient_status'],
                             'WhatsApp message id':item['whatsapp_message_id'],
                             'Patient replied':item['patient_replied']

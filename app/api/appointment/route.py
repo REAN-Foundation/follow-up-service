@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_summary, recent_file, update_reply_by_ph
+from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_content_by_phone, readfile_summary, recent_file, update_reply_by_ph
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from fastapi import FastAPI, Depends
@@ -124,6 +124,19 @@ async def read_file(client: str, date_str: str,storage_service: IStorageService 
             "Summary":followup_summary 
             } 
         return(data)
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+    
+@router.get("/{client}/individual-status/{phone_number}/days/{date_string}", status_code=status.HTTP_200_OK)
+async def read_file(client: str, phone_number: str, date_string: str,storage_service: IStorageService  = Depends(get_storage_service)):
+    
+    try:
+        ph_number = (f"+{phone_number}")
+        number = ph_number.replace(' ', '')
+        file_name=(f"{client}_appointment_{date_string}.json")
+        filename = file_name.replace(' ', '')
+        return await readfile_content_by_phone(filename,number,storage_service)
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
