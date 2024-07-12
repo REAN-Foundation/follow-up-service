@@ -21,10 +21,23 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 #################################################################################
-@router.post("/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
-async def read_file(date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
+@router.post("/{client}/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
+async def read_file(client: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
-        response = await readfile_content(date_string,storage_service)
+        date_str = date_string
+        print("in date",date_str)
+        d_str = date_str.split('-')
+        if(d_str[0].startswith('0') or d_str[2].startswith('0')):
+            datefirst = int(d_str[0])
+            datelast =  int(d_str[2])
+            date_str = (f"{datefirst}-{d_str[1]}-{datelast}")
+            print("dateStr....",date_str)
+        else: 
+            date_str = date_string
+            print("dateStr....",date_str)
+   
+        print("date...",date_str)
+        response = await readfile_content(date_str,storage_service)
         if(response == None):
             return{
                 "Message":"No Appointments available",
@@ -59,12 +72,24 @@ async def handle_sns_notification(message: Request,storage_service: IStorageServ
 @router.put("/{client}/{client_bot_name}/appointment-status/{phone_number}/days/{date_str}",  status_code=status.HTTP_201_CREATED)
 async def update_reply_and_whatsappid_by_ph(client: str, phone_number: str, new_data: dict, date_str: str,storage_service:IStorageService = Depends(get_storage_service)):
     try:
+        date_string = date_str
+        print("in date",date_string)
+        d_str = date_string.split('-')
+        if(d_str[0].startswith('0') or d_str[2].startswith('0')):
+            datefirst = int(d_str[0])
+            datelast =  int(d_str[2])
+            date = (f"{datefirst}-{d_str[1]}-{datelast}")
+            print("dateStr....",date_str)
+        else: 
+            date = date_str
+            print("dateStr....",date_str)
+
         print(phone_number)
         ph_number = (f"+{phone_number}")
         number = ph_number.replace(' ', '')
-        file_name=(f"{client}_appointment_{date_str}.json")
+        file_name=(f"{client}_appointment_{date}.json")
         filename = file_name.replace(' ', '')
-     
+           
         content = new_data
         updated_data = await update_reply_by_ph(filename, number, content,storage_service)
         return {
