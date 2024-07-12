@@ -31,11 +31,10 @@ async def read_file(client: str, date_string: str,storage_service: IStorageServi
             datefirst = int(d_str[0])
             datelast =  int(d_str[2])
             date_str = (f"{datefirst}-{d_str[1]}-{datelast}")
-            print("dateStr....",date_str)
+           
         else: 
             date_str = date_string
-            print("dateStr....",date_str)
-   
+  
         print("date...",date_str)
         response = await readfile_content(date_str,storage_service)
         if(response == None):
@@ -79,11 +78,11 @@ async def update_reply_and_whatsappid_by_ph(client: str, phone_number: str, new_
             datefirst = int(d_str[0])
             datelast =  int(d_str[2])
             date = (f"{datefirst}-{d_str[1]}-{datelast}")
-            print("dateStr....",date_str)
+            
         else: 
             date = date_str
-            print("dateStr....",date_str)
 
+        print("date....",date)
         print(phone_number)
         ph_number = (f"+{phone_number}")
         number = ph_number.replace(' ', '')
