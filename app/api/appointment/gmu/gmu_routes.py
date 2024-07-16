@@ -12,7 +12,7 @@ client_bot_name = os.getenv("GMU_BOT_CLIENT_NAME")
 
 router = APIRouter(
     prefix=f"/appointment-schedules/{client_bot_name}",
-    tags=["appointment-schedules", "gmu"],
+    tags=["appointment-schedules"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
 )
