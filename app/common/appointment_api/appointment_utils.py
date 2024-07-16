@@ -127,3 +127,11 @@ async def has_patient_replied(prefix_string, mobile, reminder_date,storage_servi
         return False
 
 
+async def form_file_name(client,date):
+    try:
+        file_name=(f"{client}_appointment_{date}.json").lower()
+        filename = file_name.replace(' ', '')
+        return(filename)
+    except Exception as e:
+        print(e)
+        return(None)

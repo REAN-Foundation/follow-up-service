@@ -9,6 +9,7 @@ from datetime import *
 from app.common.cache import cache
 import urllib.parse
 import requests
+
 ###############################################################################
 
 def print_colorized_json(obj):
@@ -63,3 +64,29 @@ def open_file_in_readmode(filename):
             print(f"An unexpected error occurred in open file in readmode{filename}: {e}")
             return None
         
+async def format_date_(date_string):
+    try: 
+        print("in date",date_string)
+        d_str = date_str.split('-')
+        if(d_str[0].startswith('0') or d_str[2].startswith('0')):
+            datefirst = int(d_str[0])
+            datelast =  int(d_str[2])
+            date_str = (f"{datefirst}-{d_str[1]}-{datelast}")
+            return(date_str)
+        else: 
+            date_str = date_string 
+            return(date_str) 
+    except Exception as e:
+        print(e)
+        return(None)
+        
+          
+    
+async def format_phone_number(phone):
+    try:
+        ph_number = (f"+{phone}")
+        number = ph_number.replace(' ', '')
+        return(number)
+    except Exception as e:
+        print(e)
+        return(None)

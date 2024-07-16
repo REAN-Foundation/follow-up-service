@@ -6,7 +6,7 @@ import boto3
 from fastapi import File, HTTPException, Request, UploadFile
 import httpx
 from app.common.reancare_api.rc_login_service import RCLogin
-from app.common.utils import get_temp_filepath, is_date_valid
+from app.common.utils import format_date_, get_temp_filepath, is_date_valid
 from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
 from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
 from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
@@ -180,7 +180,7 @@ async def store_uploaded_file(file: UploadFile):
 
 async def readfile_content(date, storage_service):
     try:
-        print (date)
+             
         login = GGHNLogin()
         await login.gghnlogin()
         login = RCLogin()
@@ -190,7 +190,7 @@ async def readfile_content(date, storage_service):
         return(appointmentcontent)
         # return()
     except Exception as e:
-         raise e
+        raise e
     
     
 async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
