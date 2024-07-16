@@ -134,9 +134,10 @@ async def status_for_date_file(client: str,date_str: str,storage_service: IStora
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
 
     
-@router.get("/{client}/individual-status/{phone_number}/days/{date_string}", status_code=status.HTTP_200_OK)
-async def read_individual_phone_data(client: str, phone_number: str, date_string: str,storage_service: IStorageService  = Depends(get_storage_service)):
+@router.get("/{client_bot_name}/appointment-status/{phone_number}/days/{date_string}", status_code=status.HTTP_200_OK)
+async def read_individual_phone_data(client_bot_name: str, phone_number: str, date_string: str,storage_service: IStorageService  = Depends(get_storage_service)):
     try:
+        client = (client_bot_name[0]).lower()
         date_str = await format_date_(date_string)
         if(date_str == 'None'):
             print("date returned null")
