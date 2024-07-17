@@ -5,8 +5,9 @@ import shutil
 import boto3
 from fastapi import File, HTTPException, Request, UploadFile
 import httpx
+from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
 from app.common.reancare_api.rc_login_service import RCLogin
-from app.common.utils import format_date_, get_temp_filepath, is_date_valid
+from app.common.utils import format_date_, format_phone_number, get_temp_filepath, is_date_valid
 from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
 from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
 from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
@@ -17,20 +18,7 @@ from app.services.common_service.recent_file_service import RecentFile
 from app.services.common_service.update_reply_service import UpdateReply
 
 
-async def readfile_content(date, storage_service):
-    try:
-        print (date)
-        login = GGHNLogin()
-        await login.gghnlogin()
-        login = RCLogin()
-        await login.login()
-        patientextraction = GGHNAppointmentReminder()
-        appointmentcontent = await patientextraction.read_content(date,storage_service)
-        return(appointmentcontent)
-        # return()
-    except Exception as e:
-         raise e
-    
+  
 #####################gmu########
 async def handle_aws(message: Request,storage_service):
     try:
@@ -180,23 +168,42 @@ async def store_uploaded_file(file: UploadFile):
 
 async def readfile_content(date, storage_service):
     try:
-             
+        in_date = date
+        date_str =  await format_date_(in_date)
+        if(date_str == 'None'):
+            print("date returned null")              
+        print("formated_date...",date_str)
         login = GGHNLogin()
         await login.gghnlogin()
         login = RCLogin()
         await login.login()
         patientextraction = GGHNAppointmentReminder()
-        appointmentcontent = await patientextraction.read_content(date,storage_service)
+        appointmentcontent = await patientextraction.read_content(date_str,storage_service)
         return(appointmentcontent)
         # return()
     except Exception as e:
         raise e
     
     
-async def update_reply_by_ph(filename, phone_number, new_data,storage_service):
+async def update_reply_by_ph(client_bot_name,date_str, phone_number, content,storage_service):
     try:
+        in_date = date_str
+        client_name = await get_client_name(client_bot_name)
+        client = (client_name).lower()
+        print("client name--",client)
+        date_str = await format_date_(in_date)
+        if(date_str == 'None'):
+            print("date returned null")
+        
+        print("formated_date...",date_str)
+        number = await format_phone_number(phone_number)
+        if(number == 'None'):
+            print("number returned null")
+        filename = await form_file_name(client,date_str)
+        if(filename == 'None'):
+            print("filename returned null")
         updatefile = UpdateReply()
-        updated_data = await updatefile.update_reply_by_phone(filename, phone_number,new_data,storage_service)
+        updated_data = await updatefile.update_reply_by_phone(filename, number, content,storage_service)
         return(updated_data)
     except Exception as e:
          raise e
@@ -218,8 +225,19 @@ async def read_appointment_file(filename,storage_service):
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(filename,number,storage_service):
+async def readfile_content_by_phone(client_bot_name, phone_number,date_string,storage_service):
     try:    
+        client_name = await get_client_name(client_bot_name)
+        client = (client_name).lower()
+        date_str = await format_date_(date_string)
+        if(date_str == 'None'):
+            print("date returned null")
+        number = await format_phone_number(phone_number)
+        if(number == 'None'):
+            print("number returned null")
+        filename = await form_file_name(client,date_str)
+        if(filename == 'None'):
+            print("filename returned null")
         reportfile = ReadReport()
         filecontent = await reportfile.readfile_content_by_ph(filename,number,storage_service)
         return(filecontent)

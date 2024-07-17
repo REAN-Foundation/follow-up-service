@@ -135,3 +135,15 @@ async def form_file_name(client,date):
     except Exception as e:
         print(e)
         return(None)
+
+async def get_client_name(client):
+    try:
+        if client.__contains__('_'):
+            client_init = client.split('_')
+            return client_init[0]
+        else:
+            return client
+    except Exception as e:
+        print(e)
+        return(None)    
+    

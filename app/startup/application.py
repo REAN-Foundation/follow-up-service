@@ -13,7 +13,7 @@ from app.startup.scheduler import start_scheduler
 async def lifespan(app: FastAPI):
     print("Lifespan started")
     # Startup code
-    asyncio.create_task(start_scheduler())
+    # asyncio.create_task(start_scheduler())
     yield
     # Shutdown code (if needed)
 

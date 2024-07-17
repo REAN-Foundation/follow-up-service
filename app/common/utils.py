@@ -67,7 +67,7 @@ def open_file_in_readmode(filename):
 async def format_date_(date_string):
     try: 
         print("in date",date_string)
-        d_str = date_str.split('-')
+        d_str = date_string.split('-')
         if(d_str[0].startswith('0') or d_str[2].startswith('0')):
             datefirst = int(d_str[0])
             datelast =  int(d_str[2])
