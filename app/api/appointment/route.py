@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
@@ -8,10 +9,13 @@ from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from fastapi import FastAPI, Depends
 from app.common.response_model import ResponseModel
+from app.common.schedule_params import ScheduleParams
 from app.common.utils import format_date_, format_phone_number
 from app.dependency import get_storage_service
 from app.interfaces.appointment_storage_interface import IStorageService
 from fastapi import APIRouter, Depends, HTTPException, Path, status, File, UploadFile
+
+from scheduler import schedule_job
 
 ##################################################################################
 router = APIRouter(
@@ -25,7 +29,7 @@ router = APIRouter(
 @router.post("/{client}/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
 async def read_file(client: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
-        response = await readfile_content(date_string,storage_service)
+        response = await readfile_content(client, date_string, storage_service)
         if(response == None):
             return{
                 "Message":"No Appointments available",
@@ -117,3 +121,19 @@ async def read_individual_phone_data(client_bot_name: str, phone_number: str, da
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+
+@router.post("/{client}/schedule")
+async def schedule_job_endpoint(client: str, params: ScheduleParams):
+    try:
+        print("printing date",params.date)
+        print(params.time)
+        # Combine date and time
+        schedule_datetime = f"{params.date} {params.time}"
+        # schedule_datetime = datetime.strptime(schedule_datetime, "%Y-%m-%d %H:%M")
+        print(schedule_datetime)
+        # Schedule the job
+        schedule_job(schedule_datetime)
+
+        return {"message": "Job scheduled successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

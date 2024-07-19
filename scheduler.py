@@ -3,7 +3,9 @@ import schedule
 import time
 from datetime import datetime
 # from fastapi import Depends
-from app.api.appointment.route import read_file
+# from app.api.appointment.route import read_file
+from app.api.appointment.handler import readfile_content
+
 from app.dependency import get_storage_service
 
 async def call_set_reminder_func():
@@ -14,7 +16,7 @@ async def call_set_reminder_func():
         current_date = datetime.now().strftime('%Y-%m-%d')
         # date_string = await format_date_(current_date)
         storage_service = get_storage_service() 
-        response = await read_file(client, current_date, storage_service)
+        response = await readfile_content(client, current_date, storage_service)
         # result = response.json()
         print("response generated",response)
         
@@ -30,8 +32,20 @@ def schedule_async_job():
     # Schedule the API call (example: every day at 10:00 AM)
 # schedule.every().day.at("10:00").do(call_api_with_date)
 
-schedule.every(1).minutes.do(schedule_async_job)
-print("Job scheduled")
+# schedule.every(1).minutes.do(schedule_async_job)
+# print("Job scheduled")
+
+def schedule_job(schedule_datetime: str):
+    # Schedule the job at the specific datetime
+    print(schedule_datetime)
+    time_str = schedule_datetime.split(' ')
+    schedule_time = time_str[1]
+    # schedule_time = schedule_datetime.strftime("%H:%M")
+    # schedule_date = schedule_datetime.strftime("%Y-%m-%d")
+
+    schedule.every().day.at(schedule_time).do(schedule_async_job)
+    print(f"Job scheduled for at {schedule_time}")
+
 
 # Function to run the scheduler
 def run_scheduler():

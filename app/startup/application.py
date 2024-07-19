@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.common.exceptions import add_exception_handlers
 from app.startup.router import router
-from app.startup.scheduler import start_scheduler
+from scheduler import start_scheduler
 
 #################################################################
 
@@ -13,7 +13,7 @@ from app.startup.scheduler import start_scheduler
 async def lifespan(app: FastAPI):
     print("Lifespan started")
     # Startup code
-    # asyncio.create_task(start_scheduler())
+    asyncio.create_task(start_scheduler())
     yield
     # Shutdown code (if needed)
 

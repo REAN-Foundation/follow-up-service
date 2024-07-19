@@ -166,7 +166,7 @@ async def store_uploaded_file(file: UploadFile):
         shutil.copyfileobj(file.file, buffer)
     return file_path
 
-async def readfile_content(date, storage_service):
+async def readfile_content(client, date, storage_service):
     try:
         in_date = date
         date_str =  await format_date_(in_date)
