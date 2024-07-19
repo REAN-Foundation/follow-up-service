@@ -128,11 +128,12 @@ async def schedule_job_endpoint(client: str, params: ScheduleParams):
         print("printing date",params.date)
         print(params.time)
         # Combine date and time
-        schedule_datetime = f"{params.date} {params.time}"
-        # schedule_datetime = datetime.strptime(schedule_datetime, "%Y-%m-%d %H:%M")
-        print(schedule_datetime)
+        for i in params.date:
+            schedule_datetime = f"{i} {params.time}"
+            schedule_datetime = datetime.strptime(schedule_datetime, "%Y-%m-%d %H:%M")
+            print(schedule_datetime)
         # Schedule the job
-        schedule_job(schedule_datetime)
+            schedule_job(schedule_datetime)
 
         return {"message": "Job scheduled successfully"}
     except Exception as e:

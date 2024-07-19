@@ -1,4 +1,5 @@
 import asyncio
+import threading
 import schedule
 import time
 from datetime import datetime
@@ -35,18 +36,20 @@ def schedule_async_job():
 # schedule.every(1).minutes.do(schedule_async_job)
 # print("Job scheduled")
 
-def schedule_job(schedule_datetime: str):
-    # Schedule the job at the specific datetime
-    print(schedule_datetime)
-    time_str = schedule_datetime.split(' ')
-    schedule_time = time_str[1]
-    # schedule_time = schedule_datetime.strftime("%H:%M")
-    # schedule_date = schedule_datetime.strftime("%Y-%m-%d")
+def schedule_job(schedule_datetime: datetime):
 
-    schedule.every().day.at(schedule_time).do(schedule_async_job)
-    print(f"Job scheduled for at {schedule_time}")
-
-
+    # print(schedule_datetime)
+    # time_str = schedule_datetime.split(' ')
+    # schedule_time = time_str[1]
+    # schedule.every().day.at(schedule_time).do(schedule_async_job)
+    # print(f"Job scheduled for at {schedule_datetime}")
+    now = datetime.now()
+    delay = (schedule_datetime - now).total_seconds()
+    
+    if delay > 0:
+        schedule.every(delay).seconds.do(schedule_async_job).tag(str(schedule_datetime))
+        print(f"Job scheduled for at {schedule_datetime}")
+        
 # Function to run the scheduler
 def run_scheduler():
     print("Scheduler is running")
@@ -59,3 +62,14 @@ async def start_scheduler():
     print("start_scheduler is called")
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, run_scheduler)
+
+
+
+# def run_schedule():
+#     while True:
+#         schedule.run_pending()
+#         time.sleep(1)
+
+# # Start the background thread
+# thread = threading.Thread(target=run_schedule, daemon=True)
+# thread.start()
