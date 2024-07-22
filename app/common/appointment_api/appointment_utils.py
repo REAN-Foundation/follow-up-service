@@ -127,3 +127,28 @@ async def has_patient_replied(prefix_string, mobile, reminder_date,storage_servi
         return False
 
 
+async def form_file_name(client,date):
+    try:
+        file_name=(f"{client}_appointment_{date}.json").lower()
+        filename = file_name.replace(' ', '')
+        return(filename)
+    except Exception as e:
+        print(e)
+        return(None)
+
+async def get_client_name(client):
+    try:
+        dev_bot = os.getenv("DEV_BOT")
+        if client == dev_bot:
+            client_name = 'gmu'
+            return client_name
+        if client.__contains__('_'):
+            client_init = client.split('_')
+            return client_init[0]
+        else:
+            return client
+              
+    except Exception as e:
+        print(e)
+        return(None)    
+    
