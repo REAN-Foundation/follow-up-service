@@ -13,43 +13,43 @@ class UpdateReply:
         number = phone_number.replace(' ', '')
         print(number)
        
-        if filename.startswith('gmu_followup_file_'):
-            data = await storage_service.search_file(filename)
-            patient_reply = await valid_patient_reply(new_data['Patient_replied'])
-                
+        # if filename.startswith('gmu_appointment_'):
+        data = await storage_service.search_file(filename)
+        patient_reply = await valid_patient_reply(new_data['Patient_replied'])
+            
         # Updating patient reply for status Pending arrival
-            for item in data:
-                if item['patient_status'] == 'Pending arrival':
-                    if item['phone_number'] == number:
-                        #Once the reply is set to Yes/No we cannot set to Not replied
-                        if patient_reply != PatientReplyEnum.Invalid_Patient_Reply:
-                            item['patient_replied'] = patient_reply
-                            item['whatsapp_message_id'] = new_data['WhatsApp_message_id']
+        for item in data:
+            if (item['patient_status'] == 'Pending arrival' or item['patient_status'] == ''):
+                if item['phone_number'] == number:
+                    #Once the reply is set to Yes/No we cannot set to Not replied
+                    if patient_reply != PatientReplyEnum.Invalid_Patient_Reply:
+                        item['patient_replied'] = patient_reply
+                        item['whatsapp_message_id'] = new_data['WhatsApp_message_id']
 
-            try:
-                content = await storage_service.update_file(filename, data)
-                return(content)
-            except Exception as e:
+        try:
+            content = await storage_service.update_file(filename, data)
+            return(content)
+        except Exception as e:
             # Handle other exceptions
                 print(f"An unexpected error occurred while updating{filename}: {e}")
                 return(e)
             
-        if filename.startswith('gghn_appointment_'):
-            data = await storage_service.search_file(filename)
-            patient_reply = await valid_patient_reply(new_data['Patient_replied'])
-        # Updating patient reply for status ANY
-            for item in data:
-                if item['phone_number'] == number:
-                    #Once the reply is set to Yes/No we cannot set to Not replied
-                    if patient_reply != PatientReplyEnum.Invalid_Patient_Reply:
-                        item['patient_replied'] =patient_reply
-                        item['whatsapp_message_id'] =new_data['WhatsApp_message_id']
+        # if filename.startswith('gghn_appointment_'):
+        #     data = await storage_service.search_file(filename)
+        #     patient_reply = await valid_patient_reply(new_data['Patient_replied'])
+        # # Updating patient reply for status ANY
+        #     for item in data:
+        #         if item['phone_number'] == number:
+        #             #Once the reply is set to Yes/No we cannot set to Not replied
+        #             if patient_reply != PatientReplyEnum.Invalid_Patient_Reply:
+        #                 item['patient_replied'] =patient_reply
+        #                 item['whatsapp_message_id'] =new_data['WhatsApp_message_id']
 
-            try:
-                content = await storage_service.update_file(filename,data)
-                return(content)
-            except Exception as e:
-            # Handle other exceptions
-                print(f"An unexpected error occurred while updating{filename}: {e}")
-                return(e)
+        #     try:
+        #         content = await storage_service.update_file(filename,data)
+        #         return(content)
+        #     except Exception as e:
+        #     # Handle other exceptions
+        #         print(f"An unexpected error occurred while updating{filename}: {e}")
+        #         return(e)
         
