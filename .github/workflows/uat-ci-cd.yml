@@ -146,6 +146,7 @@ jobs:
       - name: Task Defintion ARN
         run: |
           echo "Task Defintion: ${{ steps.taskdefintionvar.outputs.task_definition_arn }}"
+#
 
       - name: Deploy Amazon ECS task definition using Duplo API
         uses: fjogeleit/http-request-action@master
