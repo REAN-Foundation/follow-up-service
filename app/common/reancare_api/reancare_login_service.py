@@ -6,7 +6,7 @@ from app.common.cache import cache
 
 ###############################################################
 
-class RCLogin:
+class ReanCareLogin:
     def __init__(self):
 
         reancare_base_url = os.getenv("REANCARE_BASE_URL")

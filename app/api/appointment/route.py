@@ -37,7 +37,15 @@ async def read_file(client: str, date_string: str,storage_service: IStorageServi
         } 
     except Exception as e:
         print(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={
+            "Status": "failure",
+            "Message": "Internal Server Error",
+            "Data": None
+            })
+        # return {
+        #     "Message" : "Internal Server Error",
+        #     "Data" : None
+        # }
     
 @router.post("/tests/upload", status_code=status.HTTP_201_CREATED, response_model=ResponseModel[BaseResponseModel|None])
 async def test(file: UploadFile = File(...),storage_service: IStorageService = Depends(get_storage_service)):
@@ -46,7 +54,10 @@ async def test(file: UploadFile = File(...),storage_service: IStorageService = D
                return JSONResponse(content=result)
             except Exception as e:
                 print(e)
-                return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+                return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"Status": "failure",
+            "Message": "Internal Server Error",
+            "Data": None
+            })
             
 @router.post("/upload")
 async def handle_sns_notification(message: Request,storage_service: IStorageService = Depends(get_storage_service)):
@@ -56,7 +67,10 @@ async def handle_sns_notification(message: Request,storage_service: IStorageServ
         return JSONResponse(content=result)
     except Exception as e:
         print(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={ "Status": "failure",
+            "Message": "Internal Server Error",
+            "Data": None
+            })
     
 @router.put("/{client_bot_name}/appointment-status/{phone_number}/days/{date_str}",  status_code=status.HTTP_201_CREATED)
 async def update_reply_and_whatsappid_by_ph(client_bot_name: str, phone_number: str, new_data: dict, date_str: str,storage_service:IStorageService = Depends(get_storage_service)):
@@ -116,4 +130,4 @@ async def read_individual_phone_data(client_bot_name: str, phone_number: str, da
         return await readfile_content_by_phone(client_bot_name, phone_number,date_string,storage_service)
     except Exception as e:
         print(e)
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"message": "Internal Server Error"})
+        return JSONResponse(status_code=status.status.HTTP_404_NOT_FOUND, content={"message": "Data not found"})

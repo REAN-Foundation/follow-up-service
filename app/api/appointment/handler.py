@@ -6,7 +6,7 @@ import boto3
 from fastapi import File, HTTPException, Request, UploadFile
 import httpx
 from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
-from app.common.reancare_api.rc_login_service import RCLogin
+from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.utils import format_date_, format_phone_number, get_temp_filepath, is_date_valid
 from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
 from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
@@ -55,7 +55,7 @@ async def handle_s3_event(message: Request,storage_service):
     file_path = await download(message)
 
     # 1. Login as tenant-admin or tenant-user
-    login = RCLogin()
+    login = ReanCareLogin()
     await login.login()
 
     # 2. Extract the date from the PDF file
@@ -121,7 +121,7 @@ async def handle(storage_service,file: UploadFile = File(...)):
     file_path = await store_uploaded_file(file)
 
     # 1. Login as tenant-admin or tenant-user
-    login = RCLogin()
+    login = ReanCareLogin()
     await login.login()
 
     # 2. Extract the date from the PDF file
@@ -165,7 +165,7 @@ async def store_uploaded_file(file: UploadFile):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return file_path
-
+###########################other routes#######################################
 async def readfile_content(date, storage_service):
     try:
         in_date = date
@@ -173,9 +173,8 @@ async def readfile_content(date, storage_service):
         if(date_str == 'None'):
             print("date returned null")              
         print("formated_date...",date_str)
-        login = GGHNLogin()
-        await login.gghnlogin()
-        login = RCLogin()
+        
+        login = ReanCareLogin()
         await login.login()
         patientextraction = GGHNAppointmentReminder()
         appointmentcontent = await patientextraction.read_content(date_str,storage_service)
