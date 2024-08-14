@@ -26,8 +26,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             raise Exception('GGHN_BASE_URL is not set')
         
         self.patient_code_url = str(gghn_base_url + "/api/PharmacyPickup")
-        self.token = cache.get('gghn_access_token')
-        print("gghn token----",self.token)
+        self.token = ''
 
 
     #Get Paitient details using gghn api   
@@ -36,6 +35,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             login = GGHNLogin()
             await login.gghnlogin()
             self.token = cache.get('gghn_access_token')
+            print("gghn token--",self.token)
             suburl = str(f'/QueryPatientByNextAppointment?startdate={date}T00:00:00&endDate={date}T23:59:59')
             url=str(self.patient_code_url+suburl)
             print("Patient code url----",url)

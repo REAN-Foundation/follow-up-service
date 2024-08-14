@@ -140,7 +140,7 @@ async def get_client_name(client):
     try:
         dev_bot = os.getenv("DEV_BOT")
         if client == dev_bot:
-            client_name = 'gmu'
+            client_name = 'gghn'
             return client_name
         if client.__contains__('_'):
             client_init = client.split('_')

@@ -96,7 +96,8 @@ async def download(message: Request):
         event_name = record['eventName']
         s3_bucket = record['s3']['bucket']['name']
         s3_object_key = record['s3']['object']['key']
-    # Download the PDF file from AWS S3
+        # print("s3_object_key",s3_object_key)
+        # Download the PDF file from AWS S3
     local_file_path = await download_pdf_from_s3(s3_bucket, s3_object_key)
     if local_file_path == None:
         raise HTTPException(status_code=400, detail='Unable to download PDF from S3')
@@ -109,10 +110,16 @@ async def download_pdf_from_s3(bucket_name, object_key):
             aws_access_key_id=str(os.getenv("AWS_ACCESS_KEY")),
             aws_secret_access_key=str(os.getenv("AWS_SECRET_ACCESS_KEY"))
         )
-        local_file_path = await get_temp_filepath(object_key)
+        s3_object = object_key.split('/')
+     
+        s3_file = s3_object[1]
+        print("s3_file",s3_file)
+        local_file_path = get_temp_filepath(s3_file)
+       
         s3.download_file(bucket_name, object_key, local_file_path)
         return local_file_path
     except Exception as e:
+        print("exception",e)
         return None
 
 ############################gmu_test################
