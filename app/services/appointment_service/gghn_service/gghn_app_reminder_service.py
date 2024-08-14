@@ -6,6 +6,7 @@ from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
+from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
 from app.services.common_service.db_service import DatabaseService
 
 
@@ -25,14 +26,16 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             raise Exception('GGHN_BASE_URL is not set')
         
         self.patient_code_url = str(gghn_base_url + "/api/PharmacyPickup")
-        self.token = cache.get('gghn_access_token')
-        print("gghn token----",self.token)
+        self.token = ''
 
 
     #Get Paitient details using gghn api   
     async def read_content(self, date,storage_service):
         try:
+            login = GGHNLogin()
+            await login.gghnlogin()
             self.token = cache.get('gghn_access_token')
+            print("gghn token--",self.token)
             suburl = str(f'/QueryPatientByNextAppointment?startdate={date}T00:00:00&endDate={date}T23:59:59')
             url=str(self.patient_code_url+suburl)
             print("Patient code url----",url)
