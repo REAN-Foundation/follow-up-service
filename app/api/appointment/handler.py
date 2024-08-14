@@ -78,7 +78,7 @@ async def handle_s3_event(message: Request,storage_service):
 
         
         admin_notification = GMUAdminNotification()
-        await admin_notification.admin_notify(reminder_date,reminder_summary,storage_service)
+        await admin_notification.admin_notify(reminder_date,reminder_summary)
 
         return {
             "message" : "Reminders created successfully",
