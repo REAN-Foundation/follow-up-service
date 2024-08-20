@@ -20,7 +20,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         self.reminders_sent_count = 0
         self.appointment_details= []
         self.db_data = ''
-        self.client_name = os.getenv("GGHN_BOT_CLIENT_NAME")
+        self.client_name = os.getenv("DEV_BOT")
         gghn_base_url = os.getenv("GGHN_BASE_URL")
         if gghn_base_url == None:
             raise Exception('GGHN_BASE_URL is not set')
@@ -52,7 +52,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             except HTTPError as e:
                 print(f"HTTP Error {e.status_code}: {e.message}")
 
-            print("result of post---",result)
+            print("received GGHn data")
             prefix="gghn_details_"
             file_name = await self.create_reports(result,date,prefix,storage_service)
             appointment_file = await self.extract_appointment(file_name,date,storage_service)
@@ -119,7 +119,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print(f"An unexpected error occurred while reading {filename}")
           
         file_data = (file_content) 
-        print("file data...",file_data)
+        # print("file data...",file_data)
        
         flag=0
         for rdata in resp_data:
@@ -181,7 +181,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print(f"An unexpected error occurred while reading {filename}")
         
         file_data = (file_content)     
-        print("file data...",file_data)
+        # print("file data...",file_data)
         
         flag=0
         for rdata in resp_data:
@@ -332,14 +332,16 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
     #Search patient phone number from baseservice database corresponding to EMRId 
     async def search_phone_by_EMRId(self, file_name, date, EMRId):
-        print("search url",self.search_by_emrid)
+        # print("search url",self.search_by_emrid)
         header = get_headers()
-        print("header",header)
+        # print("header",header)
         params = {
         'externalMedicalRegistrationId': EMRId
         }
-        response = requests.get(self.search_by_emrid, headers = header, params=params)
+        url = self.search_by_emrid
+        response = requests.get(url, headers = header, params=params)
         result = response.json()
+        print('searched emrid', result)
         if response.status_code == 200 and not result['Message'] == 'No records found!':
             phone_no_retrived = str(result['Data']['Patients']['Items'][0]['Phone'])
             print(f"phone retrived for {EMRId} is {phone_no_retrived}")
