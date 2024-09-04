@@ -4,6 +4,7 @@ import json
 import camelot
 import pdfplumber
 from dateutil import parser
+from app.common.logtimeing import log_execution_time
 from app.common.utils import get_temp_filepath
 import pandas as pd
 
@@ -83,6 +84,7 @@ class GMUPdfReader:
             print(e)
             return None
 
+    @log_execution_time
     async def extract_table_appointments(self, filename,storage_service):
         file_content = await storage_service.search_file(filename)
         if not file_content:

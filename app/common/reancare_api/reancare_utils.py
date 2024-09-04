@@ -9,8 +9,10 @@ from datetime import *
 from app.common.cache import cache
 import urllib.parse
 import requests
-###############################################################################
 
+from app.common.logtimeing import log_execution_time
+###############################################################################
+@log_execution_time
 async def find_patient_by_mobile(mobile):
     reancare_base_url = os.getenv("REANCARE_BASE_URL")
     url = str(reancare_base_url + "/patients/")

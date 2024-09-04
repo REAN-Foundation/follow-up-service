@@ -1,9 +1,11 @@
 import json
 import os
+import time
 import requests
 from app.common.appointment_api.appointment_utils import has_patient_replied, time_of_first_reminder
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
+from app.common.logtimeing import log_execution_time
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
@@ -27,9 +29,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         
         self.patient_code_url = str(gghn_base_url + "/api/PharmacyPickup")
         self.token = ''
-
-
-    #Get Paitient details using gghn api   
+    #Get Paitient details using gghn api 
+    @log_execution_time
     async def read_content(self, date,storage_service):
         try:
             login = GGHNLogin()
@@ -62,12 +63,12 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
             updated_appointment_file = await self.update_phone_by_EMRId(appointment_file,date,storage_service)
             resp = await self.create_reminder(updated_appointment_file,date,storage_service)
-            # resp = await self.send_reminder(appointment_file,date)
+            # resp = await self.send_reminder(appointment_file,date) 
             return(resp)
         except HTTPError:
             raise NotFound(status_code=404, detail="Resource not found")
 
-
+    @log_execution_time
     #Create/update a detail file of api out put 
     async def create_reports(self,resp_data,enquiry_date,prefix,storage_service):
         filename=str(prefix+enquiry_date+'.json')
@@ -80,9 +81,10 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                await self.update_content(filename,resp_data,enquiry_date,prefix,storage_service)
             else:
                await self.update_appointment_content(filename,resp_data,enquiry_date,prefix,storage_service)
+            
         return(filename)        
       
-
+    @log_execution_time
     #Create a file with only necessary details for appointment    
     async def extract_appointment(self, file_name,date,storage_service):
         response = await storage_service.search_file(file_name)
@@ -112,6 +114,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
 
     # Update gghn details file  
+    @log_execution_time
     async def update_content(self,filename,resp_data,enquiry_date,prefix,storage_service):
         additional_data=[]
         file_content = await storage_service.search_file(filename)
@@ -173,7 +176,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print(f"An unexpected error occurred while updating{filename}: {e}")
 
 
-    # Update gghn appointment file  
+    # Update gghn appointment file
+    @log_execution_time  
     async def update_appointment_content(self,filename,resp_data,enquiry_date,prefix,storage_service):
         additional_appointment=[]
         file_content = await storage_service.search_file(filename)
@@ -218,7 +222,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         # Handle other exceptions
             print(f"An unexpected error occurred while writing into{filename}: {e}")
 
-
+    @log_execution_time
     async def create_reminder(self,appointment_file,date,storage_service):
         count = 0
         filedata = await storage_service.search_file(appointment_file)
@@ -228,12 +232,12 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             try:
                     phone_number = item['phone_number']
                     patient_code = item['participant_code']
-                    print("GGHN patient phone number is:",phone_number)
+                    # print("GGHN patient phone number is:",phone_number)
                     if(phone_number != ''):
                         patient_data = await find_patient_by_mobile(phone_number)
-                        print("GGHN patient user id is:",patient_data)
+                        # print("GGHN patient user id is:",patient_data)
                         first_reminder = await time_of_first_reminder(phone_number)
-                        print("first reminder time for GGHN patient",first_reminder)
+                        # print("first reminder time for GGHN patient",first_reminder)
                         prefix_str = 'gghn_appointment_'
                         #for trial date made static
                         # date = '2024-05-2'
@@ -297,7 +301,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         }
     # As GGHN do not provide when time so the when time is trial testing time
 
-
+    
     async def schedule_reminder(self, schedule_create_model):
         header = get_headers()
         response = requests.post(self.reminder_url, headers=header, data=json.dumps(schedule_create_model))
@@ -307,7 +311,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print('Unable to schedule reminder ', response.json())  
         return(self.reminders_sent_count)
           
-
+    
     # Update phone number in appointment file of GGHN
     async def update_phone_by_EMRId(self, file_name, date,storage_service):
         recent_data=[]
@@ -316,7 +320,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print(f"An unexpected error occurred in update_phone_by_EMRId while reading {file_name}")
         
         appointment_data = file_data
-        print("appointment file data",appointment_data)
+        # print("appointment file data",appointment_data)
         for app_data in appointment_data:
             EMRId=app_data['participant_code']
             phone_nos = await self.search_phone_by_EMRId(file_name, date, EMRId)
@@ -331,6 +335,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
 
 
     #Search patient phone number from baseservice database corresponding to EMRId 
+    
     async def search_phone_by_EMRId(self, file_name, date, EMRId):
         # print("search url",self.search_by_emrid)
         header = get_headers()
@@ -341,7 +346,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         url = self.search_by_emrid
         response = requests.get(url, headers = header, params=params)
         result = response.json()
-        print('searched emrid', result)
+        # print('searched emrid', result)
         if response.status_code == 200 and not result['Message'] == 'No records found!':
             phone_no_retrived = str(result['Data']['Patients']['Items'][0]['Phone'])
             print(f"phone retrived for {EMRId} is {phone_no_retrived}")

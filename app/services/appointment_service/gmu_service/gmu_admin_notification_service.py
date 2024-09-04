@@ -4,6 +4,7 @@ import shutil
 import requests
 
 from app.common.appointment_api.appointment_utils import validate_mobile
+from app.common.logtimeing import log_execution_time
 
 
 class GMUAdminNotification:
@@ -17,6 +18,7 @@ class GMUAdminNotification:
         
         self.notification_token = "Bearer " + whatsapp_token
 
+    @log_execution_time
     async def admin_notify(self,reminder_date,summary):
         print('Sending message to admins')
         file_name = 'GMU_admin.json'

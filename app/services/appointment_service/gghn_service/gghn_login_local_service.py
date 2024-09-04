@@ -1,9 +1,11 @@
 from ast import Dict
 import json
 import os
+import time
 import requests
 from app.common.cache import cache
 from app.common.exceptions import HTTPError
+from app.common.logtimeing import log_execution_time
 
 ###############################################################
 
@@ -21,7 +23,8 @@ class GGHNLogin:
         
         self.gghn_access_token = ''
         self._url = str(gghn_base_url)
-
+        
+    @log_execution_time
     async def gghnlogin(self):
         base_url_ = self._url
         try:
@@ -55,4 +58,5 @@ class GGHNLogin:
         cache.set('gghn_access_token', self.gghn_access_token)
         print('Login successful')
         # print('gghn_access_token',self.gghn_access_token)
+        
         return (result)

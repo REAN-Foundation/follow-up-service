@@ -11,6 +11,8 @@ from app.common.cache import cache
 import urllib.parse
 import requests
 
+from app.common.logtimeing import log_execution_time
+
 # from app.services.common_service.db_service import DatabaseService
 
 
@@ -98,6 +100,7 @@ async def has_patient_replied_infile(prefix_string, mobile, reminder_date):
                 return True
         return False
 
+@log_execution_time
 async def has_patient_replied(prefix_string, mobile, reminder_date,storage_service):
         # initial = prefix_string
         # ini_prefix = initial.split('_')

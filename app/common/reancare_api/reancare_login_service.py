@@ -3,6 +3,7 @@ import json
 import os
 import requests
 from app.common.cache import cache
+from app.common.logtimeing import log_execution_time
 
 ###############################################################
 
@@ -19,7 +20,7 @@ class ReanCareLogin:
         self.API_KEY = os.getenv("REANCARE_API_KEY")
         self.access_token = ''
         self.url = str(reancare_base_url)
-
+    @log_execution_time
     async def login(self):
         base_url = self.url
         health_check_resp = requests.get(base_url)
