@@ -55,8 +55,8 @@ async def handle_s3_event(message: Request,storage_service):
     file_path = await download(message)
 
     # 1. Login as tenant-admin or tenant-user
-    login = ReanCareLogin()
-    await login.login()
+    # login = ReanCareLogin()
+    # await login.login()
 
     # 2. Extract the date from the PDF file
     reader = GMUPdfReader()
@@ -128,8 +128,8 @@ async def handle(storage_service,file: UploadFile = File(...)):
     file_path = await store_uploaded_file(file)
 
     # 1. Login as tenant-admin or tenant-user
-    login = ReanCareLogin()
-    await login.login()
+    # login = ReanCareLogin()
+    # await login.login()
 
     # 2. Extract the date from the PDF file
     reader = GMUPdfReader()
@@ -181,11 +181,9 @@ async def readfile_content(date, storage_service):
             print("date returned null")              
         print("formated_date...",date_str)
         
-        login = ReanCareLogin()
-        await login.login()
         patientextraction = GGHNAppointmentReminder()
         appointmentcontent = await patientextraction.read_content(date_str,storage_service)
-        return(appointmentcontent)
+        print(appointmentcontent)
         # return()
     except Exception as e:
         raise e

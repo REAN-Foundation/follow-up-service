@@ -1,4 +1,5 @@
 from ast import Dict
+from datetime import datetime
 import json
 import os
 import requests
@@ -18,11 +19,13 @@ class ReanCareLogin:
         self.username = os.getenv("USER_NAME")
         self.password = os.getenv("PASSWORD")
         self.API_KEY = os.getenv("REANCARE_API_KEY")
-        self.access_token = ''
+        # self.access_token
         self.url = str(reancare_base_url)
     @log_execution_time
     async def login(self):
         base_url = self.url
+        token_validtill = ''
+        reancare_access_token = ''
         health_check_resp = requests.get(base_url)
         print("health check resp", health_check_resp)
         headers = {
@@ -39,12 +42,23 @@ class ReanCareLogin:
         result = response.json()
         if result['Status'] == 'failure':
             raise Exception(result['Message'])
-        self.access_token = result['Data']['AccessToken']
-
-        cache.set('access_token', self.access_token)
+        reancare_access_token = result['Data']['AccessToken']
+        token_validtill = result['Data']['SessionValidTill']
+        print("validtill..",token_validtill)
+        cache.set('Valid_rc_token_date', token_validtill)
+        cache.set('access_token', reancare_access_token)
         print('Login successful')
         return (result)
 
-    def get_access_token(self):
-        return self.access_token
+   
+    async def get_access_token(self):
+        token = cache.get('access_token')
+        validtill_date = cache.get('Valid_rc_token_date')
+        date = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        if(token == None or validtill_date < date or validtill_date == None):
+            print('need to login')
+            await self.login()
+        # print('token valid no need to login')
+        access_token = cache.get('access_token')
+        return access_token
 

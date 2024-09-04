@@ -10,6 +10,7 @@ from app.common.cache import cache
 import pytz
 
 from app.common.logtimeing import log_execution_time
+from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.common_service.db_service import DatabaseService
@@ -33,7 +34,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         self.reminder_url = str(reancare_base_url + "/reminders/one-time")
         self.reminder_search_url = str(reancare_base_url + "/reminders/search")
         self.api_key = os.getenv("REANCARE_API_KEY")
-        self.access_token = cache.get('access_token')
+        # self.access_token = cache.get('access_token')
         self.recent_file = ''
         self.gmu_bot_client_name = os.getenv("GMU_BOT_CLIENT_NAME")
         self.tenant_id = tenant_id
@@ -46,8 +47,8 @@ class GMUAppointmentReminder(AppointmentReminderI):
         # self.db_data = DatabaseService()
     @log_execution_time
     async def create_reminder(self, reminder_date, appointments,storage_service):
-
-        self.access_token = cache.get('access_token')
+        login = ReanCareLogin()
+        self.access_token = await login.get_access_token()
         summary_data = []
         for appointment in appointments:
 
@@ -188,7 +189,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
     @log_execution_time
     async def search_reminder(self, patient_user_id, reminder_date, reminder_time):
         url = self.reminder_search_url
-        headers = get_headers()
+        headers = await get_headers()
         params = {
             'userId': patient_user_id,
             'whenDate': reminder_date,
@@ -207,7 +208,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
     @log_execution_time    
     async def create_patient(self, mobile):
         self.url = self.patient_url
-        header = get_headers(create_user=True)
+        header = await get_headers(create_user=True)
         body = json.dumps({'Phone': mobile, 'TenantId': self.tenant_id})
         response = requests.post(self.url, headers = header, data = body)
         result = response.json()
@@ -241,7 +242,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
 
     @log_execution_time
     async def update_patient(self, patient_user_id, update_patient_model):
-        header = get_headers()
+        header = await get_headers()
         response = requests.put(self.patient_url+patient_user_id, headers=header, data=json.dumps(update_patient_model))
         if response.status_code != 200:
             raise Exception('Unable to update patient')
@@ -294,7 +295,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         }
     @log_execution_time
     async def schedule_reminder(self, schedule_create_model):
-        header = get_headers()
+        header = await get_headers()
         response = requests.post(self.reminder_url, headers=header, data=json.dumps(schedule_create_model))
         if response.status_code == 201:
             self.reminders_sent_count = self.reminders_sent_count + 1
