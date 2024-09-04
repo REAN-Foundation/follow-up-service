@@ -12,7 +12,7 @@ from app.common.utils import format_date_, format_phone_number
 from app.dependency import get_storage_service
 from app.interfaces.appointment_storage_interface import IStorageService
 from fastapi import APIRouter, Depends, HTTPException, Path, status, File, UploadFile
-
+from fastapi import BackgroundTasks
 ##################################################################################
 router = APIRouter(
  
@@ -23,29 +23,20 @@ router = APIRouter(
 )
 #################################################################################
 @router.post("/{client}/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
-async def read_file(client: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
+async def read_file(background_tasks: BackgroundTasks, client: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
-        response = await readfile_content(date_string,storage_service)
-        if(response == None):
-            return{
-                "Message":"No Appointments available",
-                "Data":response 
-            }
+        background_tasks.add_task(readfile_content, date_string,storage_service)
+       
         return {
-            "Message" : "Reminders created successfully",
-            "Data" : response
-        } 
+            "Message" : "Your Followup reminders are being scheduled",
+            } 
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={
             "Status": "failure",
             "Message": "Internal Server Error",
-            "Data": None
             })
-        # return {
-        #     "Message" : "Internal Server Error",
-        #     "Data" : None
-        # }
+        
     
 @router.post("/tests/upload", status_code=status.HTTP_201_CREATED, response_model=ResponseModel[BaseResponseModel|None])
 async def test(file: UploadFile = File(...),storage_service: IStorageService = Depends(get_storage_service)):

@@ -4,6 +4,7 @@ import os
 from fastapi import HTTPException
 import requests
 from app.common.cache import cache
+from app.common.logtime import log_execution_time
 from app.services.common_service.db_service import DatabaseService
 
 class GGHNReadReport:
@@ -17,7 +18,7 @@ class GGHNReadReport:
         self.patient_data=[]
         # self.db_data = DatabaseService()
        
-
+    @log_execution_time
     async def gghn_read_appointment_file(self,filename,storage_service):
         try:
             data = await storage_service.search_file(filename)
@@ -26,6 +27,7 @@ class GGHNReadReport:
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="File not found")
         
+    @log_execution_time    
     async def gghn_read_appointment_summary(self,filename,storage_service):
         file_name = filename.split('_')
         f_date  = '_'.join(file_name[2:])

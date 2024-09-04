@@ -6,8 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.common.exceptions import add_exception_handlers
 from app.startup.router import router
 from app.startup.scheduler import start_scheduler
+import logging
 
 #################################################################
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,7 +31,6 @@ def get_application():
         allow_methods=['*'],
         allow_headers=['*'],
     )
-
     server.include_router(router)
 
     return server

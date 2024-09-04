@@ -2,6 +2,7 @@ import json
 from app.common.appointment_api.appointment_utils import valid_patient_reply
 from app.common.enumclasses import PatientReplyEnum
 from app.services.common_service.db_service import DatabaseService
+from app.services.common_service.read_report import ReadReport
 class UpdateReply:
     def __init__(self): 
         # self.db_data = DatabaseService()
@@ -28,7 +29,10 @@ class UpdateReply:
 
         try:
             content = await storage_service.update_file(filename, data)
-            return(content)
+            read_data = ReadReport()
+            changed_data =await read_data.readfile_content_by_ph(filename, number,storage_service)
+            print("change...",changed_data)
+            return(changed_data)
         except Exception as e:
             # Handle other exceptions
                 print(f"An unexpected error occurred while updating{filename}: {e}")

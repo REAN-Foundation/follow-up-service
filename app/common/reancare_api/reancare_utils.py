@@ -9,12 +9,17 @@ from datetime import *
 from app.common.cache import cache
 import urllib.parse
 import requests
+
+from app.common.reancare_api.reancare_login_service import ReanCareLogin
 ###############################################################################
 
+from app.common.logtime import log_execution_time
+###############################################################################
+@log_execution_time
 async def find_patient_by_mobile(mobile):
     reancare_base_url = os.getenv("REANCARE_BASE_URL")
     url = str(reancare_base_url + "/patients/")
-    headers = get_headers()
+    headers = await get_headers()
     formatted = urllib.parse.quote(mobile)
     search_url = url + "search?phone={}".format(formatted)
     response = requests.get(search_url, headers=headers)
@@ -24,14 +29,16 @@ async def find_patient_by_mobile(mobile):
     else:
         return search_result['Data']['Patients']['Items'][0]['UserId']
 
-def get_headers(create_user = False):
+async def get_headers(create_user = False):
+        login = ReanCareLogin()
+        access_token = await login.get_access_token()
         if create_user:
             return {
                 'x-api-key': os.getenv("REANCARE_API_KEY"),
                 'Content-Type': 'application/json'
             }
         return {
-            'Authorization': "Bearer " +  cache.get('access_token'),
+            'Authorization': "Bearer " +  access_token,
             'x-api-key': os.getenv("REANCARE_API_KEY"),
             'Content-Type': 'application/json'
         }
