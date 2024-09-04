@@ -4,7 +4,7 @@ import shutil
 import requests
 
 from app.common.appointment_api.appointment_utils import validate_mobile
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 
 
 class GMUAdminNotification:

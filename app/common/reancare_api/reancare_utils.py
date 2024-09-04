@@ -13,7 +13,7 @@ import requests
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
 ###############################################################################
 
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 ###############################################################################
 @log_execution_time
 async def find_patient_by_mobile(mobile):

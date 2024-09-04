@@ -4,7 +4,7 @@ import json
 import camelot
 import pdfplumber
 from dateutil import parser
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 from app.common.utils import get_temp_filepath
 import pandas as pd
 

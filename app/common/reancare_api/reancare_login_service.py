@@ -4,7 +4,7 @@ import json
 import os
 import requests
 from app.common.cache import cache
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 
 ###############################################################
 

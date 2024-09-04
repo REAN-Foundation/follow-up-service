@@ -5,7 +5,7 @@ import requests
 from app.common.appointment_api.appointment_utils import has_patient_replied, time_of_first_reminder
 from app.common.cache import cache
 from app.common.exceptions import HTTPError, NotFound
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin

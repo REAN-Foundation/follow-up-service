@@ -9,7 +9,7 @@ from app.common.enumclasses import AppStatusEnum, PatientReplyEnum
 from app.common.cache import cache
 import pytz
 
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI

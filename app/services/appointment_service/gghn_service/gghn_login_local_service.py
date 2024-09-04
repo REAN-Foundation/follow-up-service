@@ -5,7 +5,7 @@ import time
 import requests
 from app.common.cache import cache
 from app.common.exceptions import HTTPError
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 
 ###############################################################
 

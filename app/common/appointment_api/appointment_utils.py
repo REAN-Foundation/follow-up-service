@@ -11,7 +11,7 @@ from app.common.cache import cache
 import urllib.parse
 import requests
 
-from app.common.logtimeing import log_execution_time
+from app.common.logtime import log_execution_time
 
 # from app.services.common_service.db_service import DatabaseService
 
