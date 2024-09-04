@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_content_by_phone, readfile_summary, recent_file, update_reply_by_ph
 from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
-from app.common.base_response import BaseResponseModel,RespModel
+from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from fastapi import FastAPI, Depends
 from app.common.response_model import ResponseModel
@@ -22,18 +22,13 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 #################################################################################
-@router.post("/{client}/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[RespModel|None])
+@router.post("/{client}/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
 async def read_file(background_tasks: BackgroundTasks, client: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
         background_tasks.add_task(readfile_content, date_string,storage_service)
-        # response = await readfile_content(date_string,storage_service)
-        # if(response == None):
-        #     return{
-        #         "Message":"No Appointments available",
-        #         "Data":response 
-        #     }
+       
         return {
-            "Message" : "Reminders created successfully",
+            "Message" : "Your Followup reminders are being scheduled",
             } 
     except Exception as e:
         print(e)
