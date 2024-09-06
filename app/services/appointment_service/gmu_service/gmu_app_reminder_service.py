@@ -251,6 +251,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
         appointment_time = patient['AppointmentTime'].split(' ')
         hour, minute = appointment_time[0].split(':')
         rest = appointment_time[1]
+        print("when date..",when_date)
         # appointment_time= '{}:{}:{}'.format(hour,minute,'00')
         raw_content = {
             "TemplateName": "appointment_rem_question",

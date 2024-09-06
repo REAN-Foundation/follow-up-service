@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
@@ -95,7 +96,9 @@ async def read_recent_file(client: str,storage_service: IStorageService = Depend
 
 @router.get("/{client}/status-report/{date_str}", status_code=status.HTTP_200_OK)
 async def status_for_date_file(client: str,date_str: str,storage_service: IStorageService = Depends(get_storage_service)):
-    date_string = await format_date_(date_str)
+    formatted_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+    print("formatted_date:",formatted_date)
+    date_string = formatted_date  
     if(date_string == 'None'):
         print("date returned null")
     filename = await form_file_name(client,date_string)

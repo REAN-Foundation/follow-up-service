@@ -1,4 +1,5 @@
 # ############gghn############
+from datetime import datetime
 import json
 import os
 import shutil
@@ -56,12 +57,15 @@ async def handle_s3_event(message: Request,storage_service):
 
     # 2. Extract the date from the PDF file
     reader = GMUPdfReader()
-    reminder_date = await reader.extract_reminder_date(file_path)
-    if not reminder_date:
+    date_extracted = await reader.extract_reminder_date(file_path)
+    if not date_extracted:
         return ('Unable to find or unable to parse the date')
 
     # Compare file date with the todays date
-    is_valid_date = await is_date_valid(reminder_date); 
+    is_valid_date = await is_date_valid(date_extracted); 
+    formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
+    print("formatted_date:",formatted_date)
+    reminder_date = formatted_date
     # 3. Extract the PDF file
     if is_valid_date:
         print('Extracting pdf data')
@@ -125,11 +129,14 @@ async def handle(storage_service,file: UploadFile = File(...)):
 
     # 2. Extract the date from the PDF file
     reader = GMUPdfReader()
-    reminder_date = await reader.extract_reminder_date(file_path)
-    if not reminder_date:
+    date_extracted = await reader.extract_reminder_date(file_path)
+    if not date_extracted:
         return ('Unable to find or unable to parse the date')
     # Compare file date with the todays date
-    is_valid_date = await is_date_valid(reminder_date); 
+    is_valid_date = await is_date_valid(date_extracted); 
+    formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
+    print("formatted_date:",formatted_date)
+    reminder_date = formatted_date
     # 3. Extract the PDF file
     if is_valid_date:
         # 3. Extract the PDF file
@@ -167,8 +174,9 @@ async def store_uploaded_file(file: UploadFile):
 ###########################other routes#######################################
 async def readfile_content(date, storage_service):
     try:
-        in_date = date
-        date_str =  await format_date_(in_date)
+        formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        date_str = formatted_date
         if(date_str == 'None'):
             print("date returned null")              
         print("formated_date...",date_str)
@@ -183,19 +191,21 @@ async def readfile_content(date, storage_service):
     
 async def update_reply_by_ph(client_bot_name,date_str, phone_number, content,storage_service):
     try:
-        in_date = date_str
+        formatted_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        
         client_name = await get_client_name(client_bot_name)
         client = (client_name).lower()
         print("client name--",client)
-        date_str = await format_date_(in_date)
-        if(date_str == 'None'):
+        # date_str = await format_date_(in_date)
+        if(formatted_date == 'None'):
             print("date returned null")
         
-        print("formated_date...",date_str)
+        print("date...",formatted_date)
         number = await format_phone_number(phone_number)
         if(number == 'None'):
             print("number returned null")
-        filename = await form_file_name(client,date_str)
+        filename = await form_file_name(client,formatted_date)
         if(filename == 'None'):
             print("filename returned null")
         updatefile = UpdateReply()
@@ -221,17 +231,18 @@ async def read_appointment_file(filename,storage_service):
     except Exception as e:
          raise e
 
-async def readfile_content_by_phone(client_bot_name, phone_number,date_string,storage_service):
+async def readfile_content_by_phone(client_bot_name, phone_number,date_str,storage_service):
     try:    
         client_name = await get_client_name(client_bot_name)
         client = (client_name).lower()
-        date_str = await format_date_(date_string)
-        if(date_str == 'None'):
+        formatted_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        if(formatted_date == 'None'):
             print("date returned null")
         number = await format_phone_number(phone_number)
         if(number == 'None'):
             print("number returned null")
-        filename = await form_file_name(client,date_str)
+        filename = await form_file_name(client,formatted_date)
         if(filename == 'None'):
             print("filename returned null")
         reportfile = ReadReport()
