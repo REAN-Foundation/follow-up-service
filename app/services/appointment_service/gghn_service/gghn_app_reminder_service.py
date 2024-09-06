@@ -192,6 +192,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
              
 
     async def get_schedule_create_model(self, patient_user_id,patient_code, reminder_time, when_date):
+        print("when date..",when_date)
         raw_content = {
             "TemplateName": "appointment_rem_question",
             "Variables": {
