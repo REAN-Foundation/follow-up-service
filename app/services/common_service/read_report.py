@@ -84,4 +84,4 @@ class ReadReport:
                 return(self.patient_data)
             
         except FileNotFoundError:
-            raise HTTPException(status_code=404, detail="File not found")
+            raise HTTPException(status_code=404, detail="Data not found")
