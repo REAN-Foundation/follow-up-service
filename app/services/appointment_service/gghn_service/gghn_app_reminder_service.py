@@ -258,11 +258,13 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         # print("appointment file data",appointment_data)
         for app_data in appointment_data:
             EMRId=app_data['participant_code']
-            phone_nos = await self.search_phone_by_EMRId(file_name, date, EMRId)
-            if(phone_nos != None):
-                app_data['phone_number'] = phone_nos
+            patient_detail = await self.search_phone_by_EMRId(file_name, date, EMRId)
+            if(patient_detail != None):
+                app_data['phone_number'] = patient_detail['phone']
+                app_data['rean_patient_userid'] = patient_detail['userId']
             else:
                 app_data['phone_number'] = ''
+                app_data['rean_patient_userid'] = ''
 
         retrived_data = await storage_service.update_file(file_name,appointment_data)
         data = retrived_data
@@ -284,8 +286,14 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         # print('searched emrid', result)
         if response.status_code == 200 and not result['Message'] == 'No records found!':
             phone_no_retrived = str(result['Data']['Patients']['Items'][0]['Phone'])
+            user_id = str(result['Data']['Patients']['Items'][0]['UserId'])
             print(f"phone retrived for {EMRId} is {phone_no_retrived}")
-            return (phone_no_retrived)
+            print(f"userId retrived for {EMRId} is {user_id}")
+            patient_data = {
+                'phone': phone_no_retrived,
+                'userId': user_id
+            }
+            return (patient_data)
         else:
             # print(result['Message'])
             return(None)

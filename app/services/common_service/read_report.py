@@ -72,16 +72,67 @@ class ReadReport:
                 for item in data:
                     if item['phone_number'] == phone_number:
                         data={
-                            'Name of patient': item['name_of_patient'],
-                            'Facility name': item['facility_name'],
-                            'Appointment time':item['appointment_time'],
-                            'Participant code': item['participant_code'],
-                            'Patient status': item['patient_status'],
-                            'WhatsApp message id':item['whatsapp_message_id'],
-                            'Patient replied':item['patient_replied']
+                            'name_of_patient': item['name_of_patient'],
+                            'facility_name': item['facility_name'],
+                            'rean_patient_userid': item['rean_patient_userid'],
+                            'appointment_time':item['appointment_time'],
+                            'participant_code': item['participant_code'],
+                            'patient_status': item['patient_status'],
+                            'whatsapp_message_id':item['whatsapp_message_id'],
+                            'patient_replied':item['patient_replied']
                         }
                         self.patient_data.append(data)
                 return(self.patient_data)
+            
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="Data not found")
+        
+    async def readfile_content_by_reply(self,filename,reply,storage_service):
+        try:
+            patient_reply_count = 0
+            count = 0
+            patient_reply_data=[]
+
+            file_data = await storage_service.search_file(filename)
+            if(file_data!= None):
+                if(reply != None):
+                    for item in file_data:
+                        if item['patient_replied'] == reply:
+                            patient_reply_count =patient_reply_count + 1
+                            data={
+                                'name_of_patient': item['name_of_patient'],
+                                'facility_name': item['facility_name'],
+                                'phone_number': item['phone_number'],
+                                'appointment_time':item['appointment_time'],
+                                'participant_code': item['participant_code'],
+                                'patient_status': item['patient_status'],
+                                'whatsapp_message_id':item['whatsapp_message_id'],
+                                'patient_replied':item['patient_replied']
+                            }
+                            patient_reply_data.append(data)
+                    detail_data = {
+                        'reply_count': patient_reply_count,
+                        'reply_details' : patient_reply_data
+                    }
+                else: 
+                    for item in file_data:
+                        count = count + 1
+                        data={
+                            'name_of_patient': item['name_of_patient'],
+                            'facility_name': item['facility_name'],
+                            'phone_number': item['phone_number'],
+                            'appointment_time':item['appointment_time'],
+                            'participant_code': item['participant_code'],
+                            'patient_status': item['patient_status'],
+                            'whatsapp_message_id':item['whatsapp_message_id'],
+                            'patient_replied':item['patient_replied']
+                        }
+                        patient_reply_data.append(data)
+                    detail_data = {
+                        'reply_count': count,
+                        'reply_details' : patient_reply_data
+                    }
+                return(detail_data)
             
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail="Data not found")
