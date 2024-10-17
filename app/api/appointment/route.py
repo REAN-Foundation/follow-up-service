@@ -3,8 +3,8 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_content_by_phone, readfile_summary, recent_file, update_reply_by_ph
-from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
+from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_content_by_phone, readfile_summary, recent_file, reply_data, update_reply_by_ph
+from app.common.appointment_api.appointment_utils import form_file_name, get_client_name, map_reply
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
 from fastapi import FastAPI, Depends
@@ -125,3 +125,33 @@ async def read_individual_phone_data(client_bot_name: str, phone_number: str, da
     except Exception as e:
         print(e)
         return JSONResponse(status_code=status.status.HTTP_404_NOT_FOUND, content={"message": "Data not found"})
+
+
+@router.get("/reply-report/", status_code=status.HTTP_200_OK)
+async def reply_report(clientname: str,date: str, reply: str | None = None,storage_service: IStorageService = Depends(get_storage_service)):
+    date_str = date
+    if(date_str == 'None' or clientname == 'None'):
+        print("date returned null")
+        return(None)
+    if(reply != None):
+        reply_str = reply
+        reply = await map_reply(reply_str)
+    formatted_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+    print("formatted_date:",formatted_date)
+    date_string = formatted_date  
+    client = clientname.lower()
+    print("client..",client)
+    filename = await form_file_name(client,date_string)
+    if(filename == 'None'):
+        print("filename returned null")
+    try:
+        # file_data = await read_appointment_file(filename,storage_service)        
+        reply_summary = await reply_data(filename,reply,storage_service)
+        data = {
+            "Summary":reply_summary['reply_count'],
+            "File_data":reply_summary['reply_details']
+            } 
+        return(data)
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "File not found"})

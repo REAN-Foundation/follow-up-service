@@ -261,3 +261,11 @@ async def readfile_summary(filename,storage_service):
          raise e
 
 
+async def reply_data(filename,reply,storage_service):
+    try:
+        reportfile = ReadReport()
+        filecontent = await reportfile.readfile_content_by_reply(filename,reply,storage_service)
+        return(filecontent)
+    except Exception as e:
+        raise e
+    

@@ -155,3 +155,18 @@ async def get_client_name(client):
         print(e)
         return(None)    
     
+async def map_reply(reply):
+    try:
+        reply_str = reply.lower()
+        if(reply_str == 'yes'):
+            reply = 'Yes'
+            return(reply)
+        if(reply_str == 'no'):
+            reply = 'No'
+            return(reply)
+        if(reply_str == 'not replied'):
+            reply = 'Not replied'
+            return(reply)
+    except Exception as e:
+        print(e)
+        return(None)
