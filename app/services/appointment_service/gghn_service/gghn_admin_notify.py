@@ -20,9 +20,9 @@ class GGHNCaseManagerNotification:
         # self.notification_token = "Bearer " + whatsapp_token
 
     @log_execution_time
-    async def case_manager_notify(self,changed_data,date_str):
+    async def case_manager_notify(self,changed_data,date_str,case_manager_name):
         print('Sending message to admins')
-        file_name = 'GMU_admin.json'
+        file_name = 'Case_manager_contact.json'
         current_path = os.getcwd()
         folder_path = os.path.join(current_path, "assets")
         exists = os.path.exists(folder_path)
@@ -33,13 +33,14 @@ class GGHNCaseManagerNotification:
             file_content=file.read()
             file_data=json.loads(file_content)
             for line in file_data:
-                admin_phone = (line['Phone'])
-                is_valid_mobile = validate_mobile(admin_phone)
-                if not is_valid_mobile:
-                    print('*Invalid phone-number - ', admin_phone)
-                phone_nos=self.reform(admin_phone)
-                print(phone_nos)
-                await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
+                if(case_manager_name == line['name']):
+                    admin_phone = (line['phone'])
+                    # is_valid_mobile = validate_mobile(admin_phone)
+                    # if not is_valid_mobile:
+                    #      print('*Invalid phone-number - ', admin_phone)
+                    phone_nos=self.reform(admin_phone)
+                    print(phone_nos)
+                    # await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
 
     async def send_msg_to_case_manager(self,phone_nos,changed_data,date_str):
         print(changed_data)
