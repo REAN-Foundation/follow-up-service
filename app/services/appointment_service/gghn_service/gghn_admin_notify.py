@@ -33,14 +33,14 @@ class GGHNCaseManagerNotification:
             file_content=file.read()
             file_data=json.loads(file_content)
             for line in file_data:
-                if(case_manager_name == line['name']):
+                if case_manager_name.lower() in line['name'].lower():
                     admin_phone = (line['phone'])
                     # is_valid_mobile = validate_mobile(admin_phone)
                     # if not is_valid_mobile:
                     #      print('*Invalid phone-number - ', admin_phone)
                     phone_nos=self.reform(admin_phone)
                     print(phone_nos)
-                    # await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
+                    await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
 
     async def send_msg_to_case_manager(self,phone_nos,changed_data,date_str):
         print(changed_data)
