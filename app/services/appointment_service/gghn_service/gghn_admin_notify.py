@@ -47,7 +47,7 @@ class GGHNCaseManagerNotification:
         participant_code= changed_data[0]['participant_code']
         date_str= date_str
         facility_name = changed_data[0]['facility_name']
-        msg = changed_data[0]['followup_assessment_reply']
+        msg = self.reform_message(changed_data[0]['followup_assessment_reply'])
         header = self.get_notification_headers()
         body ={
             "userId": phone_nos,
@@ -94,3 +94,6 @@ class GGHNCaseManagerNotification:
         temp = temp.replace(")","")
         return temp
     
+    def reform_message(self,msg):
+        temp = msg.replace("_"," ")
+        return temp
