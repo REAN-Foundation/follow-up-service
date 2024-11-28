@@ -46,6 +46,7 @@ class GGHNCaseManagerNotification:
         print(changed_data)
         participant_code= changed_data[0]['participant_code']
         date_str= date_str
+        facility_name = changed_data[0]['facility_name']
         msg = changed_data[0]['followup_assessment_reply']
         header = self.get_notification_headers()
         body ={
@@ -60,6 +61,10 @@ class GGHNCaseManagerNotification:
                         {
                             "type": "text",
                             "text": participant_code
+                        },
+                        {
+                            "type": "text",
+                            "text": facility_name
                         },
                         {
                             "type": "text",
