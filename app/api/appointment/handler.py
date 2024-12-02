@@ -268,4 +268,30 @@ async def reply_data(filename,reply,storage_service):
         return(filecontent)
     except Exception as e:
         raise e
+
     
+async def update_followup_reply(client_bot_name,date_str, phone_number, content,storage_service):
+    try:
+        formatted_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        
+        client_name = await get_client_name(client_bot_name)
+        client = (client_name).lower()
+        print("client name--",client)
+        # date_str = await format_date_(in_date)
+        if(formatted_date == 'None'):
+            print("date returned null")
+        
+        print("date...",formatted_date)
+        number = await format_phone_number(phone_number)
+        if(phone_number == 'None'):
+            print("phone number not found")
+        filename = await form_file_name(client,formatted_date)
+        if(filename == 'None'):
+            print("filename returned null")
+        updatefile = UpdateReply()
+        updated_data = await updatefile.update_followup_assessment_reply(filename, number, content,date_str,storage_service)
+        return(updated_data)
+    except Exception as e:
+         raise e
+

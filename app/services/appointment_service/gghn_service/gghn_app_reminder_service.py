@@ -101,7 +101,9 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                 "participant_code":data['participant_code'],
                 "patient_status":"",
                 "whatsapp_message_id": "",
-                "patient_replied":"Not replied"
+                "patient_replied":"Not replied",
+                "followup_assessment_reply": "",
+                "case_manager": data['case_manager']
             }
             appointment_details.append(patient_code_details)
             self.patient_code_count= self.patient_code_count+1
@@ -139,6 +141,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                                 "patient_status":"",
                                 "whatsapp_message_id": "",
                                 "patient_replied": "Not replied",
+                                "followup_assessment_reply": "",
+                                "case_manager": rdata['case_manager']
                                 }
                
                 additional_appointment.append(additional_app)

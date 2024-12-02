@@ -87,7 +87,9 @@ class GMUAppointmentReminder(AppointmentReminderI):
                 "patient_status":valid_appointment_status(appointment['Status']),
                 "whatsapp_message_id":"",
                 "patient_replied": "N/A" if valid_appointment_status(appointment['Status'])!=AppStatusEnum.Pending_Arrival else "Not replied",
-                  }
+                "followup_assessment_reply":"",
+                "case_manager": appointment['Provider'],
+                }
             summary_data.append(data)
 
             if appointment['Status'] != PENDING_ARRIVAL:
