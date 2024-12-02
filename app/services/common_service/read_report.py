@@ -82,6 +82,7 @@ class ReadReport:
                             'patient_replied':item['patient_replied'],
                             'followup_assessment_reply':item['followup_assessment_reply'],
                             'case_manager':item['case_manager'],
+
                         }
                         self.patient_data.append(data)
                 return(self.patient_data)
@@ -112,6 +113,7 @@ class ReadReport:
                                 'patient_replied':item['patient_replied'],
                                 'followup_assessment_reply':item['followup_assessment_reply'],
                                 'case_manager':item['case_manager'],
+
                             }
                             patient_reply_data.append(data)
                     detail_data = {
