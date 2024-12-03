@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.common.exceptions import add_exception_handlers
 from app.startup.router import router
-from app.startup.scheduler import start_scheduler
 import logging
 
 #################################################################

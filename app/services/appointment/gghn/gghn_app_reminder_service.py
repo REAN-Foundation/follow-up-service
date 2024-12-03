@@ -8,8 +8,8 @@ from app.common.exceptions import HTTPError, NotFound
 from app.common.logtime import log_execution_time
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
-from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
-from app.services.common_service.db_service import DatabaseService
+from app.services.appointment.gghn.gghn_login_local_service import GGHNLogin
+from app.services.common.db_service import DatabaseService
 
 
 class GGHNAppointmentReminder(AppointmentReminderI):

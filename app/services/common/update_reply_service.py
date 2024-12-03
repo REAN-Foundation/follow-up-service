@@ -2,9 +2,9 @@ import json
 import os
 from app.common.appointment_api.appointment_utils import valid_patient_reply
 from app.common.enumclasses import PatientReplyEnum
-from app.services.appointment_service.gghn_service.gghn_admin_notify import GGHNCaseManagerNotification
-from app.services.common_service.db_service import DatabaseService
-from app.services.common_service.read_report import ReadReport
+from app.services.appointment.gghn.gghn_admin_notify_service import GGHNCaseManagerNotification
+from app.services.common.db_service import DatabaseService
+from app.services.common.read_report_service import ReadReport
 class UpdateReply:
     def __init__(self): 
         # self.assessment_id= os.getenv("ASSESSMENT_ID")

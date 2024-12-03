@@ -4,7 +4,7 @@ import os
 from fastapi import HTTPException
 import requests
 from app.common.cache import cache
-# from app.services.common_service.db_service import DatabaseService
+# from app.services.common.db_service import DatabaseService
 class ReadReport:
     def __init__(self):
         self.patients_count = 0
