@@ -13,7 +13,7 @@ from app.common.logtime import log_execution_time
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
-from app.services.common_service.db_service import DatabaseService
+from app.services.common.db_service import DatabaseService
 
 
 ###############################################################
@@ -146,20 +146,7 @@ class GMUAppointmentReminder(AppointmentReminderI):
             json_string = json.dumps(summary_data, indent=7)
             json_object = json.loads(json_string)
             content_data = await storage_service.store_file(filename, json_object)
-            # temp_folder = os.path.join(os.getcwd(), "temp")
-            # if not os.path.exists(temp_folder):
-            #     os.mkdir(temp_folder)
-            # filepresent  = os.path.join(temp_folder, filename)
-            # with open(filepresent, 'w') as json_file:
-            #     json.dump(summary_data, json_file, indent=7)
-
-            # json_string = json.dumps(summary_data, indent=7)
-
-            # code to set recent file in cache
-            # self.recent_file = filename
-            # cache.set('recent_file', self.recent_file)
-            # recent_file = cache.get('recent_file')
-            # print("RECENT FILE IN CACHE",recent_file)
+           
             print(content_data)
             return(content_data)
 

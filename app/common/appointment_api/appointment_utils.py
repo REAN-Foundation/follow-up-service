@@ -13,7 +13,7 @@ import requests
 
 from app.common.logtime import log_execution_time
 
-# from app.services.common_service.db_service import DatabaseService
+# from app.services.common.db_service import DatabaseService
 
 
 ###############################################################################

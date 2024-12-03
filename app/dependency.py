@@ -1,7 +1,7 @@
 # dependencies.py
 import os
-from app.services.common_service.db_service import DatabaseService
-from app.services.common_service.file_service import FileStorageService
+from app.services.common.db_service import DatabaseService
+from app.services.common.file_service import FileStorageService
 
 
 def get_storage_service():
@@ -10,8 +10,8 @@ def get_storage_service():
        return DatabaseService()
     return FileStorageService()
 # containers.py
-# from app.services.common_service.db_service import DatabaseService
-# from app.services.common_service.file_service import FileStorageService
+# from app.services.common.db_service import DatabaseService
+# from app.services.common.file_service import FileStorageService
 # from dependency_injector import containers, providers
 # import os
 
