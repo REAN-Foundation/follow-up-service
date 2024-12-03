@@ -6,5 +6,5 @@ env
 *.csv
 test_data/*.pdf
 assets/GMU_admin.json
-assets/Case_manager_contact.json
+assets/case_manager_contact.json
 test.txt
