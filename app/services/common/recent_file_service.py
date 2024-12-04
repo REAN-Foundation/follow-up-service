@@ -2,7 +2,7 @@ import os
 
 from fastapi import HTTPException
 
-from app.services.common_service.db_service import DatabaseService
+from app.services.common.db_service import DatabaseService
 
 
 class RecentFile:

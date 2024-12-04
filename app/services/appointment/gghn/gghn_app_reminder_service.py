@@ -8,8 +8,8 @@ from app.common.exceptions import HTTPError, NotFound
 from app.common.logtime import log_execution_time
 from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
-from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
-from app.services.common_service.db_service import DatabaseService
+from app.services.appointment.gghn.gghn_login_local_service import GGHNLogin
+from app.services.common.db_service import DatabaseService
 
 
 class GGHNAppointmentReminder(AppointmentReminderI):
@@ -101,7 +101,9 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                 "participant_code":data['participant_code'],
                 "patient_status":"",
                 "whatsapp_message_id": "",
-                "patient_replied":"Not replied"
+                "patient_replied":"Not replied",
+                "followup_assessment_reply": "",
+                "case_manager": data['case_manager']
             }
             appointment_details.append(patient_code_details)
             self.patient_code_count= self.patient_code_count+1
@@ -139,6 +141,8 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                                 "patient_status":"",
                                 "whatsapp_message_id": "",
                                 "patient_replied": "Not replied",
+                                "followup_assessment_reply": "",
+                                "case_manager": rdata['case_manager']
                                 }
                
                 additional_appointment.append(additional_app)

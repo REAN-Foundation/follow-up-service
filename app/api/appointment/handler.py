@@ -9,14 +9,14 @@ import httpx
 from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.utils import format_date_, format_phone_number, get_temp_filepath, is_date_valid
-from app.services.appointment_service.gghn_service.gghn_app_reminder_service import GGHNAppointmentReminder
-from app.services.appointment_service.gghn_service.gghn_login_local_service import GGHNLogin
-from app.services.appointment_service.gmu_service.gmu_admin_notification_service import GMUAdminNotification
-from app.services.appointment_service.gmu_service.gmu_app_reminder_service import GMUAppointmentReminder
-from app.services.appointment_service.gmu_service.gmu_pdf_reader_service import GMUPdfReader
-from app.services.common_service.read_report import ReadReport
-from app.services.common_service.recent_file_service import RecentFile
-from app.services.common_service.update_reply_service import UpdateReply
+from app.services.appointment.gghn.gghn_app_reminder_service import GGHNAppointmentReminder
+from app.services.appointment.gghn.gghn_login_local_service import GGHNLogin
+from app.services.appointment.gmu.gmu_admin_notification_service import GMUAdminNotification
+from app.services.appointment.gmu.gmu_app_reminder_service import GMUAppointmentReminder
+from app.services.appointment.gmu.gmu_pdf_reader_service import GMUPdfReader
+from app.services.common.read_report_service import ReadReport
+from app.services.common.recent_file_service import RecentFile
+from app.services.common.update_reply_service import UpdateReply
 
 
   
@@ -269,3 +269,27 @@ async def reply_data(filename,reply,storage_service):
     except Exception as e:
         raise e
     
+async def update_followup_reply(client_bot_name,date_str, phone_number, content,storage_service):
+    try:
+        formatted_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        
+        client_name = await get_client_name(client_bot_name)
+        client = (client_name).lower()
+        print("client name--",client)
+        # date_str = await format_date_(in_date)
+        if(formatted_date == 'None'):
+            print("date returned null")
+        
+        print("date...",formatted_date)
+        number = await format_phone_number(phone_number)
+        if(phone_number == 'None'):
+            print("phone number not found")
+        filename = await form_file_name(client,formatted_date)
+        if(filename == 'None'):
+            print("filename returned null")
+        updatefile = UpdateReply()
+        updated_data = await updatefile.update_followup_assessment_reply(filename, number, content,date_str,storage_service)
+        return(updated_data)
+    except Exception as e:
+         raise e
