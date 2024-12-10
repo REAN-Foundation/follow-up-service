@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 import requests
-
+from difflib import SequenceMatcher
 from app.common.appointment_api.appointment_utils import validate_mobile
 from app.common.logtime import log_execution_time
 
@@ -34,15 +34,18 @@ class GGHNCaseManagerNotification:
             file_content=file.read()
             file_data=json.loads(file_content)
             for line in file_data:
-                if case_manager_name.lower() in line['name'].lower():
-                    admin_phone = (line['phone'])
-                    flag = 1
-                    # is_valid_mobile = validate_mobile(admin_phone)
-                    # if not is_valid_mobile:
-                    #      print('*Invalid phone-number - ', admin_phone)
-                    phone_nos=self.reform(admin_phone)
-                    print(phone_nos)
-                    await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
+                if changed_data[0]['facility_name'] == line['place']:
+                    line_cm = line['name']
+                    if case_manager_name != None:
+                        ratio = SequenceMatcher(None, case_manager_name.lower(), line_cm.lower()).ratio()
+                        if ratio > 0.8:  # adjust the threshold as needed
+                            admin_phone = (line['phone'])
+                            flag = 1
+                            phone_nos=self.reform(admin_phone)
+                            print(phone_nos)
+                            await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
+                    else:
+                        print('No case manager allocated to patient')
             if flag == 0:
                 print('No case manager found')
                     
