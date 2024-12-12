@@ -2,9 +2,11 @@ import os
 import json
 import shutil
 import requests
-
+from difflib import SequenceMatcher
 from app.common.appointment_api.appointment_utils import validate_mobile
 from app.common.logtime import log_execution_time
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 
 class GGHNCaseManagerNotification:
@@ -20,7 +22,7 @@ class GGHNCaseManagerNotification:
         # self.notification_token = "Bearer " + whatsapp_token
 
     @log_execution_time
-    async def case_manager_notify(self,changed_data,date_str,case_manager_name):
+    async def case_manager_notify(self,changed_data,date_str):
         print('Sending message to admins')
         flag = 0
         file_name = 'case_manager_contact.json'
@@ -33,26 +35,28 @@ class GGHNCaseManagerNotification:
             file=open(file_path,"r")
             file_content=file.read()
             file_data=json.loads(file_content)
-            for line in file_data:
-                if case_manager_name.lower() in line['name'].lower():
-                    admin_phone = (line['phone'])
-                    flag = 1
-                    # is_valid_mobile = validate_mobile(admin_phone)
-                    # if not is_valid_mobile:
-                    #      print('*Invalid phone-number - ', admin_phone)
-                    phone_nos=self.reform(admin_phone)
-                    print(phone_nos)
-                    await self.send_msg_to_case_manager(phone_nos,changed_data,date_str)  
-            if flag == 0:
-                print('No case manager found')
+            # cm_file_data = file_data
+            if changed_data:
+                for data in changed_data:
+                    matched_record = self.find_matching_record(data['case_manager'],file_data)
+                    print("match..",matched_record)
+                    if matched_record == None or matched_record['phone'] == None or matched_record['phone'] == '':
+                        print('phone number not found') 
+                    else:  
+                        admin_phone = (matched_record['phone'])
+                        phone_nos=self.reform(admin_phone)
+                        print(phone_nos)
+                        resp = await self.send_msg_to_case_manager(phone_nos,data,date_str)  
+                        print(resp)
+               
                     
 
     async def send_msg_to_case_manager(self,phone_nos,changed_data,date_str):
-        print(changed_data)
-        participant_code= changed_data[0]['participant_code']
+        # print(changed_data)
+        participant_code= changed_data['participant_code']
         date_str= date_str
-        facility_name = changed_data[0]['facility_name']
-        msg = self.reform_message(changed_data[0]['followup_assessment_reply'])
+        facility_name = changed_data['facility_name']
+        msg = self.reform_message(changed_data['followup_assessment_reply'])
         header = self.get_notification_headers()
         body ={
             "userId": phone_nos,
@@ -80,11 +84,13 @@ class GGHNCaseManagerNotification:
             }
         }
         print("case manager message..",body)
+        # return(body)
         response = requests.post(self.notification_base_url, headers=header, data=json.dumps(body))
         if response:
             print(response.json())
+            return('Message sent')
         else:
-            print('Unable  ', response.json())
+            print('Unable to send message', response.json())
 
     def get_notification_headers(self): 
         return {    
@@ -102,3 +108,28 @@ class GGHNCaseManagerNotification:
     def reform_message(self,msg):
         temp = msg.replace("_"," ")
         return temp
+    
+    def normalize_name(self,name):
+        return ' '.join(sorted(name.split()))
+
+    def find_matching_record(self,name, records, threshold=80):
+        normalized_query = self.normalize_name(name)
+
+        best_match = None
+        highest_score = 0
+
+        for record in records:
+            # Skip records where the 'name' field is missing or None
+            if not record.get('name'):
+                continue
+
+            # Remove common prefixes and suffixes (e.g., Mr., Dr., etc.) from both query and record names
+            cleaned_record_name = ' '.join([word for word in record['name'].split() if word.lower() not in ['mr', 'mrs', 'dr', 'sir']])
+            normalized_record_name = self.normalize_name(cleaned_record_name)
+            similarity_score = fuzz.ratio(normalized_query, normalized_record_name)
+
+            if similarity_score > highest_score and similarity_score >= threshold:
+                highest_score = similarity_score
+                best_match = record
+
+        return best_match
