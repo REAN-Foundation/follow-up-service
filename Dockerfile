@@ -1,44 +1,59 @@
-# FROM python:3.10
-# WORKDIR /app
-# RUN python -m venv venv
-# RUN . venv/bin/activate
-# RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 ghostscript -y
-# RUN apt-get install -y awscli dos2unix
-# RUN pip install --upgrade pip
-# RUN pip install setuptools wheel
-# COPY requirements.txt /app/
-# RUN pip install --no-cache-dir -r requirements.txt
-# COPY . /app
-# # RUN aws s3 cp s3://duploservices-dev-configs-new-167414264568/document-processor/GMU_admin.json /app/assets
-# EXPOSE 3000
-# #CMD ["python", "main.py"]
-# COPY entrypoint.sh /app/entrypoint.sh
-# RUN dos2unix /app/entrypoint.sh
-# RUN chmod +x /app/entrypoint.sh
-# ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
+FROM alpine:3.19 AS builder
 
-FROM python:3.12-slim-bookworm 
+# Install build tools, Python, and dependencies
+RUN apk --no-cache add \
+    bash \
+    curl \
+    cmake \
+    make \
+    g++ \
+    gcc \
+    git \
+    musl-dev \
+    linux-headers \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    gtest-dev \
+    zlib-dev \
+    expat-dev \
+    openssl-dev \
+    python3 \
+    py3-pip \
+    py3-virtualenv \
+    python3-dev \
+    py3-numpy \
+    libffi-dev \
+    build-base
 
-# Set the working directory
+# Set work directory
 WORKDIR /app
 
-# Install necessary tools for the build process and dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    libstdc++6 \
-    libx11-6 \
-    ghostscript \
-    awscli \
-    dos2unix \
-    libexpat1 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Create a virtual environment
+RUN python3 -m venv /app/venv
 
-# Upgrade pip and install Python packages
-RUN pip install --upgrade pip setuptools wheel
-
-# Copy requirements and install them
+# Install build tools for Python and dependencies
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
+RUN /app/venv/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Clone and build the Highway library
+RUN git clone --depth 1 https://github.com/google/highway.git /tmp/highway && \
+    cd /tmp/highway && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make -j4 && \
+    make install && \
+    rm -rf /tmp/highway
+
+# Clone and build libjxl
+RUN git clone https://github.com/libjxl/libjxl.git /tmp/libjxl && \
+    cd /tmp/libjxl && \
+    ./deps.sh && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DJPEGXL_FORCE_SYSTEM_LIBPNG=ON .. && \
+    make -j4 && \
+    make install && \
+    rm -rf /tmp/libjxl
 
 # Copy the rest of the application code
 COPY . /app
