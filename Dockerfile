@@ -1,5 +1,5 @@
 # Stage 1: Builder
-FROM alpine:3.19 AS builder
+FROM alpine:3.21.0 AS builder
 
 # Install build tools and dependencies
 RUN apk --no-cache add \
@@ -54,7 +54,7 @@ RUN git clone https://github.com/libjxl/libjxl.git /tmp/libjxl && \
     rm -rf /tmp/libjxl
 
 # Stage 2: Final Image (Runtime)
-FROM alpine:3.19
+FROM alpine:3.21.0
 
 RUN apk --no-cache update && apk --no-cache upgrade openssl && \
     apk --no-cache add \
