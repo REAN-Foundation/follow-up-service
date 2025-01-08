@@ -1,57 +1,54 @@
-# Build Stage
-FROM python:3.10-slim AS builder
+# FROM python:3.10
+# WORKDIR /app
+# RUN python -m venv venv
+# RUN . venv/bin/activate
+# RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 ghostscript -y
+# RUN apt-get install -y awscli dos2unix
+# RUN pip install --upgrade pip
+# RUN pip install setuptools wheel
+# COPY requirements.txt /app/
+# RUN pip install --no-cache-dir -r requirements.txt
+# COPY . /app
+# # RUN aws s3 cp s3://duploservices-dev-configs-new-167414264568/document-processor/GMU_admin.json /app/assets
+# EXPOSE 3000
+# #CMD ["python", "main.py"]
+# COPY entrypoint.sh /app/entrypoint.sh
+# RUN dos2unix /app/entrypoint.sh
+# RUN chmod +x /app/entrypoint.sh
+# ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
+
+FROM python:3.12-slim-bookworm 
 
 # Set the working directory
 WORKDIR /app
 
-# Install build tools and dependencies for Python packages
+# Install necessary tools for the build process and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    gfortran \
-    libopenblas-dev \
-    liblapack-dev \
-    libffi-dev \
-    libsm6 \
-    libxext6 \
     ffmpeg \
+    libstdc++6 \
+    libx11-6 \
     ghostscript \
+    awscli \
     dos2unix \
-    && rm -rf /var/lib/apt/lists/*
+    libexpat1 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set up Python virtual environment
-RUN python -m venv /opt/venv
+# Upgrade pip and install Python packages
+RUN pip install --upgrade pip setuptools wheel
 
-# Activate the virtual environment and install dependencies
-ENV PATH="/opt/venv/bin:$PATH"
+# Copy requirements and install them
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
-# Copy application source code
+# Copy the rest of the application code
 COPY . /app
 
-# Prepare the entrypoint script and set permissions
-COPY entrypoint.sh /app/entrypoint.sh
-RUN dos2unix /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+# Convert the entrypoint script to Unix format and make it executable
+RUN dos2unix /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
-# Runtime Stage
-FROM gcr.io/distroless/python3-debian11
-
-# Set the working directory
-WORKDIR /app
-
-# Copy only the necessary files from the builder stage
-COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /app /app
-
-# Ensure Python virtual environment is used
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Use non-root user for execution
-USER nonroot:nonroot
-
-# Expose application port
+# Expose port
 EXPOSE 3000
 
 # Set the entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
