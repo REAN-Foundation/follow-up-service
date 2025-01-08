@@ -17,7 +17,7 @@
 # RUN chmod +x /app/entrypoint.sh
 # ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
 
-FROM python:3.12-slim-bookworm 
+FROM python:3.14.0a3-slim-bookworm 
 
 # Set the working directory
 WORKDIR /app
