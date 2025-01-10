@@ -38,17 +38,20 @@ class GGHNCaseManagerNotification:
             # cm_file_data = file_data
             if changed_data:
                 for data in changed_data:
-                    matched_record = self.find_matching_record(data['case_manager'],file_data)
-                    print("match..",matched_record)
-                    if matched_record == None or matched_record['phone'] == None or matched_record['phone'] == '':
-                        print('phone number not found') 
-                    else:  
-                        admin_phone = (matched_record['phone'])
-                        phone_nos=self.reform(admin_phone)
-                        print(phone_nos)
-                        resp = await self.send_msg_to_case_manager(phone_nos,data,date_str)  
-                        print(resp)
-               
+                    if(data['case_manager']!= None):
+                        matched_record = self.find_matching_record(data['case_manager'],file_data)
+                        print("match..",matched_record)
+                        if matched_record == None or matched_record['phone'] == None or matched_record['phone'] == '':
+                            print('phone number not found') 
+                        else:  
+                            admin_phone = (matched_record['phone'])
+                            phone_nos=self.reform(admin_phone)
+                            print(phone_nos)
+                            resp = await self.send_msg_to_case_manager(phone_nos,data,date_str)  
+                            print(resp)
+                    else:
+                        print('case manager not associated') 
+                
                     
 
     async def send_msg_to_case_manager(self,phone_nos,changed_data,date_str):
