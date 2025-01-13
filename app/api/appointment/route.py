@@ -167,3 +167,4 @@ async def followup_assessment_reply(client_bot_name: str, phone_number: str, new
         } 
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+

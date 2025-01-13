@@ -47,6 +47,7 @@ class UpdateReply:
         print(number)
         case_manager_name = []
 
+
         data = await storage_service.search_file(filename)
                    
         # Updating patient reply for status Pending arrival
@@ -62,6 +63,7 @@ class UpdateReply:
             print("change...",changed_data)
             case_manager_note = GGHNCaseManagerNotification()
             resp = await case_manager_note.case_manager_notify(changed_data,date_str)
+
             return(changed_data)
         except Exception as e:
             # Handle other exceptions

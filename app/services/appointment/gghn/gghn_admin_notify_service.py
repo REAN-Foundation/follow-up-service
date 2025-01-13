@@ -9,6 +9,7 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 
+
 class GGHNCaseManagerNotification:
     def __init__(self):
       
@@ -22,6 +23,7 @@ class GGHNCaseManagerNotification:
         # self.notification_token = "Bearer " + whatsapp_token
 
     @log_execution_time
+
     async def case_manager_notify(self,changed_data,date_str):
         print('Sending message to admins')
         flag = 0
@@ -35,6 +37,7 @@ class GGHNCaseManagerNotification:
             file=open(file_path,"r")
             file_content=file.read()
             file_data=json.loads(file_content)
+
             # cm_file_data = file_data
             if changed_data:
                 for data in changed_data:
@@ -60,6 +63,7 @@ class GGHNCaseManagerNotification:
         date_str= date_str
         facility_name = changed_data['facility_name']
         msg = self.reform_message(changed_data['followup_assessment_reply'])
+
         header = self.get_notification_headers()
         body ={
             "userId": phone_nos,
@@ -94,6 +98,7 @@ class GGHNCaseManagerNotification:
             return('Message sent')
         else:
             print('Unable to send message', response.json())
+
 
     def get_notification_headers(self): 
         return {    
@@ -136,3 +141,4 @@ class GGHNCaseManagerNotification:
                 best_match = record
 
         return best_match
+
