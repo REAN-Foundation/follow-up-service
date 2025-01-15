@@ -45,7 +45,8 @@ class UpdateReply:
         print("filename",filename)
         number = phone_number.replace(' ', '')
         print(number)
-        case_manager_name = ''
+        case_manager_name = []
+
 
         data = await storage_service.search_file(filename)
                    
@@ -53,7 +54,6 @@ class UpdateReply:
         for item in data:
             if item['phone_number'] == number:
                 # if new_data['assessment_id'] == self.assessment_id:
-                case_manager_name = item['case_manager']
                 item['followup_assessment_reply'] = new_data['chosen_option']['text']
                     
         try:
@@ -62,7 +62,8 @@ class UpdateReply:
             changed_data =await read_data.readfile_content_by_ph(filename, number,storage_service)
             print("change...",changed_data)
             case_manager_note = GGHNCaseManagerNotification()
-            resp = await case_manager_note.case_manager_notify(changed_data,date_str,case_manager_name)
+            resp = await case_manager_note.case_manager_notify(changed_data,date_str)
+
             return(changed_data)
         except Exception as e:
             # Handle other exceptions
