@@ -1,0 +1,558 @@
+{
+	"info": {
+		"_postman_id": "1245b4b5-224e-4d06-bf92-9d23965cc158",
+		"name": "Follow_up",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24199452"
+	},
+	"item": [
+		{
+			"name": "Common Routes",
+			"item": [
+				{
+					"name": "Set Reminders Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6InJlYW5hcGkiLCJuYW1laWQiOiJyZWFuYXBpIiwibmJmIjoxNzE0NDUzMTk2LCJleHAiOjE3MTQ1Mzk1OTYsImlhdCI6MTcxNDQ1MzE5Nn0.ZO-uXtENQ_p-3OAPsjrv-Qy5ubifwQl0EVD4yMuufFA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/{{CLIENT}}/set-reminders/date/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"{{CLIENT}}",
+								"set-reminders",
+								"date",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Reminder reply gghn",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6InJlYW5hcGkiLCJuYW1laWQiOiJyZWFuYXBpIiwibmJmIjoxNzE0NDUzMTk2LCJleHAiOjE3MTQ1Mzk1OTYsImlhdCI6MTcxNDQ1MzE5Nn0.ZO-uXtENQ_p-3OAPsjrv-Qy5ubifwQl0EVD4yMuufFA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"WhatsApp_message_id\" : \"123\",\r\n    \"Patient_replied\": \"Yes\"\r\n   \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/{{BOT_CLIENT}}/appointment-status/{{PHONE_NUMBER}}/days/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"{{BOT_CLIENT}}",
+								"appointment-status",
+								"{{PHONE_NUMBER}}",
+								"days",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Appointment Recent file",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/{{CLIENT}}/recent-status-report/recent-file",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"{{CLIENT}}",
+								"recent-status-report",
+								"recent-file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Appointment Reportfor date",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/{{CLIENT}}/status-report/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"{{CLIENT}}",
+								"status-report",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Individual Appointment",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/{{CLIENT}}/appointment-status/{{PHONE_NUMBER}}/days/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"{{CLIENT}}",
+								"appointment-status",
+								"{{PHONE_NUMBER}}",
+								"days",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reply_search Copy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/reply-report/?clientname={{CLIENT}}&date={{DATE}}&reply=yes",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"reply-report",
+								""
+							],
+							"query": [
+								{
+									"key": "clientname",
+									"value": "{{CLIENT}}"
+								},
+								{
+									"key": "date",
+									"value": "{{DATE}}"
+								},
+								{
+									"key": "reply",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reply_search Copy 2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/reply-report/?clientname={{CLIENT}}&date={{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"reply-report",
+								""
+							],
+							"query": [
+								{
+									"key": "clientname",
+									"value": "{{CLIENT}}"
+								},
+								{
+									"key": "date",
+									"value": "{{DATE}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reply_search Copy 3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/reply-report/?clientname={{CLIENT}}&date={{DATE}}&reply=No",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"reply-report",
+								""
+							],
+							"query": [
+								{
+									"key": "clientname",
+									"value": "{{CLIENT}}"
+								},
+								{
+									"key": "date",
+									"value": "{{DATE}}"
+								},
+								{
+									"key": "reply",
+									"value": "No"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pdf-upload Copy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/nisha/Desktop/Oct17.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3005/api/v1/appointment-schedules/tests/upload",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"appointment-schedules",
+								"tests",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update followup assessment reply",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n     \"assessment_id\": \"xxxxxxxx-xxxx-xxxx-xxxx-7db893f45874\",\r\n     \"patient_user_id\": \"xxxxxxxx-xxxx-xxxx-xxxx-79e27717ca94\",\r\n     \"chosen_option\": {\r\n                    \"id\": \"xxxxxxxx-xxxx-xxxx-xxxx-a3281c923b9d\",\r\n                    \"node_id\": \"xxxxxxxx-xxxx-xxxx-xxxx-3d0b2c5d9e0f\",\r\n                    \"display_code\": \"xxxxxxxx-xxxx-xxxx-xxxx:Option#1\",\r\n                    \"provider_given_code\": \"work commitments\",\r\n                    \"text\":\"Transit_Issue\",\r\n                    \"image_url\": null,\r\n                    \"sequence\": 1\r\n                }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointment-schedules/{{BOT_CLIENT}}/follow-up/assessment/reply/{{PHONE_NUMBER}}/date/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointment-schedules",
+								"{{BOT_CLIENT}}",
+								"follow-up",
+								"assessment",
+								"reply",
+								"{{PHONE_NUMBER}}",
+								"date",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send assessment reply to case manager",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": \"91xxxxxx\",\r\n    \"agentName\": \"postman\",\r\n    \"type\": \"template\",\r\n    \"templateName\": \"case_manager_notify\",\r\n    \"provider\": \"REAN\",\r\n    \"message\": {\r\n        \"Variables\": {\r\n            \"en\": [\r\n                {\r\n                    \"type\": \"text\",\r\n                    \"text\": \"BB03\"\r\n                },\r\n                {\r\n                    \"type\": \"text\",\r\n                    \"text\": \"Work commitment\"\r\n                }\r\n            ]\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://reanbot-dev.services.reanfoundation.org/v1/REAN_BOT/whatsappMeta/REAN_BOT/send",
+							"protocol": "https",
+							"host": [
+								"reanbot-dev",
+								"services",
+								"reanfoundation",
+								"org"
+							],
+							"path": [
+								"v1",
+								"REAN_BOT",
+								"whatsappMeta",
+								"REAN_BOT",
+								"send"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test routes of GMU",
+			"item": [
+				{
+					"name": "appointment-status for individual",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/appointments/tests/{{CLIENT}}/appointment-status/{{PHONE_NUMBER}}/days/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointments",
+								"tests",
+								"{{CLIENT}}",
+								"appointment-status",
+								"{{PHONE_NUMBER}}",
+								"days",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "status report for date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/appointments/tests/{{CLIENT}}/recent-status-report/recent-file",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointments",
+								"tests",
+								"{{CLIENT}}",
+								"recent-status-report",
+								"recent-file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "appointment-reply for individual",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"WhatsApp_message_id\" : \"12356\",\r\n    \"Patient_replied\": \"Yes\"\r\n   \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointments/tests/{{CLIENT}}/appointment-status/{{BASE_URL}}/days/{{DATE}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointments",
+								"tests",
+								"{{CLIENT}}",
+								"appointment-status",
+								"{{BASE_URL}}",
+								"days",
+								"{{DATE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pdf-upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/nisha/Desktop/m23.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}appointments/tests/upload",
+							"host": [
+								"{{BASE_URL}}appointments"
+							],
+							"path": [
+								"tests",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "status report Recent file Copy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/appointments/tests/{{CLIENT}}/recent-status-report/recent-file",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"appointments",
+								"tests",
+								"{{CLIENT}}",
+								"recent-status-report",
+								"recent-file"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
