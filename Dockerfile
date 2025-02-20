@@ -1,16 +1,12 @@
-FROM python:3.12-slim-bookworm 
+# Use the latest secure Python image
+FROM python:3.12-slim-bookworm
 
 # Set the working directory
 WORKDIR /app
 
 # Upgrade system libraries to remove vulnerabilities
 RUN apt-get update && apt-get upgrade -y && \
-    # apt-get install -y --only-upgrade aom jpeg-xl zlib1g && \
     apt-get install -y --no-install-recommends \
-    libaom-dev \
-    # jpeg-xl \
-    libjxl-dev \
-    zlib1g \
     ffmpeg \
     libstdc++6 \
     libx11-6 \
@@ -19,6 +15,8 @@ RUN apt-get update && apt-get upgrade -y && \
     dos2unix \
     libexpat1 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get remove -y --allow-remove-essential libaom zlib1g jpeg-xl || true
 
 # Upgrade pip and install Python packages
 RUN pip install --upgrade pip setuptools wheel
