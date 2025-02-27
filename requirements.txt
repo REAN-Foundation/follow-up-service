@@ -97,7 +97,7 @@ pydantic==2.7.1
 pydantic_core==2.18.2
 Pygments==2.18.0
 pymongo==4.7.3
-PyMySQL==1.1.0
+PyMySQL==1.1.1
 pypdf==4.2.0
 pypdfium2==4.30.0
 pyproject_hooks==1.1.0
@@ -106,7 +106,7 @@ pyrsistent==0.20.0
 pytest==8.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-python-multipart==0.0.9
+python-multipart==0.0.18
 pytz==2024.1
 pywin32-ctypes==0.2.2
 PyYAML==6.0.1
@@ -139,7 +139,7 @@ ujson==5.10.0
 urllib3==2.2.2
 userpath==1.9.2
 uvicorn==0.29.0
-virtualenv==20.26.2
+virtualenv==20.26.6
 virtualenv-clone==0.5.7
 watchfiles==0.21.0
 webencodings==0.5.1
