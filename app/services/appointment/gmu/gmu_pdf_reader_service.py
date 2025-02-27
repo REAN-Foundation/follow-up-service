@@ -1,7 +1,6 @@
 from datetime import datetime
 import os
 import json
-import camelot
 import pdfplumber
 from dateutil import parser
 from app.common.logtime import log_execution_time
@@ -40,50 +39,51 @@ class GMUPdfReader:
         self.data = {}
         # self.db_data = DatabaseService()
        
-
     async def extract_appointments_from_pdf(self, input_file_path,storage_service):
-        try:
-            if not os.path.exists(input_file_path):
-                raise Exception(input_file_path + " does not exist.")
+            
+            try:
+                if not os.path.exists(input_file_path):
+                    raise Exception(f"{input_file_path} does not exist.")
 
-            tables = camelot.read_pdf(filepath=input_file_path, pages="all", suppress_stdout=True)
-            self.total_table_count = tables.n
-            if self.total_table_count == 0:
-                raise Exception("No tables inside the pdf.")
+                all_appointments_ = []
+                total_rows = 0
+                total_table_count = 0
 
-            all_appointments_ = []
-            # invalid_data_ = []
+                with pdfplumber.open(input_file_path) as pdf:
+                    for page_number, page in enumerate(pdf.pages, start=1):
+                        tables = page.extract_tables()
+                        if not tables:
+                            continue  # Skip pages with no tables
 
-            for i in range(self.total_table_count):
-                row_count, column_count = self.get_shape(tables[i].df)
-                self.total_rows = self.total_rows + row_count
-                filename = "temp_appointments_" + str(i) + ".json"
-                # Convert the Camelot Table to a pandas DataFrame
-                df = tables[i].df
-                # Convert the DataFrame to a JSON string
-                json_string = df.to_json(orient='records')
-                # json_string = tables[i].to_json()
-                print("json_string..",json_string)
-                content = await storage_service.search_file(filename)
-                if(content != None):
-                    await storage_service.update_file(filename, json_string)
-                else:
-                    await storage_service.store_file(filename, json_string)
-                # temp_filepath = get_temp_filepath(filename)
-                # tables[i].to_json(temp_filepath)
-                appointments = await self.extract_table_appointments(filename,storage_service)
-                all_appointments_.extend(appointments)
-               
+                        for i, table in enumerate(tables):
+                            df = pd.DataFrame(table)  # Convert extracted table to DataFrame
+                            row_count, column_count = df.shape
+                            total_rows += row_count
+                            total_table_count += 1
 
-            self.all_appointments = all_appointments_
-            # self.debug_log(self.all_appointments)
-            print('All Appointments extracted successfully')
-            return self.all_appointments
+                            filename = f"temp_appointments_{page_number}_{i}.json"
+                            json_string = df.to_json(orient='records')
 
-        except Exception as e:
-            print(e)
-            return None
+                            print("json_string..", json_string)
+                            content = await storage_service.search_file(filename)
+                            if content is not None:
+                                await storage_service.update_file(filename, json_string)
+                            else:
+                                await storage_service.store_file(filename, json_string)
 
+                            appointments = await self.extract_table_appointments(filename, storage_service)
+                            all_appointments_.extend(appointments)
+
+                if total_table_count == 0:
+                    raise Exception("No tables found inside the PDF.")
+                self.all_appointments = all_appointments_
+
+                return self.all_appointments
+
+            except Exception as e:
+                print(f"Error: {e}")
+                return []
+        
     @log_execution_time
     async def extract_table_appointments(self, filename,storage_service):
         file_content = await storage_service.search_file(filename)
