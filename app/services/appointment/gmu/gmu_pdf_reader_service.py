@@ -83,7 +83,7 @@ class GMUPdfReader:
             except Exception as e:
                 print(f"Error: {e}")
                 return []
-        
+
     @log_execution_time
     async def extract_table_appointments(self, filename,storage_service):
         file_content = await storage_service.search_file(filename)
