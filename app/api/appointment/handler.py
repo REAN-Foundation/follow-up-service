@@ -5,6 +5,7 @@ import os
 import shutil
 import boto3
 from fastapi import File, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse
 import httpx
 from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
@@ -293,3 +294,25 @@ async def update_followup_reply(client_bot_name,date_str, phone_number, content,
         return(updated_data)
     except Exception as e:
          raise e
+
+
+async def handle_create_excel_format_mapper(model: dict, storage_service):
+    tenant_name = model.get("TenantName")
+    if not tenant_name:
+        raise ValueError("Missing 'TenantName'")
+
+    filename = f"{tenant_name}Format_Mapper.json"
+
+    # Optional: remove or keep TenentName in saved data
+    data_to_save = {k: v for k, v in model.items() if k != "TenantName"}
+    json_string = json.dumps(data_to_save, indent=4)
+    json_object = json.loads(json_string)
+
+    content_data = await storage_service.store_file(filename, json_object)
+    return content_data
+
+
+async def handle_get_excel_format_mapper(tenent_name: str, storage_service):
+    filename = f"{tenent_name}Format_Mapper.json"
+    data = await storage_service.search_file(filename)
+    return data

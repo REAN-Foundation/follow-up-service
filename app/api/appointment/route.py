@@ -3,7 +3,7 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.appointment.handler import handle, handle_aws, read_appointment_file, readfile_content, readfile_content_by_phone, readfile_summary, recent_file, reply_data, update_followup_reply, update_reply_by_ph
+from app.api.appointment.handler import handle, handle_aws, handle_create_excel_format_mapper, handle_get_excel_format_mapper, read_appointment_file, readfile_content, readfile_content_by_phone, readfile_summary, recent_file, reply_data, update_followup_reply, update_reply_by_ph
 from app.common.appointment_api.appointment_utils import form_file_name, get_client_name, map_reply
 from app.common.base_response import BaseResponseModel
 from app.common.cache import cache
@@ -167,3 +167,29 @@ async def followup_assessment_reply(client_bot_name: str, phone_number: str, new
         } 
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+    
+@router.post("/format-mapper", status_code=status.HTTP_201_CREATED)
+async def create_excel_format_mapper(
+    model: Request,
+    storage_service: IStorageService = Depends(get_storage_service)
+):
+    try:
+        body = await model.json()
+        result = await handle_create_excel_format_mapper(body, storage_service)
+        return {"message": "Mapping saved", "result": result}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/format-mapper/{tenant_name}")
+async def get_excel_format_mapper(
+    tenant_name: str,
+    storage_service: IStorageService = Depends(get_storage_service)
+):
+    try:
+        result = await handle_get_excel_format_mapper(tenant_name, storage_service)
+        if not result:
+            raise HTTPException(status_code=404, detail="Mapping not found")
+        return {"filename": f"{tenant_name}Format_Mapper.json", "data": result}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
