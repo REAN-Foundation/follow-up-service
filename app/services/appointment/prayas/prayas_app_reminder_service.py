@@ -131,7 +131,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
     @log_execution_time
     async def create_reports(self,summary_data,reminder_date,storage_service):
         print('SUMMARY:',summary_data)
-        filename=str('gmu_appointment_'+reminder_date+'.json')
+        filename=str('prayas_appointment_'+reminder_date+'.json')
         data = await storage_service.search_file(filename)
         # f_path=(os.getcwd()+"/temp/"+filename)
         if(data != None):
