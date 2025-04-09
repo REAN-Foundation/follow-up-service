@@ -51,7 +51,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         self.access_token = await login.get_access_token()
         summary_data = []
         for appointment in appointments:
-
+            reminder_date = appointment.get("AppointmentDate")
             patient_mobile_number = appointment['PatientMobile']
             is_valid_mobile = validate_mobile(patient_mobile_number)
             if not is_valid_mobile:
