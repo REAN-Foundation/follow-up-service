@@ -15,6 +15,7 @@ from app.services.appointment.gghn.gghn_login_local_service import GGHNLogin
 from app.services.appointment.gmu.gmu_admin_notification_service import GMUAdminNotification
 from app.services.appointment.gmu.gmu_app_reminder_service import GMUAppointmentReminder
 from app.services.appointment.gmu.gmu_pdf_reader_service import GMUPdfReader
+from app.services.appointment.prayas.prayas_admin_notification_service import PrayasAdminNotification
 from app.services.appointment.prayas.prayas_app_reminder_service import PrayasAppointmentReminder
 from app.services.appointment.prayas.excel_reader_service import ExcelReader
 from app.services.common.read_report_service import ReadReport
@@ -175,7 +176,7 @@ async def handle(storage_service,file: UploadFile = File(...)):
         await reminder.create_reminder(appointments,storage_service)
         reminder_summary = await reminder.summary()
         
-        admin_notification = GMUAdminNotification()
+        admin_notification = PrayasAdminNotification()
         await admin_notification.admin_notify(reminder_date,reminder_summary)
         return {
                 "Message" : "Reminders created successfully",
