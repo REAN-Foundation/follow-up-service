@@ -169,15 +169,16 @@ async def handle(storage_service,file: UploadFile = File(...)):
             }
     elif file_type == "Excel":
         # Extract data from excel ile
-        appointments = excel_reader.extract_appointments_From_excel(file_path)
+        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
+        print(appointments)
 
         # Send one-time reminder
         reminder = PrayasAppointmentReminder()
         await reminder.create_reminder(appointments,storage_service)
         reminder_summary = await reminder.summary()
         
-        admin_notification = PrayasAdminNotification()
-        await admin_notification.admin_notify(reminder_date,reminder_summary)
+        #admin_notification = PrayasAdminNotification()
+        #await admin_notification.admin_notify(reminder_date,reminder_summary)
         return {
                 "Message" : "Reminders created successfully",
                 "Data" : reminder_summary,

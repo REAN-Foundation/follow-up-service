@@ -52,7 +52,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         summary_data = []
         for appointment in appointments:
             reminder_date = appointment.get("AppointmentDate")
-            patient_mobile_number = appointment['PatientMobile']
+            patient_mobile_number = appointment.get('PatientMobile')
             is_valid_mobile = validate_mobile(patient_mobile_number)
             if not is_valid_mobile:
                 print('*Invalid phone-number - ', patient_mobile_number)
@@ -84,16 +84,13 @@ class PrayasAppointmentReminder(AppointmentReminderI):
                 "phone_number":patient_mobile_number,
                 "appointment_time":appointment['AppointmentTime'],
                 "participant_code":"",
-                "patient_status":valid_appointment_status(appointment['Status']),
+                "patient_status":"",
                 "whatsapp_message_id":"",
-                "patient_replied": "N/A" if valid_appointment_status(appointment['Status'])!=AppStatusEnum.Pending_Arrival else "Not replied",
+                "patient_replied": "Not replied",
                 "followup_assessment_reply":"",
-                "case_manager": appointment['Provider'],
+                "case_manager": ""
                 }
             summary_data.append(data)
-
-            if appointment['Status'] != PENDING_ARRIVAL:
-               continue
 
             self.pending_arrival_count = self.pending_arrival_count + 1
 
@@ -105,7 +102,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
                 schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment,first_reminder,reminder_date)
                 
                 # Check the patient replied status
-                prefix_string = 'gmu_appointment_'
+                prefix_string = 'prayas_appointment_'
                 already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date,storage_service)
                 # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
                 
@@ -238,8 +235,8 @@ class PrayasAppointmentReminder(AppointmentReminderI):
 
     async def get_schedule_create_model(self, patient_user_id, patient_name, patient, reminder_time, when_date):
         appointment_time = patient['AppointmentTime'].split(' ')
-        hour, minute = appointment_time[0].split(':')
-        rest = appointment_time[1]
+        #hour, minute = appointment_time[0].split(':')
+        #rest = appointment_time[1]
         print("when date..",when_date)
         # appointment_time= '{}:{}:{}'.format(hour,minute,'00')
         raw_content = {
