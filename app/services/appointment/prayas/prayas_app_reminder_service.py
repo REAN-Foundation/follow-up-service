@@ -36,7 +36,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         self.api_key = os.getenv("REANCARE_API_KEY")
         # self.access_token = cache.get('access_token')
         self.recent_file = ''
-        self.gmu_bot_client_name = os.getenv("GMU_BOT_CLIENT_NAME")
+        self.gmu_bot_client_name = os.getenv("DEV_BOT")
         self.tenant_id = tenant_id
 
         self.new_patients_added_count = 0
@@ -52,6 +52,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         summary_data = []
         for appointment in appointments:
             reminder_date = appointment.get("AppointmentDate")
+            reminder_time = appointment.get("AppointmentTime")
             patient_mobile_number = appointment.get('PatientMobile')
             is_valid_mobile = validate_mobile(patient_mobile_number)
             if not is_valid_mobile:
@@ -64,8 +65,8 @@ class PrayasAppointmentReminder(AppointmentReminderI):
             user_id = await find_patient_by_mobile(patient_mobile_number)
             user_model = await self.get_update_patient_model(appointment)
             appointment_time = await self.get_time_in_24hrs(appointment)
-            first_time = appointment_time['FirstTime']
-            second_time = appointment_time['SecondTime']
+            #first_time = appointment_time['FirstTime']
+            #second_time = appointment_time['SecondTime']
             first_name = user_model['FirstName']
             last_name = user_model['LastName']
 
@@ -96,10 +97,10 @@ class PrayasAppointmentReminder(AppointmentReminderI):
 
             # First reminder set as soon as pdf upload
             print(f'patient phone number {patient_mobile_number}')
-            first_reminder = await time_of_first_reminder(patient_mobile_number)
+            first_reminder = appointment_time.get("FirstTime")
             if(first_reminder != None):
-                print(f'time of reminder after pdfupload {first_reminder}')
-                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment,first_reminder,reminder_date)
+                print(f'time of reminder after excel-upload {first_reminder}')
+                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, reminder_date, first_reminder)
                 
                 # Check the patient replied status
                 prefix_string = 'prayas_appointment_'
@@ -233,8 +234,8 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         if response.status_code != 200:
             raise Exception('Unable to update patient')
 
-    async def get_schedule_create_model(self, patient_user_id, patient_name, patient, reminder_time, when_date):
-        appointment_time = patient['AppointmentTime'].split(' ')
+    async def get_schedule_create_model(self, patient_user_id, patient_name, patient, when_date, reminder_time):
+        #appointment_time = patient['AppointmentTime'].split(' ')
         #hour, minute = appointment_time[0].split(':')
         #rest = appointment_time[1]
         print("when date..",when_date)
@@ -290,32 +291,10 @@ class PrayasAppointmentReminder(AppointmentReminderI):
             print('Unable to schedule reminder ', response.json())
 
     async def get_time_in_24hrs(self, i):
-        patient_ap_time = i['AppointmentTime']
-        ap_time = patient_ap_time.split(' ')
-        appointment_time = ap_time[0].split(':')
-        rest = appointment_time[1]
-        if ap_time[1] == "PM":
-            new_app_time = int(appointment_time[0]) + int(12)
-            newtime = str(new_app_time)
-            if newtime.startswith('24'):
-                newtime = '12'
-                appointment = (str(newtime)+":"+rest+":00")
-                # print("PM",appointment)
-                return await self.get_appointment_time(appointment)
-            else:
-                appointment = (str(newtime)+":"+rest+":00")
-                # print("PM",appointment)
-                return await self.get_appointment_time(appointment)
-        else:
-            if appointment_time[0] == "12" or appointment_time[0] == "00":
-                new_app_time = '00'
-                appointment = (str(new_app_time)+":"+rest+":00")
-                return await self.get_appointment_time(appointment)
-                # print("AM",appointment)
-            else:
-                appointment = str(appointment_time[0]+":"+rest+":00")
-                # print("AM",appointment)
-                return await self.get_appointment_time(appointment)
+        time_str = i['AppointmentTime']
+        time_obj = datetime.strptime(time_str, '%I:%M:%S %p')
+        appointment = time_obj.strftime('%H:%M:%S')
+        return await self.get_appointment_time(appointment)
 
     async def get_appointment_time(self, time):
         appoint = str(time)
