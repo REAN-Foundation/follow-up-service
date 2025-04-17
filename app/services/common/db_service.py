@@ -23,7 +23,7 @@ class DatabaseService(IStorageService):
             record = db.get_collection(os.getenv("GMU_COLLECTION_NAME"))
             return(record)
         if(collect_prefix == 'prayas'):
-            record = db.get_collection(os.getenv("Prayas_COLLECTION_NAME"))
+            record = db.get_collection(os.getenv("PRAYAS_COLLECTION_NAME"))
             return(record)
     
     async def store_file(self,filename,content):
