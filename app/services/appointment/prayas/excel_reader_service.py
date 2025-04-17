@@ -21,6 +21,7 @@ class ExcelReader:
         try:
             tenant_name = os.getenv("TENANT_NAME")
             filename = f"{tenant_name}_format_mapper.json"
+            print("Format mapper file name",filename)
             column_mapping  = await storage_service.search_file(filename)
             if not column_mapping :
                 raise FileNotFoundError(f"Mapping file '{filename}' not found.")
