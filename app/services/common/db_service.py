@@ -56,6 +56,8 @@ class DatabaseService(IStorageService):
             collection = await self.connect_storage(collection_prefix)
             # Define the query to filter documents
             query = {"filename": query}
+            
+            print("query",query)
             # Retrieve documents matching the query
             documents = collection.find_one(query)
             # Check if any documents were found

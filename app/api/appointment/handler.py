@@ -58,9 +58,11 @@ async def handle_subscription_confirmation(message_data):
 async def handle_s3_event(message: Request,storage_service):
 
     file_path = await download(message)
+    print("Downloaded file path",file_path)
 
     # 2. Extract the date from the PDF file
     file_type = find_file_type(file_path)
+    print("Retrived file type",file_type)
     reader = GMUPdfReader()
     excel_reader = ExcelReader()
     if file_type == "PDF":
@@ -98,7 +100,7 @@ async def handle_s3_event(message: Request,storage_service):
     elif file_type == "Excel":
         # Extract data from excel ile
         appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
-        print(appointments)
+        print("Appointments",appointments)
 
         # Send one-time reminder
         reminder = PrayasAppointmentReminder()
@@ -138,7 +140,7 @@ async def download_pdf_from_s3(bucket_name, object_key):
         s3_file = s3_object[1]
         print("s3_file",s3_file)
         local_file_path = get_temp_filepath(s3_file)
-       
+        print("local file path",local_file_path)
         s3.download_file(bucket_name, object_key, local_file_path)
         return local_file_path
     except Exception as e:
