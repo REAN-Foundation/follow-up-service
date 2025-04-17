@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+import mimetypes
 from fastapi import HTTPException
 from pygments import highlight, lexers, formatters
 from app.common.enumclasses import AppStatusEnum,PatientReplyEnum
@@ -170,3 +171,15 @@ async def map_reply(reply):
     except Exception as e:
         print(e)
         return(None)
+
+def find_file_type(filepath):
+    # Get the MIME type based on file extension
+    mime_type, _ = mimetypes.guess_type(filepath)
+    
+    if mime_type == 'application/pdf':
+        return "PDF"
+    elif mime_type in ['application/vnd.ms-excel', 
+                       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
+        return "Excel"
+    else:
+        return "Unknown"

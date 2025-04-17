@@ -5,8 +5,9 @@ import os
 import shutil
 import boto3
 from fastapi import File, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse
 import httpx
-from app.common.appointment_api.appointment_utils import form_file_name, get_client_name
+from app.common.appointment_api.appointment_utils import form_file_name, get_client_name, find_file_type
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.utils import format_date_, format_phone_number, get_temp_filepath, is_date_valid
 from app.services.appointment.gghn.gghn_app_reminder_service import GGHNAppointmentReminder
@@ -14,6 +15,9 @@ from app.services.appointment.gghn.gghn_login_local_service import GGHNLogin
 from app.services.appointment.gmu.gmu_admin_notification_service import GMUAdminNotification
 from app.services.appointment.gmu.gmu_app_reminder_service import GMUAppointmentReminder
 from app.services.appointment.gmu.gmu_pdf_reader_service import GMUPdfReader
+from app.services.appointment.prayas.prayas_admin_notification_service import PrayasAdminNotification
+from app.services.appointment.prayas.prayas_app_reminder_service import PrayasAppointmentReminder
+from app.services.appointment.prayas.excel_reader_service import ExcelReader
 from app.services.common.read_report_service import ReadReport
 from app.services.common.recent_file_service import RecentFile
 from app.services.common.update_reply_service import UpdateReply
@@ -56,38 +60,57 @@ async def handle_s3_event(message: Request,storage_service):
     file_path = await download(message)
 
     # 2. Extract the date from the PDF file
+    file_type = find_file_type(file_path)
     reader = GMUPdfReader()
-    date_extracted = await reader.extract_reminder_date(file_path)
-    if not date_extracted:
-        return ('Unable to find or unable to parse the date')
+    excel_reader = ExcelReader()
+    if file_type == "PDF":
+        date_extracted = await reader.extract_reminder_date(file_path)
+        if not date_extracted:
+            return ('Unable to find or unable to parse the date')
 
-    # Compare file date with the todays date
-    is_valid_date = await is_date_valid(date_extracted); 
-    formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
-    print("formatted_date:",formatted_date)
-    reminder_date = formatted_date
-    # 3. Extract the PDF file
-    if is_valid_date:
-        print('Extracting pdf data')
-        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
+        # Compare file date with the todays date
+        is_valid_date = await is_date_valid(date_extracted); 
+        formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        reminder_date = formatted_date
+        # 3. Extract the PDF file
+        if is_valid_date:
+            print('Extracting pdf data')
+            appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
 
-        # 4. Send one-time-reminders
-        reminder = GMUAppointmentReminder()
-        await reminder.create_reminder(reminder_date, appointments,storage_service)
-        reminder_summary = await reminder.summary()
+            # 4. Send one-time-reminders
+            reminder = GMUAppointmentReminder()
+            await reminder.create_reminder(reminder_date, appointments,storage_service)
+            reminder_summary = await reminder.summary()
 
         
-        admin_notification = GMUAdminNotification()
-        await admin_notification.admin_notify(reminder_date,reminder_summary)
+            admin_notification = GMUAdminNotification()
+            await admin_notification.admin_notify(reminder_date,reminder_summary)
 
+            return {
+                "message" : "Reminders created successfully",
+                "summary" : reminder_summary,
+            }
         return {
-            "message" : "Reminders created successfully",
-            "summary" : reminder_summary,
+            "message" : "Can not process appointment pdf with previous dates",
+            "summary" : None
         }
-    return {
-        "message" : "Can not process appointment pdf with previous dates",
-        "summary" : None
-    }
+    elif file_type == "Excel":
+        # Extract data from excel ile
+        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
+        print(appointments)
+
+        # Send one-time reminder
+        reminder = PrayasAppointmentReminder()
+        await reminder.create_reminder(appointments,storage_service)
+        reminder_summary = await reminder.summary()
+        
+        #admin_notification = PrayasAdminNotification()
+        #await admin_notification.admin_notify(reminder_date,reminder_summary)
+        return {
+                "Message" : "Reminders created successfully",
+                "Data" : reminder_summary,
+            }
 async def download(message: Request):
     webhook_data = await message.json()
     s3_event_notification = json.loads(webhook_data['Message'])
@@ -128,38 +151,59 @@ async def handle(storage_service,file: UploadFile = File(...)):
     file_path = await store_uploaded_file(file)
 
     # 2. Extract the date from the PDF file
+    file_type = find_file_type(file_path)
     reader = GMUPdfReader()
-    date_extracted = await reader.extract_reminder_date(file_path)
-    if not date_extracted:
-        return ('Unable to find or unable to parse the date')
-    # Compare file date with the todays date
-    is_valid_date = await is_date_valid(date_extracted); 
-    formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
-    print("formatted_date:",formatted_date)
-    reminder_date = formatted_date
-    # 3. Extract the PDF file
-    if is_valid_date:
+    excel_reader = ExcelReader()
+    if file_type == "PDF":
+        date_extracted = await reader.extract_reminder_date(file_path)
+        if not date_extracted:
+            return ('Unable to find or unable to parse the date')
+        # Compare file date with the todays date
+        is_valid_date = await is_date_valid(date_extracted); 
+        formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        reminder_date = formatted_date
         # 3. Extract the PDF file
-        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
+        if is_valid_date:
+            # 3. Extract the PDF file
+            appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
         
-        # 4. Send one-time-reminders
-        reminder = GMUAppointmentReminder()
-        # reminder_date = '2023-11-08'
-        await reminder.create_reminder(reminder_date, appointments,storage_service)
-        reminder_summary = await reminder.summary()
+            # 4. Send one-time-reminders
+            reminder = GMUAppointmentReminder()
+            # reminder_date = '2023-11-08'
+            await reminder.create_reminder(reminder_date, appointments,storage_service)
+            reminder_summary = await reminder.summary()
 
-        admin_notification = GMUAdminNotification()
-        await admin_notification.admin_notify(reminder_date,reminder_summary)
+            admin_notification = GMUAdminNotification()
+            await admin_notification.admin_notify(reminder_date,reminder_summary)
+
+            return {
+                "Message" : "Reminders created successfully",
+                "Data" : reminder_summary,
+            }
 
         return {
-            "Message" : "Reminders created successfully",
-            "Data" : reminder_summary,
-        }
+                "Message" : "Can not process appontment pdf with previous dates",
+                "Data": None 
+            }
+    elif file_type == "Excel":
+        # Extract data from excel ile
+        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
+        print(appointments)
 
-    return {
-            "Message" : "Can not process appontment pdf with previous dates",
-            "Data": None 
-        }
+        # Send one-time reminder
+        reminder = PrayasAppointmentReminder()
+        await reminder.create_reminder(appointments,storage_service)
+        reminder_summary = await reminder.summary()
+        
+        #admin_notification = PrayasAdminNotification()
+        #await admin_notification.admin_notify(reminder_date,reminder_summary)
+        return {
+                "Message" : "Reminders created successfully",
+                "Data" : reminder_summary,
+            }
+
+        
 async def store_uploaded_file(file: UploadFile):
     current_path = os.getcwd()
     folder_path = os.path.join(current_path, "temp")
@@ -293,3 +337,25 @@ async def update_followup_reply(client_bot_name,date_str, phone_number, content,
         return(updated_data)
     except Exception as e:
          raise e
+
+
+async def handle_create_excel_format_mapper(model: dict, storage_service):
+    tenant_name = model.get("TenantName")
+    if not tenant_name:
+        raise ValueError("Missing 'TenantName'")
+
+    filename = f"{tenant_name}_format_mapper.json"
+
+    # Optional: remove or keep TenentName in saved data
+    data_to_save = {k: v for k, v in model.items() if k != "TenantName"}
+    json_string = json.dumps(data_to_save, indent=4)
+    json_object = json.loads(json_string)
+
+    content_data = await storage_service.store_file(filename, json_object)
+    return content_data
+
+
+async def handle_get_excel_format_mapper(tenent_name: str, storage_service):
+    filename = f"{tenent_name}_format_mapper.json"
+    data = await storage_service.search_file(filename)
+    return data
