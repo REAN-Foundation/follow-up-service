@@ -60,38 +60,57 @@ async def handle_s3_event(message: Request,storage_service):
     file_path = await download(message)
 
     # 2. Extract the date from the PDF file
+    file_type = find_file_type(file_path)
     reader = GMUPdfReader()
-    date_extracted = await reader.extract_reminder_date(file_path)
-    if not date_extracted:
-        return ('Unable to find or unable to parse the date')
+    excel_reader = ExcelReader()
+    if file_type == "PDF":
+        date_extracted = await reader.extract_reminder_date(file_path)
+        if not date_extracted:
+            return ('Unable to find or unable to parse the date')
 
-    # Compare file date with the todays date
-    is_valid_date = await is_date_valid(date_extracted); 
-    formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
-    print("formatted_date:",formatted_date)
-    reminder_date = formatted_date
-    # 3. Extract the PDF file
-    if is_valid_date:
-        print('Extracting pdf data')
-        appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
+        # Compare file date with the todays date
+        is_valid_date = await is_date_valid(date_extracted); 
+        formatted_date = datetime.strptime(date_extracted, '%Y-%m-%d').strftime('%Y-%m-%d')
+        print("formatted_date:",formatted_date)
+        reminder_date = formatted_date
+        # 3. Extract the PDF file
+        if is_valid_date:
+            print('Extracting pdf data')
+            appointments = await reader.extract_appointments_from_pdf(file_path,storage_service)
 
-        # 4. Send one-time-reminders
-        reminder = GMUAppointmentReminder()
-        await reminder.create_reminder(reminder_date, appointments,storage_service)
-        reminder_summary = await reminder.summary()
+            # 4. Send one-time-reminders
+            reminder = GMUAppointmentReminder()
+            await reminder.create_reminder(reminder_date, appointments,storage_service)
+            reminder_summary = await reminder.summary()
 
         
-        admin_notification = GMUAdminNotification()
-        await admin_notification.admin_notify(reminder_date,reminder_summary)
+            admin_notification = GMUAdminNotification()
+            await admin_notification.admin_notify(reminder_date,reminder_summary)
 
+            return {
+                "message" : "Reminders created successfully",
+                "summary" : reminder_summary,
+            }
         return {
-            "message" : "Reminders created successfully",
-            "summary" : reminder_summary,
+            "message" : "Can not process appointment pdf with previous dates",
+            "summary" : None
         }
-    return {
-        "message" : "Can not process appointment pdf with previous dates",
-        "summary" : None
-    }
+    elif file_type == "Excel":
+        # Extract data from excel ile
+        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
+        print(appointments)
+
+        # Send one-time reminder
+        reminder = PrayasAppointmentReminder()
+        await reminder.create_reminder(appointments,storage_service)
+        reminder_summary = await reminder.summary()
+        
+        #admin_notification = PrayasAdminNotification()
+        #await admin_notification.admin_notify(reminder_date,reminder_summary)
+        return {
+                "Message" : "Reminders created successfully",
+                "Data" : reminder_summary,
+            }
 async def download(message: Request):
     webhook_data = await message.json()
     s3_event_notification = json.loads(webhook_data['Message'])

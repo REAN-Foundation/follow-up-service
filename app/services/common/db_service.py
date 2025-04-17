@@ -22,6 +22,9 @@ class DatabaseService(IStorageService):
         if(collect_prefix == 'gmu'):
             record = db.get_collection(os.getenv("GMU_COLLECTION_NAME"))
             return(record)
+        if(collect_prefix == 'prayas'):
+            record = db.get_collection(os.getenv("Prayas_COLLECTION_NAME"))
+            return(record)
     
     async def store_file(self,filename,content):
         prefix =  filename.split('_')
