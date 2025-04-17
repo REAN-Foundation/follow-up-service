@@ -344,7 +344,7 @@ async def handle_create_excel_format_mapper(model: dict, storage_service):
     if not tenant_name:
         raise ValueError("Missing 'TenantName'")
 
-    filename = f"{tenant_name}Format_Mapper.json"
+    filename = f"{tenant_name}_format_mapper.json"
 
     # Optional: remove or keep TenentName in saved data
     data_to_save = {k: v for k, v in model.items() if k != "TenantName"}
@@ -356,6 +356,6 @@ async def handle_create_excel_format_mapper(model: dict, storage_service):
 
 
 async def handle_get_excel_format_mapper(tenent_name: str, storage_service):
-    filename = f"{tenent_name}Format_Mapper.json"
+    filename = f"{tenent_name}_format_mapper.json"
     data = await storage_service.search_file(filename)
     return data
