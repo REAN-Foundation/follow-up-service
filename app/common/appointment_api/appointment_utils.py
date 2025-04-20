@@ -172,14 +172,23 @@ async def map_reply(reply):
         print(e)
         return(None)
 
-def find_file_type(filepath):
-    # Get the MIME type based on file extension
-    mime_type, _ = mimetypes.guess_type(filepath)
+# def find_file_type(filepath):
+#     # Get the MIME type based on file extension
+#     mime_type, _ = mimetypes.guess_type(filepath)
     
-    if mime_type == 'application/pdf':
+#     if mime_type == 'application/pdf':
+#         return "PDF"
+#     elif mime_type in ['application/vnd.ms-excel', 
+#                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
+#         return "Excel"
+#     else:
+#         return "Unknown"
+
+def find_file_type(file_path: str) -> str:
+    _, ext = os.path.splitext(file_path)
+    ext = ext.lower()
+    if ext == '.pdf':
         return "PDF"
-    elif mime_type in ['application/vnd.ms-excel', 
-                       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
+    elif ext in ['.xlsx', '.xls']:
         return "Excel"
-    else:
-        return "Unknown"
+    return "Unknown"
