@@ -2,6 +2,7 @@ from datetime import *
 from ast import Dict
 import json
 import os
+from typing import Optional
 import requests
 import urllib.parse
 from app.common.appointment_api.appointment_utils import has_patient_replied, time_of_first_reminder, valid_appointment_status, validate_mobile
@@ -46,7 +47,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         self.appointments_skipped_count = 0
         # self.db_data = DatabaseService()
     @log_execution_time
-    async def create_reminder(self, appointments,storage_service):
+    async def create_reminder(self, appointments,storage_service, tenant_code):
         login = ReanCareLogin()
         self.access_token = await login.get_access_token()
         summary_data = []
@@ -62,7 +63,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
 
             self.appointments_processed_count = self.appointments_processed_count + 1
 
-            user_id = await find_patient_by_mobile(patient_mobile_number)
+            user_id = await find_patient_by_mobile(patient_mobile_number, tenant_code)
             user_model = await self.get_update_patient_model(appointment)
             appointment_time = await self.get_time_in_24hrs(appointment)
             #first_time = appointment_time['FirstTime']
@@ -72,7 +73,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
 
             # Create patient if does not exist
             if user_id == None:
-                user_id = await self.create_patient(patient_mobile_number)
+                user_id = await self.create_patient(patient_mobile_number, tenant_code)
                 if user_id == None:
                     raise Exception('Unable to create patient')
                 self.new_patients_added_count = self.new_patients_added_count  + 1
@@ -193,10 +194,10 @@ class PrayasAppointmentReminder(AppointmentReminderI):
 
 
     @log_execution_time    
-    async def create_patient(self, mobile):
+    async def create_patient(self, mobile, tenant_code):
         self.url = self.patient_url
         header = await get_headers(create_user=True)
-        body = json.dumps({'Phone': mobile, 'TenantId': self.tenant_id})
+        body = json.dumps({'Phone': mobile, 'TenantCode': tenant_code})
         response = requests.post(self.url, headers = header, data = body)
         result = response.json()
         if not result['HttpCode'] == 201:

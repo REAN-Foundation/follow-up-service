@@ -16,12 +16,14 @@ from app.common.reancare_api.reancare_login_service import ReanCareLogin
 from app.common.logtime import log_execution_time
 ###############################################################################
 @log_execution_time
-async def find_patient_by_mobile(mobile):
+async def find_patient_by_mobile(mobile, tenant_code):
     reancare_base_url = os.getenv("REANCARE_BASE_URL")
-    url = str(reancare_base_url + "/patients/")
+    url = f"{reancare_base_url}/patients/"
+    # url = str(reancare_base_url + "/patients/")
     headers = await get_headers()
     formatted = urllib.parse.quote(mobile)
-    search_url = url + "search?phone={}".format(formatted)
+    # search_url = url + "search?phone={}".format(formatted)
+    search_url = f"{url}search?tenantCode={tenant_code}&phone={formatted}"
     response = requests.get(search_url, headers=headers)
     search_result = response.json()
     if search_result['Message'] == 'No records found!':

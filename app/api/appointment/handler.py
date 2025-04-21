@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import os
 import shutil
+from typing import Optional
 import boto3
 from fastapi import File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
@@ -21,8 +22,6 @@ from app.services.appointment.prayas.excel_reader_service import ExcelReader
 from app.services.common.read_report_service import ReadReport
 from app.services.common.recent_file_service import RecentFile
 from app.services.common.update_reply_service import UpdateReply
-
-
   
 #####################gmu########
 async def handle_aws(message: Request,storage_service):
@@ -59,8 +58,9 @@ async def handle_s3_event(message: Request,storage_service):
 
     file_path = await download(message)
     print("Downloaded file path",file_path)
-
+    tenant_code = await extract_tenant_code_from_path(file_path)
     # 2. Extract the date from the PDF file
+    
     file_type = find_file_type(file_path)
     print("Retrived file type",file_type)
     reader = GMUPdfReader()
@@ -82,7 +82,7 @@ async def handle_s3_event(message: Request,storage_service):
 
             # 4. Send one-time-reminders
             reminder = GMUAppointmentReminder()
-            await reminder.create_reminder(reminder_date, appointments,storage_service)
+            await reminder.create_reminder(reminder_date, appointments,storage_service, tenant_code)
             reminder_summary = await reminder.summary()
 
         
@@ -99,12 +99,12 @@ async def handle_s3_event(message: Request,storage_service):
         }
     elif file_type == "Excel":
         # Extract data from excel ile
-        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
+        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service, tenant_code)
         print("Appointments",appointments)
 
         # Send one-time reminder
         reminder = PrayasAppointmentReminder()
-        await reminder.create_reminder(appointments,storage_service)
+        await reminder.create_reminder(appointments,storage_service, tenant_code)
         reminder_summary = await reminder.summary()
         
         #admin_notification = PrayasAdminNotification()
@@ -113,6 +113,13 @@ async def handle_s3_event(message: Request,storage_service):
                 "Message" : "Reminders created successfully",
                 "Data" : reminder_summary,
             }
+        
+    else:
+        return {
+            "message": f"Unsupported file type: {file_type}",
+            "summary": None
+        }
+        
 async def download(message: Request):
     webhook_data = await message.json()
     s3_event_notification = json.loads(webhook_data['Message'])
@@ -153,6 +160,7 @@ async def handle(storage_service,file: UploadFile = File(...)):
     file_path = await store_uploaded_file(file)
 
     # 2. Extract the date from the PDF file
+    tenant_code = await extract_tenant_code_from_path(file_path)
     file_type = find_file_type(file_path)
     reader = GMUPdfReader()
     excel_reader = ExcelReader()
@@ -173,7 +181,7 @@ async def handle(storage_service,file: UploadFile = File(...)):
             # 4. Send one-time-reminders
             reminder = GMUAppointmentReminder()
             # reminder_date = '2023-11-08'
-            await reminder.create_reminder(reminder_date, appointments,storage_service)
+            await reminder.create_reminder(reminder_date, appointments,storage_service, tenant_code)
             reminder_summary = await reminder.summary()
 
             admin_notification = GMUAdminNotification()
@@ -190,12 +198,12 @@ async def handle(storage_service,file: UploadFile = File(...)):
             }
     elif file_type == "Excel":
         # Extract data from excel ile
-        appointments = await excel_reader.extract_appointments_From_excel(file_path,storage_service)
+        appointments = await excel_reader.extract_appointments_From_excel(file_path, storage_service, tenant_code)
         print(appointments)
 
         # Send one-time reminder
         reminder = PrayasAppointmentReminder()
-        await reminder.create_reminder(appointments,storage_service)
+        await reminder.create_reminder(appointments, storage_service, tenant_code)
         reminder_summary = await reminder.summary()
         
         #admin_notification = PrayasAdminNotification()
@@ -267,7 +275,6 @@ async def recent_file(file_prefix,storage_service):
     recentfile = RecentFile()
     filename = await recentfile.find_recent_file(fileprefix,storage_service)   
     return filename
-
 
 async def read_appointment_file(filename,storage_service):
     try:
@@ -342,14 +349,14 @@ async def update_followup_reply(client_bot_name,date_str, phone_number, content,
 
 
 async def handle_create_excel_format_mapper(model: dict, storage_service):
-    tenant_name = model.get("TenantName")
-    if not tenant_name:
-        raise ValueError("Missing 'TenantName'")
+    tenant_code = model.get("TenantCode")
+    if not tenant_code:
+        raise ValueError("Missing 'TenantCode'")
 
-    filename = f"{tenant_name}_format_mapper.json"
+    filename = f"{tenant_code}_format_mapper.json"
 
     # Optional: remove or keep TenentName in saved data
-    data_to_save = {k: v for k, v in model.items() if k != "TenantName"}
+    data_to_save = {k: v for k, v in model.items() if k != "TenantCode"}
     json_string = json.dumps(data_to_save, indent=4)
     json_object = json.loads(json_string)
 
@@ -357,7 +364,26 @@ async def handle_create_excel_format_mapper(model: dict, storage_service):
     return content_data
 
 
-async def handle_get_excel_format_mapper(tenent_name: str, storage_service):
-    filename = f"{tenent_name}_format_mapper.json"
+async def handle_get_excel_format_mapper(tenent_code: str, storage_service):
+    filename = f"{tenent_code}_format_mapper.json"
     data = await storage_service.search_file(filename)
     return data
+
+
+async def extract_tenant_code_from_path(file_path: str) -> Optional[str]:
+    # Get the file name without path
+    filename = os.path.basename(file_path)
+    # Remove the extension
+    name_without_ext = os.path.splitext(filename)[0]
+    
+    parts = name_without_ext.split('_')
+
+    if len(parts) < 2:
+        return None  # Not enough parts
+
+    # Assume last part is the date (YYYYMMDD)
+    date_part = parts[-1]
+
+    # Tenant code is everything before the date
+    tenant_code = '_'.join(parts[:-1])
+    return tenant_code

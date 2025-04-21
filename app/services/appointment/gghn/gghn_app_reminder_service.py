@@ -60,7 +60,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             appointment_file = await self.extract_appointment(result,date,storage_service)
 
             updated_appointment_file = await self.update_phone_by_EMRId(appointment_file,date,storage_service)
-            resp = await self.create_reminder(updated_appointment_file,date,storage_service)
+            resp = await self.create_reminder(updated_appointment_file, date, storage_service)
             # resp = await self.send_reminder(appointment_file,date) 
             return(resp)
         except HTTPError:
