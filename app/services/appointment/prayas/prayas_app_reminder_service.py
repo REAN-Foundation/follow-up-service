@@ -104,7 +104,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
                 schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, reminder_date, first_reminder)
                 
                 # Check the patient replied status
-                prefix_string = 'prayas_appointment_'
+                prefix_string = f'{tenant_code}_appointment_'
                 already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date,storage_service)
                 # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
                 
@@ -125,12 +125,13 @@ class PrayasAppointmentReminder(AppointmentReminderI):
                      print("Patient have already replied hence no reminder set")
             else:
                 print("Patient phone number not set!")
-        await self.create_reports(summary_data,reminder_date,storage_service)
+        await self.create_reports(summary_data,reminder_date,storage_service, tenant_code)
 
     @log_execution_time
-    async def create_reports(self,summary_data,reminder_date,storage_service):
+    async def create_reports(self,summary_data,reminder_date,storage_service, tenant_code):
         print('SUMMARY:',summary_data)
-        filename=str('prayas_appointment_'+reminder_date+'.json')
+        filename=f'{tenant_code}_appointment_{reminder_date}.json'
+        # filename=str('prayas_appointment_'+reminder_date+'.json')
         data = await storage_service.search_file(filename)
         # f_path=(os.getcwd()+"/temp/"+filename)
         if(data != None):
