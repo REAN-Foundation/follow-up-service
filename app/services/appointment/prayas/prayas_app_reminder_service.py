@@ -100,7 +100,10 @@ class PrayasAppointmentReminder(AppointmentReminderI):
             first_reminder = appointment_time.get("FirstTime")
             if(first_reminder != None):
                 print(f'time of reminder after excel-upload {first_reminder}')
-                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, reminder_date, first_reminder)
+                date_obj = datetime.strptime(reminder_date, '%Y-%m-%d')
+                previous_date_obj = date_obj - timedelta(days=1)
+                previous_date = previous_date_obj.strftime('%Y-%m-%d') 
+                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, previous_date, first_reminder)
                 
                 # Check the patient replied status
                 prefix_string = 'prayas_appointment_'
