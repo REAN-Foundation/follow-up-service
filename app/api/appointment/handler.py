@@ -59,6 +59,7 @@ async def handle_s3_event(message: Request,storage_service):
     file_path = await download(message)
     print("Downloaded file path",file_path)
     tenant_code = await extract_tenant_code_from_path(file_path)
+    tenant_code = tenant_code.lower()
     # 2. Extract the date from the PDF file
     
     file_type = find_file_type(file_path)
@@ -161,6 +162,7 @@ async def handle(storage_service,file: UploadFile = File(...)):
 
     # 2. Extract the date from the PDF file
     tenant_code = await extract_tenant_code_from_path(file_path)
+    tenant_code = tenant_code.lower()
     file_type = find_file_type(file_path)
     reader = GMUPdfReader()
     excel_reader = ExcelReader()
@@ -349,7 +351,7 @@ async def update_followup_reply(client_bot_name,date_str, phone_number, content,
 
 
 async def handle_create_excel_format_mapper(model: dict, storage_service):
-    tenant_code = model.get("TenantCode")
+    tenant_code = model.get("TenantCode").lower()
     if not tenant_code:
         raise ValueError("Missing 'TenantCode'")
 
@@ -365,10 +367,10 @@ async def handle_create_excel_format_mapper(model: dict, storage_service):
 
 
 async def handle_get_excel_format_mapper(tenent_code: str, storage_service):
+    tenent_code = tenent_code.lower()
     filename = f"{tenent_code}_format_mapper.json"
     data = await storage_service.search_file(filename)
     return data
-
 
 async def extract_tenant_code_from_path(file_path: str) -> Optional[str]:
     # Get the file name without path

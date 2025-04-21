@@ -22,7 +22,7 @@ class DatabaseService(IStorageService):
         if(collect_prefix == 'gmu'):
             record = db.get_collection(os.getenv("GMU_COLLECTION_NAME"))
             return(record)
-        if(collect_prefix == 'PRAYAS'):
+        if(collect_prefix == 'prayas'):
             record = db.get_collection(os.getenv("PRAYAS_COLLECTION_NAME"))
             return(record)
     
