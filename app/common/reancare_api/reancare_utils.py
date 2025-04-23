@@ -44,3 +44,56 @@ async def get_headers(create_user = False):
             'x-api-key': os.getenv("REANCARE_API_KEY"),
             'Content-Type': 'application/json'
         }
+        
+async def get_tenant_by_code(tenant_code):
+    url = f"{os.getenv('REANCARE_BASE_URL')}/tenants/search?code={tenant_code}"
+    headers = await get_headers()
+    # params = {'tenantCode': tenant_code} 
+
+    response = requests.get(url, headers=headers)
+    result = response.json()
+
+    if response.status_code == 200 and 'Data' in result:
+        tenant_data = result['Data']["TenantRecords"]['Items'][0]
+        return tenant_data.get('id') 
+    else:
+        print(f"Failed to fetch tenant info for code {tenant_code}: {result}")
+        return None
+    
+async def get_tenant_settings(tenant_code):
+    tenant_code = tenant_code.upper()
+    tenant_id = await get_tenant_by_code(tenant_code)
+    url = f"{os.getenv('REANCARE_BASE_URL')}/tenant-settings/{tenant_id}"
+    headers = await get_headers()
+
+    response = requests.get(url, headers=headers)
+    result = response.json()
+
+    if response.status_code == 200 and 'Data' in result:
+        return result['Data'] ["TenantSettings"]
+    # Adjust based on actual response format
+    else:
+        print(f"Failed to fetch tenant settings for ID {tenant_id}: {result}")
+        return None
+
+async def get_appointment_followup_settings(tenant_settings: dict) -> str | None:
+    if not tenant_settings:
+        return None
+
+    chatbot = tenant_settings.get("ChatBot")
+    if not chatbot:
+        return None
+
+    followup = chatbot.get("AppointmentFollowup")
+    if not followup:
+        return None
+
+    ehr_api_details = followup.get("AppointmentEhrApiDetails")
+    if not ehr_api_details:
+        return None
+
+    mechanism = ehr_api_details.get("FollowupMechanism")
+    if not mechanism:
+        return None
+
+    return mechanism.get("MessageFrequency")

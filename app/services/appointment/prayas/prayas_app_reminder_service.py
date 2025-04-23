@@ -12,10 +12,10 @@ import pytz
 
 from app.common.logtime import log_execution_time
 from app.common.reancare_api.reancare_login_service import ReanCareLogin
-from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_headers
+from app.common.reancare_api.reancare_utils import find_patient_by_mobile, get_appointment_followup_settings, get_headers, get_tenant_settings
 from app.interfaces.appointment_reminder_interface import AppointmentReminderI
 from app.services.common.db_service import DatabaseService
-
+from dateutil.parser import parse as parse_datetime
 
 ###############################################################
 
@@ -29,7 +29,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         reancare_base_url = os.getenv("REANCARE_BASE_URL")
         if reancare_base_url == None:
             raise Exception('REANCARE_BASE_URL is not set')
-        tenant_id = os.getenv("TENANT_ID")
+        # tenant_id = os.getenv("TENANT_ID")
 
         self.patient_url = str(reancare_base_url + "/patients/")
         self.reminder_url = str(reancare_base_url + "/reminders/one-time")
@@ -38,7 +38,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         # self.access_token = cache.get('access_token')
         self.recent_file = ''
         self.gmu_bot_client_name = os.getenv("DEV_BOT")
-        self.tenant_id = tenant_id
+        # self.tenant_id = tenant_id
 
         self.new_patients_added_count = 0
         self.reminders_sent_count = 0
@@ -46,89 +46,190 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         self.appointments_processed_count = 0
         self.appointments_skipped_count = 0
         # self.db_data = DatabaseService()
+    # @log_execution_time
+    # async def create_reminder(self, appointments,storage_service, tenant_code):
+    #     login = ReanCareLogin()
+    #     self.access_token = await login.get_access_token()
+    #     summary_data = []
+    #     for appointment in appointments:
+    #         reminder_date = appointment.get("AppointmentDate")
+    #         reminder_time = appointment.get("AppointmentTime")
+    #         patient_mobile_number = appointment.get('PatientMobile')
+    #         is_valid_mobile = validate_mobile(patient_mobile_number)
+    #         if not is_valid_mobile:
+    #             print('*Invalid phone-number - ', patient_mobile_number)
+    #             self.appointments_skipped_count = self.appointments_skipped_count + 1
+    #             continue
+
+    #         self.appointments_processed_count = self.appointments_processed_count + 1
+
+    #         user_id = await find_patient_by_mobile(patient_mobile_number, tenant_code)
+    #         user_model = await self.get_update_patient_model(appointment)
+    #         appointment_time = await self.get_time_in_24hrs(appointment)
+    #         #first_time = appointment_time['FirstTime']
+    #         #second_time = appointment_time['SecondTime']
+    #         first_name = user_model['FirstName']
+    #         last_name = user_model['LastName']
+
+    #         # Create patient if does not exist
+    #         if user_id == None:
+    #             user_id = await self.create_patient(patient_mobile_number, tenant_code)
+    #             if user_id == None:
+    #                 raise Exception('Unable to create patient')
+    #             self.new_patients_added_count = self.new_patients_added_count  + 1
+    #             await self.update_patient(user_id, user_model)
+
+    #         data = {
+    #             "name_of_patient":appointment['PatientName'],
+    #             "facility_name":"",
+    #             "rean_patient_userid":user_id,
+    #             "phone_number":patient_mobile_number,
+    #             "appointment_time":appointment['AppointmentTime'],
+    #             "participant_code":"",
+    #             "patient_status":"",
+    #             "whatsapp_message_id":"",
+    #             "patient_replied": "Not replied",
+    #             "followup_assessment_reply":"",
+    #             "case_manager": ""
+    #             }
+    #         summary_data.append(data)
+
+    #         self.pending_arrival_count = self.pending_arrival_count + 1
+
+    #         # First reminder set as soon as pdf upload
+    #         print(f'patient phone number {patient_mobile_number}')
+    #         first_reminder = appointment_time.get("FirstTime")
+            
+    #         tenant_settings = await get_tenant_settings(tenant_code)
+    #         if tenant_settings is None:
+    #             raise Exception(f"Tenant settings not found for tenant code {tenant_code}")
+            
+    #         message_frequency = await get_appointment_followup_settings(tenant_settings)
+    #         print(f'message_frequency {message_frequency}')
+        
+    #         if(first_reminder != None):
+    #             print(f'time of reminder after excel-upload {first_reminder}')
+    #             date_obj = datetime.strptime(reminder_date, '%Y-%m-%d')
+    #             previous_date_obj = date_obj - timedelta(days=1)
+    #             previous_date = previous_date_obj.strftime('%Y-%m-%d')
+                
+                
+    #             schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, previous_date, first_reminder)
+                
+    #             # Check the patient replied status
+    #             prefix_string = f'{tenant_code}_appointment_'
+    #             already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date,storage_service)
+    #             # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
+                
+    #             if not already_replied:
+    #                 response = await self.schedule_reminder(schedule_model)
+
+    #         #  Send reminders 10 min before and after
+
+    #         # is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
+    #         # if not is_reminder_set:
+    #         #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, first_time, reminder_date)
+    #         #     self.schedule_reminder(schedule_model)
+    #         # is_reminder_set = self.search_reminder(user_id, reminder_date, second_time)
+    #         # if not is_reminder_set:
+    #         #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
+    #         #     self.schedule_reminder(schedule_model)
+    #             else:
+    #                  print("Patient have already replied hence no reminder set")
+    #         else:
+    #             print("Patient phone number not set!")
+    #     await self.create_reports(summary_data,reminder_date,storage_service, tenant_code)
+
     @log_execution_time
-    async def create_reminder(self, appointments,storage_service, tenant_code):
+    async def create_reminder(self, appointments, storage_service, tenant_code):
         login = ReanCareLogin()
         self.access_token = await login.get_access_token()
         summary_data = []
+
         for appointment in appointments:
             reminder_date = appointment.get("AppointmentDate")
             reminder_time = appointment.get("AppointmentTime")
-            patient_mobile_number = appointment.get('PatientMobile')
+            patient_mobile_number = appointment.get("PatientMobile")
             is_valid_mobile = validate_mobile(patient_mobile_number)
+
             if not is_valid_mobile:
                 print('*Invalid phone-number - ', patient_mobile_number)
-                self.appointments_skipped_count = self.appointments_skipped_count + 1
+                self.appointments_skipped_count += 1
                 continue
 
-            self.appointments_processed_count = self.appointments_processed_count + 1
-
+            self.appointments_processed_count += 1
             user_id = await find_patient_by_mobile(patient_mobile_number, tenant_code)
             user_model = await self.get_update_patient_model(appointment)
             appointment_time = await self.get_time_in_24hrs(appointment)
-            #first_time = appointment_time['FirstTime']
-            #second_time = appointment_time['SecondTime']
+
             first_name = user_model['FirstName']
             last_name = user_model['LastName']
 
-            # Create patient if does not exist
-            if user_id == None:
+            if user_id is None:
                 user_id = await self.create_patient(patient_mobile_number, tenant_code)
-                if user_id == None:
+                if user_id is None:
                     raise Exception('Unable to create patient')
-                self.new_patients_added_count = self.new_patients_added_count  + 1
+                self.new_patients_added_count += 1
                 await self.update_patient(user_id, user_model)
 
             data = {
-                "name_of_patient":appointment['PatientName'],
-                "facility_name":"",
-                "rean_patient_userid":user_id,
-                "phone_number":patient_mobile_number,
-                "appointment_time":appointment['AppointmentTime'],
-                "participant_code":"",
-                "patient_status":"",
-                "whatsapp_message_id":"",
+                "name_of_patient": appointment['PatientName'],
+                "facility_name": "",
+                "rean_patient_userid": user_id,
+                "phone_number": patient_mobile_number,
+                "appointment_time": appointment['AppointmentTime'],
+                "participant_code": "",
+                "patient_status": "",
+                "whatsapp_message_id": "",
                 "patient_replied": "Not replied",
-                "followup_assessment_reply":"",
+                "followup_assessment_reply": "",
                 "case_manager": ""
-                }
+            }
             summary_data.append(data)
+            self.pending_arrival_count += 1
 
-            self.pending_arrival_count = self.pending_arrival_count + 1
+            tenant_settings = await get_tenant_settings(tenant_code)
+            if tenant_settings is None:
+                raise Exception(f"Tenant settings not found for tenant code {tenant_code}")
 
-            # First reminder set as soon as pdf upload
-            print(f'patient phone number {patient_mobile_number}')
-            first_reminder = appointment_time.get("FirstTime")
-            if(first_reminder != None):
-                print(f'time of reminder after excel-upload {first_reminder}')
-                date_obj = datetime.strptime(reminder_date, '%Y-%m-%d')
-                previous_date_obj = date_obj - timedelta(days=1)
-                previous_date = previous_date_obj.strftime('%Y-%m-%d')
-                schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, previous_date, first_reminder)
-                
-                # Check the patient replied status
-                prefix_string = f'{tenant_code}_appointment_'
-                already_replied = await has_patient_replied(prefix_string, patient_mobile_number, reminder_date,storage_service)
-                # already_replied = self.isPatientAlreadyReplied(patient_mobile_number, reminder_date)
-                
-                if not already_replied:
-                    response = await self.schedule_reminder(schedule_model)
+            message_frequency = await get_appointment_followup_settings(tenant_settings)
+            print(f'message_frequency {message_frequency}')
 
-            #  Send reminders 10 min before and after
+            appointment_dt = parse_datetime(f"{reminder_date} {reminder_time}")
 
-            # is_reminder_set = self.search_reminder(user_id, reminder_date, first_time)
-            # if not is_reminder_set:
-            #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, first_time, reminder_date)
-            #     self.schedule_reminder(schedule_model)
-            # is_reminder_set = self.search_reminder(user_id, reminder_date, second_time)
-            # if not is_reminder_set:
-            #     schedule_model = self.get_schedule_create_model(user_id, first_name, appointment, second_time, reminder_date)
-            #     self.schedule_reminder(schedule_model)
-                else:
-                     print("Patient have already replied hence no reminder set")
+            # Fallback if all values are false or message_frequency is None
+            if not message_frequency or not any(message_frequency.values()):
+                print("No message frequency configured. Using default: OneDayBefore.")
+                reminder_dt = appointment_dt - timedelta(days=1)
+                await self.schedule_timed_reminder(reminder_dt, appointment, user_id, first_name, tenant_code, storage_service)
             else:
-                print("Patient phone number not set!")
-        await self.create_reports(summary_data,reminder_date,storage_service, tenant_code)
+                if message_frequency.get("OneDayBefore"):
+                    reminder_dt = appointment_dt - timedelta(days=1)
+                    await self.schedule_timed_reminder(reminder_dt, appointment, user_id, first_name, tenant_code, storage_service)
+
+                if message_frequency.get("OneWeekBefore"):
+                    reminder_dt = appointment_dt - timedelta(weeks=1)
+                    await self.schedule_timed_reminder(reminder_dt, appointment, user_id, first_name, tenant_code, storage_service)
+
+                if message_frequency.get("OneHourBefore"):
+                    reminder_dt = appointment_dt - timedelta(hours=1)
+                    await self.schedule_timed_reminder(reminder_dt, appointment, user_id, first_name, tenant_code, storage_service)
+
+        await self.create_reports(summary_data, reminder_date, storage_service, tenant_code)
+        
+        
+    async def schedule_timed_reminder(self, reminder_dt, appointment, user_id, first_name, tenant_code, storage_service):
+        when_date = reminder_dt.strftime('%Y-%m-%d')
+        when_time = reminder_dt.strftime('%H:%M')
+
+        prefix_string = f'{tenant_code}_appointment_'
+        already_replied = await has_patient_replied(prefix_string, appointment['PatientMobile'], appointment['AppointmentDate'], storage_service)
+
+        if not already_replied:
+            schedule_model = await self.get_schedule_create_model(user_id, first_name, appointment, when_date, when_time)
+            await self.schedule_reminder(schedule_model)
+        else:
+            print("Patient has already replied, skipping reminder.")
 
     @log_execution_time
     async def create_reports(self,summary_data,reminder_date,storage_service, tenant_code):
@@ -340,3 +441,4 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         return (result)
 
 ###############################################################
+
