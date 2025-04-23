@@ -244,6 +244,9 @@ class PrayasAppointmentReminder(AppointmentReminderI):
         #hour, minute = appointment_time[0].split(':')
         #rest = appointment_time[1]
         print("when date..",when_date)
+        appointment_date = patient.get("AppointmentDate")
+        appointment_time = patient.get("AppointmentTime")
+        appointment_date_time = f"{appointment_time} {appointment_date}"
         # appointment_time= '{}:{}:{}'.format(hour,minute,'00')
         raw_content = {
             "TemplateName": "appointment_rem_question",
@@ -259,7 +262,7 @@ class PrayasAppointmentReminder(AppointmentReminderI):
                     },
                     {
                         "type": "text",
-                        "text":  reminder_time
+                        "text":  appointment_date_time
                     },
                     {
                         "type": "text",
