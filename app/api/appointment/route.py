@@ -26,7 +26,7 @@ router = APIRouter(
 @router.post("/{client}/set-reminders/date/{date_string}", status_code=status.HTTP_201_CREATED,response_model=ResponseModel[BaseResponseModel|None])
 async def read_file(background_tasks: BackgroundTasks, client: str, date_string: str,storage_service: IStorageService = Depends(get_storage_service)):
     try:
-        background_tasks.add_task(readfile_content, date_string,storage_service)
+        background_tasks.add_task(readfile_content, date_string,storage_service, client)
        
         return {
             "Message" : "Your Followup reminders are being scheduled",
