@@ -228,7 +228,7 @@ async def store_uploaded_file(file: UploadFile):
         shutil.copyfileobj(file.file, buffer)
     return file_path
 ###########################other routes#######################################
-async def readfile_content(date, storage_service):
+async def readfile_content(date, storage_service, client):
     try:
         formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%Y-%m-%d')
         print("formatted_date:",formatted_date)
@@ -238,7 +238,7 @@ async def readfile_content(date, storage_service):
         print("formated_date...",date_str)
         
         patientextraction = GGHNAppointmentReminder()
-        appointmentcontent = await patientextraction.read_content(date_str,storage_service)
+        appointmentcontent = await patientextraction.read_content(date_str,storage_service, client)
         print(appointmentcontent)
         # return()
     except Exception as e:

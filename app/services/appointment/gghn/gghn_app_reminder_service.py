@@ -31,7 +31,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
         self.token = ''
     #Get Paitient details using gghn api 
     @log_execution_time
-    async def read_content(self, date,storage_service):
+    async def read_content(self, date,storage_service, client):
         try:
             login = GGHNLogin()
             await login.gghnlogin()
@@ -60,7 +60,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             appointment_file = await self.extract_appointment(result,date,storage_service)
 
             updated_appointment_file = await self.update_phone_by_EMRId(appointment_file,date,storage_service)
-            resp = await self.create_reminder(updated_appointment_file, date, storage_service)
+            resp = await self.create_reminder(updated_appointment_file, date, storage_service, client)
             # resp = await self.send_reminder(appointment_file,date) 
             return(resp)
         except HTTPError:
@@ -161,7 +161,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
             print(f"An unexpected error occurred while writing into{filename}: {e}")
 
     @log_execution_time
-    async def create_reminder(self,appointment_file,date,storage_service):
+    async def create_reminder(self,appointment_file,date,storage_service, client):
         count = 0
         filedata = await storage_service.search_file(appointment_file)
         if(filedata == None):
@@ -172,7 +172,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                     patient_code = item['participant_code']
                     # print("GGHN patient phone number is:",phone_number)
                     if(phone_number != ''):
-                        patient_data = await find_patient_by_mobile(phone_number)
+                        patient_data = await find_patient_by_mobile(phone_number, client)
                         # print("GGHN patient user id is:",patient_data)
                         first_reminder = await time_of_first_reminder(phone_number)
                         print("first reminder time for GGHN patient",first_reminder)
@@ -271,6 +271,7 @@ class GGHNAppointmentReminder(AppointmentReminderI):
                 app_data['rean_patient_userid'] = ''
 
         retrived_data = await storage_service.update_file(file_name,appointment_data)
+        print('Retrived Data', recent_data)
         data = retrived_data
         return(file_name)
 
